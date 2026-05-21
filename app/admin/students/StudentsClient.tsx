@@ -40,7 +40,7 @@ export default function StudentsPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, phone, email }),
     });
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
 
     if (!res.ok) {
       setError(data.error ?? "Failed to add student");

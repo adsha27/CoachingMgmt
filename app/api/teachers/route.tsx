@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import { render } from "@react-email/render";
 import { prisma } from "@/lib/prisma";
@@ -44,16 +45,25 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const teacher = await prisma.user.create({
-    data: {
-      name,
-      phone,
-      email,
-      role: "TEACHER",
-      teacherToken: { create: {} },
-    },
-    include: { teacherToken: { select: { token: true } } },
-  });
+  let teacher;
+  try {
+    teacher = await prisma.user.create({
+      data: {
+        name,
+        phone,
+        email,
+        role: "TEACHER",
+        teacherToken: { create: {} },
+      },
+      include: { teacherToken: { select: { token: true } } },
+    });
+  } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+      const target = Array.isArray(err.meta?.target) ? err.meta.target.join(", ") : "field";
+      return NextResponse.json({ error: `A user with this ${target} already exists` }, { status: 409 });
+    }
+    throw err;
+  }
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? "http://localhost:3000";
   const scheduleUrl = `${baseUrl}/schedule/${teacher.teacherToken!.token}`;
