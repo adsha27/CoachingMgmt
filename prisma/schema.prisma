@@ -44,13 +44,15 @@ enum UserStatus {
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 
 // Single-use 6-digit OTP codes. Raw code never stored — only bcrypt hash.
+// failedAttempts: incremented on wrong guess; code invalidated after 5 failures.
 model OtpCode {
-  id        Int       @id @default(autoincrement())
-  email     String
-  codeHash  String
-  expiresAt DateTime
-  usedAt    DateTime?
-  createdAt DateTime  @default(now())
+  id             Int       @id @default(autoincrement())
+  email          String
+  codeHash       String
+  expiresAt      DateTime
+  usedAt         DateTime?
+  failedAttempts Int       @default(0)
+  createdAt      DateTime  @default(now())
 
   @@index([email, createdAt])
   @@map("otp_codes")

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { render } from "@react-email/render";
 import { prisma } from "@/lib/prisma";
+import { getSession, SESSION_COOKIE } from "@/lib/auth";
 import { createMeetSession } from "@/lib/calendar";
 import { sendEmail } from "@/lib/email";
 import {
@@ -8,7 +9,16 @@ import {
   sessionInviteText,
 } from "@/lib/emails/session-invite";
 
-export async function GET() {
+async function requireAdmin(req: NextRequest) {
+  const user = await getSession(req.cookies.get(SESSION_COOKIE)?.value ?? "");
+  if (!user || user.role !== "ADMIN") return null;
+  return user;
+}
+
+export async function GET(req: NextRequest) {
+  if (!await requireAdmin(req)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
   const sessions = await prisma.session.findMany({
     include: {
       teacher: { select: { id: true, name: true, email: true } },
@@ -22,6 +32,9 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  if (!await requireAdmin(req)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
   const body = await req.json();
   const { teacherId, subject, scheduledDate, durationMinutes, studentIds = [] } =
     body as {

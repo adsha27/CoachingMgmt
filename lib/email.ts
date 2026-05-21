@@ -1,8 +1,13 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+let resend: Resend | null = null;
 
-const FROM = process.env.EMAIL_FROM ?? "noreply@yourdomain.com";
+function getResend() {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) throw new Error("RESEND_API_KEY is not set");
+  resend ??= new Resend(apiKey);
+  return resend;
+}
 
 export async function sendEmail(params: {
   to: string | string[];
@@ -10,8 +15,12 @@ export async function sendEmail(params: {
   html: string;
   text: string;
 }): Promise<{ id: string }> {
-  const { data, error } = await resend.emails.send({
-    from: FROM,
+  if (process.env.EMAIL_DELIVERY_MODE === "console") {
+    return { id: `console-${Date.now()}` };
+  }
+
+  const { data, error } = await getResend().emails.send({
+    from: process.env.EMAIL_FROM ?? "noreply@yourdomain.com",
     to: params.to,
     subject: params.subject,
     html: params.html,

@@ -11,6 +11,7 @@ build/
 # env — never commit secrets
 .env
 .env.local
+.env.test
 .env.production
 
 # prisma generated
@@ -35,3 +36,6 @@ test-results/
 # google service account key — never commit
 *service-account*.json
 *credentials*.json
+
+# gstack local artifacts (security reports, analytics — keep local)
+.gstack/

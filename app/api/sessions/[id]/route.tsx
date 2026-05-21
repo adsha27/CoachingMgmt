@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { render } from "@react-email/render";
 import { prisma } from "@/lib/prisma";
+import { getSession, SESSION_COOKIE } from "@/lib/auth";
 import { cancelCalendarEvent } from "@/lib/calendar";
 import { sendEmail } from "@/lib/email";
 import {
@@ -12,6 +13,10 @@ export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const user = await getSession(req.cookies.get(SESSION_COOKIE)?.value ?? "");
+  if (!user || user.role !== "ADMIN") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
   const { id } = await params;
   const body = await req.json().catch(() => ({}));
   const reason = (body as { reason?: string }).reason;

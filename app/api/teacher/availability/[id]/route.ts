@@ -2,6 +2,24 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession, SESSION_COOKIE } from "@/lib/auth";
 
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const user = await getSession(req.cookies.get(SESSION_COOKIE)?.value ?? "");
+  if (!user || user.role !== "ADMIN") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const { id } = await params;
+  const slots = await prisma.teacherAvailability.findMany({
+    where: { teacherId: Number(id), startTime: { gte: new Date() } },
+    orderBy: { startTime: "asc" },
+  });
+
+  return NextResponse.json(slots);
+}
+
 export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }

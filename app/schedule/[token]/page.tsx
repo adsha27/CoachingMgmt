@@ -31,7 +31,7 @@ export default async function SchedulePage({
       scheduledDate: { gte: new Date() },
     },
     include: {
-      students: { include: { student: { select: { name: true } } } },
+      students: { select: { studentId: true } },
     },
     orderBy: { scheduledDate: "asc" },
   });
@@ -64,7 +64,7 @@ export default async function SchedulePage({
               hour: "2-digit",
               minute: "2-digit",
             });
-            const studentNames = session.students.map((ss) => ss.student.name);
+            const studentCount = session.students.length;
 
             return (
               <div
@@ -82,9 +82,9 @@ export default async function SchedulePage({
                     <p className="text-gray-600">
                       {timeStr} &middot; {session.durationMinutes} min
                     </p>
-                    {studentNames.length > 0 && (
+                    {studentCount > 0 && (
                       <p className="text-sm text-gray-400 mt-1">
-                        Students: {studentNames.join(", ")}
+                        {studentCount} {studentCount === 1 ? "student" : "students"}
                       </p>
                     )}
                   </div>

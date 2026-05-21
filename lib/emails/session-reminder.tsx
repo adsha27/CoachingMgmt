@@ -10,6 +10,7 @@ import {
   Section,
   Text,
 } from "@react-email/components";
+import React from "react";
 
 interface SessionReminderProps {
   teacherName: string;

@@ -1,12 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 interface User {
   id: number;
   name: string;
   email: string;
+}
+
+interface AvailabilitySlot {
+  id: number;
+  startTime: string;
+  endTime: string;
+  note: string | null;
 }
 
 export default function NewSessionForm({
@@ -22,9 +29,34 @@ export default function NewSessionForm({
   const [scheduledDate, setScheduledDate] = useState("");
   const [durationMinutes, setDurationMinutes] = useState("60");
   const [studentIds, setStudentIds] = useState<number[]>([]);
+  const [availabilitySlots, setAvailabilitySlots] = useState<AvailabilitySlot[]>([]);
   const [loading, setLoading] = useState(false);
+  const [availabilityLoading, setAvailabilityLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [emailWarning, setEmailWarning] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!teacherId) {
+      setAvailabilitySlots([]);
+      return;
+    }
+
+    let cancelled = false;
+    async function loadAvailability() {
+      setAvailabilityLoading(true);
+      const res = await fetch(`/api/teacher/availability/${teacherId}`);
+      const data = await res.json();
+      if (!cancelled) {
+        setAvailabilitySlots(res.ok ? data : []);
+        setAvailabilityLoading(false);
+      }
+    }
+
+    loadAvailability();
+    return () => {
+      cancelled = true;
+    };
+  }, [teacherId]);
 
   function toggleStudent(id: number) {
     setStudentIds((prev) =>
@@ -88,10 +120,11 @@ export default function NewSessionForm({
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="teacherId" className="block text-sm font-medium text-gray-700 mb-1">
             Teacher
           </label>
           <select
+            id="teacherId"
             value={teacherId}
             onChange={(e) => setTeacherId(e.target.value)}
             required
@@ -104,13 +137,48 @@ export default function NewSessionForm({
               </option>
             ))}
           </select>
+          {availabilityLoading && (
+            <p className="text-xs text-gray-400 mt-2">Loading availability…</p>
+          )}
+          {!availabilityLoading && availabilitySlots.length > 0 && (
+            <div className="mt-3 rounded-lg border border-indigo-100 bg-indigo-50 p-3">
+              <h2 className="text-xs font-semibold text-indigo-900 mb-2">
+                Teacher availability
+              </h2>
+              <div className="space-y-2">
+                {availabilitySlots.map((slot) => (
+                  <div key={slot.id} className="text-sm text-indigo-900">
+                    <span>
+                      {new Date(slot.startTime).toLocaleString("en-IN", {
+                        month: "short",
+                        day: "numeric",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
+                    <span> → </span>
+                    <span>
+                      {new Date(slot.endTime).toLocaleTimeString("en-IN", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
+                    {slot.note && (
+                      <span className="text-indigo-700"> · {slot.note}</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-1">
             Subject
           </label>
           <input
+            id="subject"
             type="text"
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
@@ -122,10 +190,11 @@ export default function NewSessionForm({
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="scheduledDate" className="block text-sm font-medium text-gray-700 mb-1">
               Date &amp; time
             </label>
             <input
+              id="scheduledDate"
               type="datetime-local"
               value={scheduledDate}
               onChange={(e) => setScheduledDate(e.target.value)}
@@ -134,10 +203,11 @@ export default function NewSessionForm({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="durationMinutes" className="block text-sm font-medium text-gray-700 mb-1">
               Duration (minutes)
             </label>
             <input
+              id="durationMinutes"
               type="number"
               value={durationMinutes}
               onChange={(e) => setDurationMinutes(e.target.value)}
