@@ -75,6 +75,13 @@ function LoginForm() {
           </div>
         )}
 
+        <p className="text-sm text-gray-500 text-center mb-6">
+          New here?{" "}
+          <a href="/register" className="text-indigo-600 hover:underline">
+            Register
+          </a>
+        </p>
+
         {step === "email" ? (
           <form onSubmit={requestCode} className="space-y-4">
             <div>

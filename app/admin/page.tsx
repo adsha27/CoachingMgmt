@@ -11,13 +11,16 @@ export default async function AdminPage() {
   const user = await getCurrentUser();
   if (!user || user.role !== "ADMIN") redirect("/login");
 
-  const sessions = await prisma.session.findMany({
-    include: {
-      teacher: { select: { name: true } },
-      students: { include: { student: { select: { name: true } } } },
-    },
-    orderBy: { scheduledDate: "asc" },
-  });
+  const [sessions, pendingCount] = await Promise.all([
+    prisma.session.findMany({
+      include: {
+        teacher: { select: { name: true } },
+        students: { include: { student: { select: { name: true } } } },
+      },
+      orderBy: { scheduledDate: "asc" },
+    }),
+    prisma.user.count({ where: { status: "INACTIVE", role: { in: ["TEACHER", "STUDENT"] } } }),
+  ]);
 
   return (
     <main className="max-w-5xl mx-auto py-8 px-4">
@@ -43,6 +46,14 @@ export default async function AdminPage() {
         </Link>
         <Link href="/admin/students" className="text-indigo-600 hover:underline">
           Students
+        </Link>
+        <Link href="/admin/registrations" className="text-indigo-600 hover:underline flex items-center gap-1">
+          Registrations
+          {pendingCount > 0 && (
+            <span className="bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 leading-none">
+              {pendingCount}
+            </span>
+          )}
         </Link>
       </div>
 
