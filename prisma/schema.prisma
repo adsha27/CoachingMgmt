@@ -1,0 +1,93 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Phase 1: three tables only.
+// Phase 2 adds: teacher_profiles, teacher_availability, group_courses,
+//               one_on_one_packages, bookings, slot_proposals.
+
+model User {
+  id        Int        @id @default(autoincrement())
+  name      String
+  phone     String     @unique
+  email     String     @unique
+  role      Role
+  status    UserStatus @default(ACTIVE)
+  createdAt DateTime   @default(now())
+
+  teacherToken     TeacherToken?
+  sessionsTeaching Session[]      @relation("TeacherSessions")
+  sessionsEnrolled SessionStudent[]
+
+  @@map("users")
+}
+
+enum Role {
+  ADMIN
+  TEACHER
+  STUDENT
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+// Token-gated read-only schedule URL for teachers.
+// /schedule/:token — no login required.
+// deletedAt set (soft-delete) when teacher is removed → URL returns 404.
+model TeacherToken {
+  id        Int       @id @default(autoincrement())
+  token     String    @unique @default(cuid())
+  teacherId Int       @unique
+  teacher   User      @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  @@map("teacher_tokens")
+}
+
+model Session {
+  id              Int           @id @default(autoincrement())
+  teacherId       Int
+  teacher         User          @relation("TeacherSessions", fields: [teacherId], references: [id])
+  subject         String
+  scheduledDate   DateTime
+  durationMinutes Int           // stored as integer minutes
+  meetLink        String?
+  // stored for orphan reconciliation if DB insert fails after Calendar API succeeds
+  calendarEventId String?
+  status          SessionStatus @default(SCHEDULED)
+  cancelReason    String?
+  // email delivery tracking
+  emailSentAt     DateTime?
+  emailError      String?       // set if Resend fails; admin sees warning banner
+
+  createdAt DateTime @default(now())
+  students  SessionStudent[]
+
+  @@map("sessions")
+}
+
+enum SessionStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+}
+
+// Join table: session ↔ student (many-to-many)
+model SessionStudent {
+  sessionId Int
+  studentId Int
+  session   Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  student   User    @relation(fields: [studentId], references: [id])
+
+  @@id([sessionId, studentId])
+  @@map("session_students")
+}
