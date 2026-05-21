@@ -84,6 +84,27 @@ describe("POST /api/auth/otp/request", () => {
     const res = await requestOtp(jsonReq("POST", "/api/auth/otp/request", { email: user.email }));
     expect(res.status).toBe(429);
   });
+
+  it("uses fixed 123456 OTP for the seeded local admin in non-production", async () => {
+    await prisma.user.create({
+      data: {
+        name: `${P} Local Admin`,
+        phone: phone(),
+        email: "admin@example.test",
+        role: "ADMIN",
+      },
+    });
+
+    const requestRes = await requestOtp(jsonReq("POST", "/api/auth/otp/request", { email: "admin@example.test" }));
+    expect(requestRes.status).toBe(200);
+
+    const verifyRes = await verifyOtp(jsonReq("POST", "/api/auth/otp/verify", {
+      email: "admin@example.test",
+      code: "123456",
+    }));
+    expect(verifyRes.status).toBe(200);
+    expect(await verifyRes.json()).toMatchObject({ ok: true, redirect: "/admin" });
+  });
 });
 
 describe("POST /api/auth/otp/verify", () => {

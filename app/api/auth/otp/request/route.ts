@@ -25,7 +25,11 @@ export async function POST(req: NextRequest) {
   const user = await prisma.user.findUnique({ where: { email } });
 
   if (user && user.status === "ACTIVE") {
-    const code = generateCode();
+    const fixedDevEmail = process.env.DEV_FIXED_OTP_EMAIL ?? "admin@example.test";
+    const fixedDevCode = process.env.DEV_FIXED_OTP_CODE ?? "123456";
+    const code = process.env.NODE_ENV !== "production" && email === fixedDevEmail
+      ? fixedDevCode
+      : generateCode();
     const codeHash = await hashCode(code);
     const expiresAt = new Date(Date.now() + OTP_TTL_MINUTES * 60 * 1000);
 
