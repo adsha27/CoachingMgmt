@@ -90,7 +90,7 @@ test("admin, teacher, student, and public schedule smoke flow", async ({ page, c
 
   await context.addCookies([await sessionCookie(admin.id)]);
   await page.goto("/admin");
-  await expect(page.getByRole("heading", { name: "Sessions" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Admin" })).toBeVisible();
   await expect(page.getByText(`${P} Physics`)).toBeVisible();
 
   await page.goto("/admin/sessions/new");
