@@ -7,9 +7,7 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// Phase 1: three tables only.
-// Phase 2 adds: teacher_profiles, teacher_availability, group_courses,
-//               one_on_one_packages, bookings, slot_proposals.
+// ─── Users ────────────────────────────────────────────────────────────────────
 
 model User {
   id        Int        @id @default(autoincrement())
@@ -21,8 +19,12 @@ model User {
   createdAt DateTime   @default(now())
 
   teacherToken     TeacherToken?
-  sessionsTeaching Session[]      @relation("TeacherSessions")
+  teacherProfile   TeacherProfile?
+  sessionsTeaching Session[]         @relation("TeacherSessions")
   sessionsEnrolled SessionStudent[]
+  availability     TeacherAvailability[]
+  userSessions     UserSession[]
+  bookings         Booking[]
 
   @@map("users")
 }
@@ -39,9 +41,37 @@ enum UserStatus {
   SUSPENDED
 }
 
-// Token-gated read-only schedule URL for teachers.
-// /schedule/:token — no login required.
-// deletedAt set (soft-delete) when teacher is removed → URL returns 404.
+// ─── Auth ─────────────────────────────────────────────────────────────────────
+
+// Single-use 6-digit OTP codes. Raw code never stored — only bcrypt hash.
+model OtpCode {
+  id        Int       @id @default(autoincrement())
+  email     String
+  codeHash  String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([email, createdAt])
+  @@map("otp_codes")
+}
+
+// Server-side sessions. Revocable by deleting the row.
+model UserSession {
+  id        Int      @id @default(autoincrement())
+  sessionId String   @unique @default(cuid())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([sessionId])
+  @@map("user_sessions")
+}
+
+// ─── Teacher ──────────────────────────────────────────────────────────────────
+
+// Token-gated read-only schedule URL. deletedAt set on removal → 404.
 model TeacherToken {
   id        Int       @id @default(autoincrement())
   token     String    @unique @default(cuid())
@@ -53,23 +83,102 @@ model TeacherToken {
   @@map("teacher_tokens")
 }
 
+// Bio + verification status for teacher-facing profile pages.
+model TeacherProfile {
+  id             Int                    @id @default(autoincrement())
+  teacherId      Int                    @unique
+  teacher        User                   @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  bio            String?
+  subjects       String[]               // e.g. ["JEE Physics", "JEE Chemistry"]
+  verifyStatus   TeacherVerifyStatus    @default(PENDING)
+  verifyNote     String?                // admin rejection reason
+  createdAt      DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+
+  @@map("teacher_profiles")
+}
+
+enum TeacherVerifyStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// Availability windows teachers propose; admin references when scheduling.
+model TeacherAvailability {
+  id        Int      @id @default(autoincrement())
+  teacherId Int
+  teacher   User     @relation(fields: [teacherId], references: [id], onDelete: Cascade)
+  startTime DateTime
+  endTime   DateTime
+  note      String?
+  createdAt DateTime @default(now())
+
+  @@map("teacher_availability")
+}
+
+// ─── Courses ──────────────────────────────────────────────────────────────────
+
+model GroupCourse {
+  id          Int       @id @default(autoincrement())
+  teacherId   Int
+  title       String
+  subject     String
+  description String?
+  maxStudents Int       @default(30)
+  priceINR    Int       // paise (multiply by 100 for Razorpay)
+  status      CourseStatus @default(DRAFT)
+  createdAt   DateTime  @default(now())
+
+  sessions Session[]
+  bookings Booking[]
+
+  @@map("group_courses")
+}
+
+enum CourseStatus {
+  DRAFT
+  ACTIVE
+  CLOSED
+}
+
+model OneOnOnePackage {
+  id          Int      @id @default(autoincrement())
+  teacherId   Int
+  title       String
+  subject     String
+  sessions    Int      // total sessions in package
+  durationMin Int      // minutes per session
+  priceINR    Int      // paise
+  status      CourseStatus @default(DRAFT)
+  createdAt   DateTime @default(now())
+
+  bookings     Booking[]
+  slotProposals SlotProposal[]
+
+  @@map("one_on_one_packages")
+}
+
+// ─── Sessions ─────────────────────────────────────────────────────────────────
+
 model Session {
   id              Int           @id @default(autoincrement())
   teacherId       Int
   teacher         User          @relation("TeacherSessions", fields: [teacherId], references: [id])
+  groupCourseId   Int?
+  groupCourse     GroupCourse?  @relation(fields: [groupCourseId], references: [id])
   subject         String
   scheduledDate   DateTime
-  durationMinutes Int           // stored as integer minutes
+  durationMinutes Int
   meetLink        String?
-  // stored for orphan reconciliation if DB insert fails after Calendar API succeeds
   calendarEventId String?
   status          SessionStatus @default(SCHEDULED)
   cancelReason    String?
-  // email delivery tracking
   emailSentAt     DateTime?
-  emailError      String?       // set if Resend fails; admin sees warning banner
+  emailError      String?
+  reminderSentAt  DateTime?     // set by nightly cron after reminder email
 
-  createdAt DateTime @default(now())
+  createdAt DateTime       @default(now())
   students  SessionStudent[]
 
   @@map("sessions")
@@ -81,7 +190,6 @@ enum SessionStatus {
   CANCELLED
 }
 
-// Join table: session ↔ student (many-to-many)
 model SessionStudent {
   sessionId Int
   studentId Int
@@ -90,4 +198,52 @@ model SessionStudent {
 
   @@id([sessionId, studentId])
   @@map("session_students")
+}
+
+// ─── Bookings ─────────────────────────────────────────────────────────────────
+
+// Polymorphic booking: exactly one of groupCourseId / oneOnOnePackageId is set.
+model Booking {
+  id                Int              @id @default(autoincrement())
+  studentId         Int
+  student           User             @relation(fields: [studentId], references: [id])
+  groupCourseId     Int?
+  groupCourse       GroupCourse?     @relation(fields: [groupCourseId], references: [id])
+  oneOnOnePackageId Int?
+  oneOnOnePackage   OneOnOnePackage? @relation(fields: [oneOnOnePackageId], references: [id])
+  status            BookingStatus    @default(CONFIRMED)
+  createdAt         DateTime         @default(now())
+
+  @@map("bookings")
+}
+
+enum BookingStatus {
+  CONFIRMED
+  CANCELLED
+}
+
+// ─── Slot Proposals (1-on-1 rolling schedule) ─────────────────────────────────
+
+model SlotProposal {
+  id                Int              @id @default(autoincrement())
+  packageId         Int
+  package           OneOnOnePackage  @relation(fields: [packageId], references: [id])
+  proposedBy        ProposedBy
+  startTime         DateTime
+  endTime           DateTime
+  status            SlotStatus       @default(PENDING)
+  createdAt         DateTime         @default(now())
+
+  @@map("slot_proposals")
+}
+
+enum ProposedBy {
+  STUDENT
+  TEACHER
+}
+
+enum SlotStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
 }
