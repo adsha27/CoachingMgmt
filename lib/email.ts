@@ -16,6 +16,11 @@ export async function sendEmail(params: {
   text: string;
 }): Promise<{ id: string }> {
   if (process.env.EMAIL_DELIVERY_MODE === "console") {
+    console.log("[email:console]", {
+      to: params.to,
+      subject: params.subject,
+      text: params.text,
+    });
     return { id: `console-${Date.now()}` };
   }
 
