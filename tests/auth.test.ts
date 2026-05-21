@@ -86,9 +86,12 @@ describe("POST /api/auth/otp/request", () => {
   });
 
   it("uses fixed 123456 OTP for the seeded local admin in non-production", async () => {
-    await prisma.user.create({
-      data: {
-        name: `${P} Local Admin`,
+    // The admin@example.test account may already exist from the demo seed — upsert handles both cases
+    await prisma.user.upsert({
+      where: { email: "admin@example.test" },
+      update: {},
+      create: {
+        name: "Admin",
         phone: phone(),
         email: "admin@example.test",
         role: "ADMIN",

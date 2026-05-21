@@ -14,7 +14,7 @@ async function makeAdmin() {
     update: {},
     create: {
       name: `${P} Admin`,
-      phone: "0000000000",
+      phone: `00${Date.now()}`.slice(0, 10),
       email: `${P}_admin@test.invalid`,
       role: "ADMIN",
     },
