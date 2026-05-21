@@ -9,6 +9,29 @@ import {
   sessionCancelledText,
 } from "@/lib/emails/session-cancelled";
 
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const user = await getSession(req.cookies.get(SESSION_COOKIE)?.value ?? "");
+  if (!user || user.role !== "ADMIN") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+  const { id } = await params;
+
+  const session = await prisma.session.findUnique({ where: { id: Number(id) } });
+  if (!session) return NextResponse.json({ error: "Session not found" }, { status: 404 });
+  if (session.status !== "SCHEDULED") {
+    return NextResponse.json({ error: "Only SCHEDULED sessions can be marked complete" }, { status: 409 });
+  }
+
+  const updated = await prisma.session.update({
+    where: { id: Number(id) },
+    data: { status: "COMPLETED" },
+  });
+  return NextResponse.json({ session: updated });
+}
+
 export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
