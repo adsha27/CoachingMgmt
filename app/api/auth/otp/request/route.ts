@@ -25,12 +25,12 @@ export async function POST(req: NextRequest) {
   const user = await prisma.user.findUnique({ where: { email } });
 
   if (user && user.status === "ACTIVE") {
+    const fixedDevEmail = process.env.DEV_FIXED_OTP_EMAIL ?? "admin@example.test";
     const fixedDevDomain = process.env.DEV_FIXED_OTP_DOMAIN ?? "";
-    const fixedDevEmail = process.env.DEV_FIXED_OTP_EMAIL ?? "";
     const fixedDevCode = process.env.DEV_FIXED_OTP_CODE ?? "123456";
     const isDevFixed = process.env.NODE_ENV !== "production" && (
-      (fixedDevDomain && email.endsWith(`@${fixedDevDomain}`)) ||
-      (fixedDevEmail && email === fixedDevEmail)
+      email === fixedDevEmail ||
+      (fixedDevDomain !== "" && email.endsWith(`@${fixedDevDomain}`))
     );
     const code = isDevFixed ? fixedDevCode : generateCode();
     const codeHash = await hashCode(code);
