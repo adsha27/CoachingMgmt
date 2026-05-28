@@ -1,3 +1,9 @@
+## 0. ENV & Config (do this first — blocks everything else)
+
+- [ ] 0.1 Add `MSG91_API_KEY`, `MSG91_TEMPLATE_ID` to `.env.local` and `.env.local.example`
+- [ ] 0.2 Add `AUTH_MODE=phone` flag (fall back to `email` if MSG91 DLT not yet approved)
+- [ ] 0.3 Verify all existing env vars still apply: `DATABASE_URL`, `RESEND_API_KEY`, Google Calendar service account creds
+
 ## 1. Dead Code Removal
 
 - [ ] 1.1 Delete `/app/register/student/page.tsx` and `/app/register/teacher/page.tsx` (replaced by inline OTP registration)
@@ -20,8 +26,8 @@
 - [ ] 2.6 Rewrite `Booking`: add `course_type`, `total_sessions`, `sessions_completed`, `sessions_scheduled`, `sessions_remaining`, `booked_at`
 - [ ] 2.7 Rewrite `Session`: add `booking_id` FK, `session_number`, `NO_SHOW` status; drop direct `teacher_id` / `students[]` junction (sessions are now booking-scoped)
 - [ ] 2.8 Rename `SlotProposal` fields to match spec: `proposed_date`, `proposed_start_time`, `teacher_note`; fix FK to `booking_id` (not `packageId`)
-- [ ] 2.9 Add new tables: `session_feedback`, `topic_requests`, `parent_access`, `invite_links`
-- [ ] 2.10 Add `parentStudentId Int?` column to `user_sessions` for scoped parent sessions
+- [ ] 2.9 Add new tables: `session_feedback`, `topic_requests` (with `status OPEN/FULFILLED` and `fulfilled_by_course_id Int?` FK), `parent_access`, `invite_links` (with `group_course_id Int?` + `one_on_one_package_id Int?` nullable FKs — exactly one set)
+- [ ] 2.10 Add `parentStudentId Int?` to `user_sessions` with explicit FK to `users.id`, indexed; add `@@index([parentStudentId])`
 - [ ] 2.11 Add `reminderSentAt` to sessions (already exists — verify and keep)
 - [ ] 2.12 Generate and run migration: `npx prisma migrate dev --name marketplace-skeleton`
 
@@ -133,7 +139,7 @@
 - [ ] 16.2 Create `PATCH /api/admin/cancellation-requests/[id]/route.ts`: admin approves (cancels session, notifies students) or rejects
 - [ ] 16.3 Add cancellation request button to teacher session/course detail pages
 
-## 17. Email Notifications
+## 17. Email Notifications (build before booking tasks — 10.x depends on these)
 
 - [ ] 17.1 Create `lib/emails/booking-confirmed-group.tsx`: student email with all session dates + Meet links
 - [ ] 17.2 Create `lib/emails/booking-confirmed-teacher.tsx`: teacher notification of new group enrollment
@@ -144,8 +150,8 @@
 - [ ] 17.7 Create `lib/emails/teacher-verified.tsx` and `lib/emails/teacher-rejected.tsx`
 - [ ] 17.8 Update cron `/app/api/cron/session-reminders/route.ts`: adapt to new sessions schema (booking-scoped sessions)
 
-## 18. ENV & Config
+## 18. Deferred (explicitly cut from MVP)
 
-- [ ] 18.1 Add `MSG91_API_KEY` and `MSG91_TEMPLATE_ID` to `.env.example` and Vercel/deployment config
-- [ ] 18.2 Add `AUTH_MODE=phone|email` feature flag env var (fallback to email OTP if MSG91 DLT not yet approved)
-- [ ] 18.3 Verify all existing env vars still apply (`DATABASE_URL`, `RESEND_API_KEY`, Google Calendar creds)
+- ~~18.1 Task 15.3 — Invite link generation UI on teacher pages~~ (generate via API call, copy link; no UI needed for MVP)
+- ~~18.2 Task 13.4 — Topic request → course linkage at creation~~ (manual admin action for now; FK column exists in schema for when it's built)
+- ~~18.3 Task 13.3 — Demand signal panel on teacher dashboard~~ (defer until topic requests have enough volume to be useful)
