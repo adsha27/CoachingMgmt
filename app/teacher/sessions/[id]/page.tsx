@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import CancelRequestButton from "./CancelRequestButton";
 
 export const dynamic = "force-dynamic";
 
@@ -118,6 +119,10 @@ export default async function TeacherSessionDetail({
           <p className="mt-4 text-sm text-red-600">
             Cancelled: {session.cancelReason}
           </p>
+        )}
+
+        {session.status === "SCHEDULED" && (
+          <CancelRequestButton sessionId={session.id} />
         )}
       </div>
     </main>

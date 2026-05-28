@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import FeedbackForm from "./FeedbackForm";
 
 export const dynamic = "force-dynamic";
 
@@ -31,6 +32,7 @@ export default async function StudentSessionDetail({
           },
         },
       },
+      feedback: { where: { studentId: user.id }, take: 1 },
     },
   });
 
@@ -99,6 +101,25 @@ export default async function StudentSessionDetail({
 
         {session.cancelReason && (
           <p className="mt-4 text-sm text-red-600">Cancelled: {session.cancelReason}</p>
+        )}
+
+        {session.status === "COMPLETED" && session.feedback.length === 0 && (
+          <FeedbackForm sessionId={session.id} />
+        )}
+
+        {session.status === "COMPLETED" && session.feedback.length > 0 && (
+          <div className="mt-5 pt-5 border-t border-gray-100">
+            <p className="text-sm font-medium text-gray-700 mb-1">Your feedback</p>
+            <div className="flex items-center gap-1">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <span key={i} className={i < session.feedback[0].rating ? "text-yellow-400" : "text-gray-300"}>★</span>
+              ))}
+              <span className="text-xs text-gray-500 ml-1">({session.feedback[0].rating}/5)</span>
+            </div>
+            {session.feedback[0].comment && (
+              <p className="text-sm text-gray-600 mt-1 italic">&ldquo;{session.feedback[0].comment}&rdquo;</p>
+            )}
+          </div>
         )}
       </div>
     </main>

@@ -3,6 +3,9 @@ import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import LogoutButton from "@/app/_components/LogoutButton";
+import ProposeSlotButton from "./ProposeSlotButton";
+import TopicRequestForm from "./TopicRequestForm";
+import ParentAccessSection from "./ParentAccessSection";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +15,7 @@ export default async function StudentDashboard() {
 
   const now = new Date();
 
-  const [upcoming, past, bookings] = await Promise.all([
+  const [upcoming, past, bookings, parents] = await Promise.all([
     // Sessions via 1-on-1 bookings or group courses the student is enrolled in
     prisma.session.findMany({
       where: {
@@ -56,7 +59,13 @@ export default async function StudentDashboard() {
       include: {
         groupCourse: { select: { title: true, subject: true } },
         oneOnOnePackage: { select: { title: true, subject: true } },
+        slotProposals: { where: { status: "PENDING" }, take: 1 },
       },
+    }),
+    prisma.parentAccess.findMany({
+      where: { studentId: user.id },
+      select: { id: true, parentName: true, parentPhone: true, parentEmail: true, verified: true },
+      orderBy: { createdAt: "desc" },
     }),
   ]);
 
@@ -84,18 +93,29 @@ export default async function StudentDashboard() {
           <h2 className="text-lg font-semibold text-gray-800 mb-3">My enrolments</h2>
           <div className="space-y-2">
             {bookings.map((b) => (
-              <div key={b.id} className="flex justify-between items-center bg-white border border-gray-200 rounded-lg px-4 py-3 text-sm">
-                <div>
-                  <span className="font-medium text-gray-800">
-                    {b.groupCourse?.title ?? b.oneOnOnePackage?.title}
-                  </span>
-                  <span className="text-gray-400 ml-2">
-                    {b.groupCourse?.subject ?? b.oneOnOnePackage?.subject}
+              <div key={b.id} className="bg-white border border-gray-200 rounded-lg px-4 py-3 text-sm">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <span className="font-medium text-gray-800">
+                      {b.groupCourse?.title ?? b.oneOnOnePackage?.title}
+                    </span>
+                    <span className="text-gray-400 ml-2">
+                      {b.groupCourse?.subject ?? b.oneOnOnePackage?.subject}
+                    </span>
+                  </div>
+                  <span className="text-xs text-gray-500">
+                    {b.sessionsCompleted}/{b.totalSessions} done
                   </span>
                 </div>
-                <span className="text-xs text-gray-500">
-                  {b.sessionsCompleted}/{b.totalSessions} done
-                </span>
+                {b.courseType === "ONE_ON_ONE" && b.sessionsRemaining > 0 && (
+                  <div className="mt-2">
+                    {b.slotProposals.length > 0 ? (
+                      <span className="text-xs text-amber-600">Slot proposal pending teacher response…</span>
+                    ) : (
+                      <ProposeSlotButton bookingId={b.id} />
+                    )}
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -150,6 +170,17 @@ export default async function StudentDashboard() {
           </div>
         )}
       </section>
+
+      {/* Topic Requests */}
+      <section className="mb-10">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-semibold text-gray-800">Topic Requests</h2>
+        </div>
+        <p className="text-xs text-gray-500 mb-3">Request topics you want covered — teachers see these as demand signals when creating courses.</p>
+        <TopicRequestForm />
+      </section>
+
+      <ParentAccessSection parents={parents} />
 
       {/* Past */}
       {past.length > 0 && (

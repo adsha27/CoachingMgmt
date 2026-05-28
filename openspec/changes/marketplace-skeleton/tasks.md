@@ -51,38 +51,38 @@
 
 ## 5. Teacher Profile Wizard
 
-- [ ] 5.1 Create `/app/teacher/wizard/page.tsx`: multi-step wizard shell with step state management
-- [ ] 5.2 Step 1 — Basic info: name, phone (pre-filled from auth), email, subjects (multi-select), target_exams (multi-select)
-- [ ] 5.3 Step 2 — Qualifications: free text qualifications field, teaching_experience_years
-- [ ] 5.4 Step 3 — Demo video: demo_video_link URL input with YouTube embed preview
-- [ ] 5.5 Step 4 — Social links: youtube, instagram, twitter, linkedin inputs (stored as jsonb)
-- [ ] 5.6 Step 5 — Review & submit: summary of all entered data, submit button sets status to PENDING
-- [ ] 5.7 Add draft persistence: save wizard state to DB (partial TeacherProfile) on each step save
-- [ ] 5.8 Create `PUT /api/teacher/profile/route.ts`: upsert TeacherProfile fields
-- [ ] 5.9 Create `POST /api/teacher/profile/submit/route.ts`: sets verifyStatus = PENDING
+- [x] 5.1 Create `/app/teacher/wizard/page.tsx`: multi-step wizard shell with step state management
+- [x] 5.2 Step 1 — Basic info: name, phone (pre-filled from auth), email, subjects (multi-select), target_exams (multi-select)
+- [x] 5.3 Step 2 — Qualifications: free text qualifications field, teaching_experience_years
+- [x] 5.4 Step 3 — Demo video: demo_video_link URL input with YouTube embed preview
+- [x] 5.5 Step 4 — Social links: youtube, instagram, twitter, linkedin inputs (stored as jsonb)
+- [x] 5.6 Step 5 — Review & submit: summary of all entered data, submit button sets status to PENDING
+- [x] 5.7 Add draft persistence: save wizard state to DB (partial TeacherProfile) on each step save
+- [x] 5.8 Create `PUT /api/teacher/profile/route.ts`: upsert TeacherProfile fields
+- [x] 5.9 Create `POST /api/teacher/profile/submit/route.ts`: sets verifyStatus = PENDING
 
 ## 6. Admin Dashboard V2 — Verification & Oversight
 
-- [ ] 6.1 Create `/app/admin/verification/page.tsx`: lists PENDING teacher profiles with approve/reject/request-info actions
-- [ ] 6.2 Create `POST /api/admin/teacher/[id]/verify/route.ts`: handles APPROVE / REJECT / MORE_INFO_REQUESTED with reason
-- [ ] 6.3 Update `/app/admin/teachers/page.tsx`: show VERIFIED teachers with Suspend/Unsuspend action
-- [ ] 6.4 Create `POST /api/admin/teacher/[id]/suspend/route.ts`: toggles User.status between ACTIVE and SUSPENDED
-- [ ] 6.5 Create `/app/admin/courses/page.tsx`: all courses across teachers, filter by teacher/subject/status (read-only)
-- [ ] 6.6 Update `/app/admin/page.tsx` (dashboard index): remove session-creation links; add links to verification queue and cancellation requests
-- [ ] 6.7 Create `/app/admin/cancellations/page.tsx`: pending teacher cancellation requests with approve/reject
+- [x] 6.1 Create `/app/admin/verification/page.tsx`: lists PENDING teacher profiles with approve/reject/request-info actions
+- [x] 6.2 Create `POST /api/admin/teacher/[id]/verify/route.ts`: handles APPROVE / REJECT / MORE_INFO_REQUESTED with reason
+- [x] 6.3 Update `/app/admin/teachers/page.tsx`: show VERIFIED teachers with Suspend/Unsuspend action
+- [x] 6.4 Create `POST /api/admin/teacher/[id]/suspend/route.ts`: toggles User.status between ACTIVE and SUSPENDED
+- [x] 6.5 Create `/app/admin/courses/page.tsx`: all courses across teachers, filter by teacher/subject/status (read-only)
+- [x] 6.6 Update `/app/admin/page.tsx` (dashboard index): remove session-creation links; add links to verification queue and cancellation requests
+- [x] 6.7 Create `/app/admin/cancellations/page.tsx`: pending teacher cancellation requests with approve/reject
 
 ## 7. Group Course Management (Teacher)
 
-- [ ] 7.1 Create `/app/teacher/courses/new/page.tsx`: group course creation form
-- [ ] 7.2 Create `POST /api/teacher/courses/group/route.ts`: creates GroupCourse + all GroupSession rows + Meet links via `lib/calendar.ts`
-- [ ] 7.3 Create `PATCH /api/teacher/courses/group/[id]/route.ts`: publish DRAFT → LISTED
-- [ ] 7.4 Update teacher dashboard `/app/teacher/dashboard/page.tsx`: show own courses with status and enrolled_count
+- [x] 7.1 Create `/app/teacher/courses/new/page.tsx`: group course creation form
+- [x] 7.2 Create `POST /api/teacher/courses/group/route.ts`: creates GroupCourse + all GroupSession rows + Meet links via `lib/calendar.ts`
+- [x] 7.3 Create `PATCH /api/teacher/courses/group/[id]/route.ts`: publish DRAFT → LISTED
+- [x] 7.4 Update teacher dashboard `/app/teacher/dashboard/page.tsx`: show own courses with status and enrolled_count
 
 ## 8. 1-on-1 Package Management (Teacher)
 
-- [ ] 8.1 Create `/app/teacher/packages/new/page.tsx`: 1-on-1 package creation form
-- [ ] 8.2 Create `POST /api/teacher/packages/route.ts`: creates OneOnOnePackage
-- [ ] 8.3 Create `PATCH /api/teacher/packages/[id]/route.ts`: publish DRAFT → LISTED
+- [x] 8.1 Create `/app/teacher/packages/new/page.tsx`: 1-on-1 package creation form
+- [x] 8.2 Create `POST /api/teacher/packages/route.ts`: creates OneOnOnePackage
+- [x] 8.3 Create `PATCH /api/teacher/packages/[id]/route.ts`: publish DRAFT → LISTED
 
 ## 9. Teacher Availability (Rewrite)
 
@@ -92,62 +92,62 @@
 
 ## 10. Booking (Student)
 
-- [ ] 10.1 Create `/app/courses/[id]/book/page.tsx`: booking confirmation page for group courses
-- [ ] 10.2 Create `POST /api/bookings/group/route.ts`: creates Booking, increments enrolled_count, sends confirmation email
-- [ ] 10.3 Create `/app/packages/[id]/book/page.tsx`: 1-on-1 package booking + first slot picker
-- [ ] 10.4 Create `POST /api/bookings/one-on-one/route.ts`: creates Booking + first Session + Meet link, sends confirmation emails
-- [ ] 10.5 Create `/app/student/dashboard/page.tsx`: rewrite to show bookings list (group and 1-on-1) with session counts and upcoming sessions
+- [x] 10.1 Create `/app/courses/[id]/book/page.tsx`: booking confirmation page for group courses
+- [x] 10.2 Create `POST /api/bookings/group/route.ts`: creates Booking, increments enrolled_count, sends confirmation email
+- [x] 10.3 Create `/app/packages/[id]/book/page.tsx`: 1-on-1 package booking + first slot picker
+- [x] 10.4 Create `POST /api/bookings/one-on-one/route.ts`: creates Booking + first Session + Meet link, sends confirmation emails
+- [x] 10.5 Create `/app/student/dashboard/page.tsx`: rewrite to show bookings list (group and 1-on-1) with session counts and upcoming sessions
 
 ## 11. Slot Proposals (1-on-1 Rolling Schedule)
 
-- [ ] 11.1 Create `POST /api/bookings/[id]/proposals/route.ts`: student creates PENDING slot proposal
-- [ ] 11.2 Create `PATCH /api/proposals/[id]/route.ts`: teacher confirms (creates Session + Meet link) or rejects (with note)
-- [ ] 11.3 Add proposal UI to student dashboard: "Schedule next session" button when sessions_remaining > 0 and no pending proposal
-- [ ] 11.4 Add proposal response UI to teacher dashboard: pending proposals with confirm/reject controls
+- [x] 11.1 Create `POST /api/bookings/[id]/proposals/route.ts`: student creates PENDING slot proposal
+- [x] 11.2 Create `PATCH /api/proposals/[id]/route.ts`: teacher confirms (creates Session + Meet link) or rejects (with note)
+- [x] 11.3 Add proposal UI to student dashboard: "Schedule next session" button when sessions_remaining > 0 and no pending proposal
+- [x] 11.4 Add proposal response UI to teacher dashboard: pending proposals with confirm/reject controls
 
 ## 12. Session Feedback
 
-- [ ] 12.1 Create `POST /api/sessions/[id]/feedback/route.ts`: creates session_feedback, recalculates teacher_profile.rating
-- [ ] 12.2 Add feedback form to student session detail page (only shown when session.status = COMPLETED and no existing feedback)
-- [ ] 12.3 Add feedback display to teacher dashboard per completed session
-- [ ] 12.4 Add feedback list to admin dashboard
+- [x] 12.1 Create `POST /api/sessions/[id]/feedback/route.ts`: creates session_feedback, recalculates teacher_profile.rating
+- [x] 12.2 Add feedback form to student session detail page (only shown when session.status = COMPLETED and no existing feedback)
+- [x] 12.3 Add feedback display to teacher dashboard per completed session
+- [x] 12.4 Add feedback list to admin dashboard
 
 ## 13. Topic Requests
 
-- [ ] 13.1 Create `POST /api/topic-requests/route.ts`: student submits subject + topic_description
-- [ ] 13.2 Add topic request form to student dashboard
-- [ ] 13.3 Add demand signal panel to teacher dashboard: grouped topic_requests with counts
-- [ ] 13.4 Link topic request to course at creation time: optional field in course/package creation form that marks matching requests FULFILLED
+- [x] 13.1 Create `POST /api/topic-requests/route.ts`: student submits subject + topic_description
+- [x] 13.2 Add topic request form to student dashboard
+- [~] 13.3 Add demand signal panel to teacher dashboard: grouped topic_requests with counts
+- [~] 13.4 Link topic request to course at creation time: optional field in course/package creation form that marks matching requests FULFILLED
 
 ## 14. Parent Access
 
-- [ ] 14.1 Create `POST /api/student/parent-access/route.ts`: student adds parent, OTP sent to parent's phone
-- [ ] 14.2 Create `POST /api/auth/parent/verify/route.ts`: parent verifies OTP, creates scoped UserSession with parentStudentId
-- [ ] 14.3 Create `/app/parent/login/page.tsx`: phone OTP login page for parents
-- [ ] 14.4 Create `/app/parent/dashboard/page.tsx`: read-only view of linked student's bookings, sessions, feedback
-- [ ] 14.5 Add parent management UI to student settings: list authorized parents, add new parent
+- [x] 14.1 Create `POST /api/student/parent-access/route.ts`: student adds parent, OTP sent to parent's phone
+- [x] 14.2 Create `POST /api/auth/parent/verify/route.ts`: parent verifies OTP, creates scoped UserSession with parentStudentId
+- [x] 14.3 Create `/app/parent/login/page.tsx`: phone OTP login page for parents
+- [x] 14.4 Create `/app/parent/dashboard/page.tsx`: read-only view of linked student's bookings, sessions, feedback
+- [x] 14.5 Add parent management UI to student settings: list authorized parents, add new parent
 
 ## 15. Teacher Invite Links
 
-- [ ] 15.1 Create `POST /api/teacher/invite-links/route.ts`: generates invite_links row with 12-char code
-- [ ] 15.2 Create `/app/invite/[code]/page.tsx`: resolves code, redirects to login if unauthenticated, creates booking on return
-- [ ] 15.3 Add invite link generation UI to teacher course/package management pages
+- [x] 15.1 Create `POST /api/teacher/invite-links/route.ts`: generates invite_links row with 12-char code
+- [x] 15.2 Create `/app/invite/[code]/page.tsx`: resolves code, redirects to login if unauthenticated, creates booking on return
+- [~] 15.3 Add invite link generation UI to teacher course/package management pages
 
 ## 16. Teacher Cancellation Flow
 
-- [ ] 16.1 Create `POST /api/teacher/cancellation-requests/route.ts`: teacher submits cancellation request with reason
-- [ ] 16.2 Create `PATCH /api/admin/cancellation-requests/[id]/route.ts`: admin approves (cancels session, notifies students) or rejects
-- [ ] 16.3 Add cancellation request button to teacher session/course detail pages
+- [x] 16.1 Create `POST /api/teacher/cancellation-requests/route.ts`: teacher submits cancellation request with reason
+- [x] 16.2 Create `PATCH /api/admin/cancellation-requests/[id]/route.ts`: admin approves (cancels session, notifies students) or rejects
+- [x] 16.3 Add cancellation request button to teacher session/course detail pages
 
 ## 17. Email Notifications (build before booking tasks — 10.x depends on these)
 
-- [ ] 17.1 Create `lib/emails/booking-confirmed-group.tsx`: student email with all session dates + Meet links
-- [ ] 17.2 Create `lib/emails/booking-confirmed-teacher.tsx`: teacher notification of new group enrollment
-- [ ] 17.3 Create `lib/emails/session-confirmed-1on1.tsx`: both-sides confirmation for 1-on-1 session
-- [ ] 17.4 Create `lib/emails/slot-proposed.tsx`: teacher notification of student slot proposal
-- [ ] 17.5 Create `lib/emails/slot-confirmed.tsx`: student notification of confirmed slot
-- [ ] 17.6 Create `lib/emails/session-cancelled.tsx`: update existing template if needed
-- [ ] 17.7 Create `lib/emails/teacher-verified.tsx` and `lib/emails/teacher-rejected.tsx`
+- [x] 17.1 Create `lib/emails/booking-confirmed-group.tsx`: student email with all session dates + Meet links
+- [x] 17.2 Create `lib/emails/booking-confirmed-teacher.tsx`: teacher notification of new group enrollment
+- [x] 17.3 Create `lib/emails/session-confirmed-1on1.tsx`: both-sides confirmation for 1-on-1 session
+- [x] 17.4 Create `lib/emails/slot-proposed.tsx`: teacher notification of student slot proposal
+- [x] 17.5 Create `lib/emails/slot-confirmed.tsx`: student notification of confirmed slot
+- [x] 17.6 Create `lib/emails/session-cancelled.tsx`: update existing template if needed
+- [x] 17.7 Create `lib/emails/teacher-verified.tsx` and `lib/emails/teacher-rejected.tsx`
 - [x] 17.8 Update cron `/app/api/cron/session-reminders/route.ts`: adapt to new sessions schema (booking-scoped sessions)
 
 ## 18. Deferred (explicitly cut from MVP)

@@ -10,12 +10,25 @@ export default async function AdminPage() {
   const user = await getCurrentUser();
   if (!user || user.role !== "ADMIN") redirect("/login");
 
-  const [pendingVerifications, cancellationRequests, teacherCount, studentCount] =
+  const [pendingVerifications, cancellationRequests, teacherCount, studentCount, recentFeedback] =
     await Promise.all([
       prisma.teacherProfile.count({ where: { verifyStatus: "PENDING" } }),
       prisma.cancellationRequest.count({ where: { status: "PENDING" } }),
       prisma.user.count({ where: { role: "TEACHER", status: "ACTIVE" } }),
       prisma.user.count({ where: { role: "STUDENT", status: "ACTIVE" } }),
+      prisma.sessionFeedback.findMany({
+        orderBy: { createdAt: "desc" },
+        take: 10,
+        include: {
+          student: { select: { name: true } },
+          session: {
+            include: {
+              groupCourse: { include: { teacher: { select: { name: true } } } },
+              booking: { include: { oneOnOnePackage: { include: { teacher: { select: { name: true } } } } } },
+            },
+          },
+        },
+      }),
     ]);
 
   const stats = [
@@ -58,7 +71,7 @@ export default async function AdminPage() {
       </div>
 
       {/* Nav links */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-10">
         {navLinks.map(({ href, label, badge }) => (
           <Link
             key={href}
@@ -74,6 +87,36 @@ export default async function AdminPage() {
           </Link>
         ))}
       </div>
+
+      {/* Recent feedback */}
+      {recentFeedback.length > 0 && (
+        <section>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">Recent feedback</h2>
+          <div className="space-y-3">
+            {recentFeedback.map((f) => {
+              const teacherName = f.session.groupCourse?.teacher.name ?? f.session.booking?.oneOnOnePackage?.teacher.name ?? "—";
+              const courseTitle = f.session.groupCourse?.title ?? f.session.booking?.oneOnOnePackage?.title ?? "Session";
+              return (
+                <div key={f.id} className="bg-white border border-gray-200 rounded-xl p-4">
+                  <div className="flex justify-between items-start gap-3">
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">{f.student.name}</p>
+                      <p className="text-xs text-gray-500">{courseTitle} · by {teacherName}</p>
+                      {f.comment && <p className="text-sm text-gray-700 mt-1 italic">&ldquo;{f.comment}&rdquo;</p>}
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <div className="text-yellow-400 text-sm">
+                        {"★".repeat(f.rating)}<span className="text-gray-300">{"★".repeat(5 - f.rating)}</span>
+                      </div>
+                      <p className="text-xs text-gray-400">{new Date(f.createdAt).toLocaleDateString("en-IN")}</p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
     </main>
   );
 }
