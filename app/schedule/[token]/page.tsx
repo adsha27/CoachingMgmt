@@ -26,14 +26,25 @@ export default async function SchedulePage({
 
   const sessions = await prisma.session.findMany({
     where: {
-      teacherId: teacherToken.teacherId,
       status: { not: "CANCELLED" },
-      scheduledDate: { gte: new Date() },
+      scheduledAt: { gte: new Date() },
+      OR: [
+        { groupCourse: { teacherId: teacherToken.teacherId } },
+        { booking: { oneOnOnePackage: { teacherId: teacherToken.teacherId } } },
+      ],
     },
     include: {
-      students: { select: { studentId: true } },
+      groupCourse: {
+        select: { title: true, subject: true, enrolledCount: true },
+      },
+      booking: {
+        include: {
+          student: { select: { name: true } },
+          oneOnOnePackage: { select: { title: true, subject: true } },
+        },
+      },
     },
-    orderBy: { scheduledDate: "asc" },
+    orderBy: { scheduledAt: "asc" },
   });
 
   const teacher = teacherToken.teacher;
@@ -48,23 +59,21 @@ export default async function SchedulePage({
       {sessions.length === 0 ? (
         <div className="text-center py-16 text-gray-500">
           <p className="text-lg">No upcoming sessions scheduled.</p>
-          <p className="text-sm mt-2">Check back after your admin adds sessions.</p>
         </div>
       ) : (
         <div className="space-y-4">
           {sessions.map((session) => {
-            const date = new Date(session.scheduledDate);
-            const dateStr = date.toLocaleDateString("en-IN", {
-              weekday: "long",
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            });
-            const timeStr = date.toLocaleTimeString("en-IN", {
-              hour: "2-digit",
-              minute: "2-digit",
-            });
-            const studentCount = session.students.length;
+            const date = new Date(session.scheduledAt);
+            const isGroup = session.groupCourseId != null;
+            const title = session.groupCourse?.title
+              ?? session.booking?.oneOnOnePackage?.title
+              ?? "Session";
+            const subject = session.groupCourse?.subject
+              ?? session.booking?.oneOnOnePackage?.subject
+              ?? "";
+            const studentLabel = isGroup
+              ? `${session.groupCourse?.enrolledCount ?? 0} students`
+              : session.booking?.student.name ?? "";
 
             return (
               <div
@@ -73,19 +82,17 @@ export default async function SchedulePage({
               >
                 <div className="flex justify-between items-start gap-3">
                   <div className="min-w-0">
-                    <h2 className="font-semibold text-gray-900 text-lg leading-snug">
-                      {session.subject}
-                    </h2>
+                    <h2 className="font-semibold text-gray-900 text-lg leading-snug">{title}</h2>
+                    {subject && <p className="text-sm text-gray-500">{subject}</p>}
                     <p className="text-gray-600 mt-1">
-                      {dateStr}
+                      {date.toLocaleDateString("en-IN", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
                     </p>
                     <p className="text-gray-600">
-                      {timeStr} &middot; {session.durationMinutes} min
+                      {date.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
+                      {" "}&middot; {session.durationMinutes} min
                     </p>
-                    {studentCount > 0 && (
-                      <p className="text-sm text-gray-400 mt-1">
-                        {studentCount} {studentCount === 1 ? "student" : "students"}
-                      </p>
+                    {studentLabel && (
+                      <p className="text-sm text-gray-400 mt-1">{studentLabel}</p>
                     )}
                   </div>
                   <span

@@ -19,48 +19,78 @@ export async function GET(req: NextRequest) {
   const sessions = await prisma.session.findMany({
     where: {
       status: "SCHEDULED",
-      scheduledDate: { gte: windowStart, lte: windowEnd },
+      scheduledAt: { gte: windowStart, lte: windowEnd },
       reminderSentAt: null,
     },
     include: {
-      teacher: { select: { name: true, email: true } },
-      students: { include: { student: { select: { name: true, email: true } } } },
+      booking: {
+        include: {
+          student: { select: { name: true, email: true } },
+          oneOnOnePackage: {
+            include: { teacher: { select: { name: true, email: true } } },
+          },
+        },
+      },
+      groupCourse: {
+        include: {
+          teacher: { select: { name: true, email: true } },
+          bookings: {
+            where: { status: "ACTIVE" },
+            include: { student: { select: { name: true, email: true } } },
+          },
+        },
+      },
     },
   });
 
   const results: { sessionId: number; ok: boolean; error?: string }[] = [];
 
   for (const session of sessions) {
-    const allEmails = [
-      session.teacher.email,
-      ...session.students.map((ss) => ss.student.email),
+    // Resolve teacher and participants depending on session type
+    const isGroup = session.groupCourseId != null;
+    const teacher = isGroup
+      ? session.groupCourse!.teacher
+      : session.booking?.oneOnOnePackage?.teacher;
+    const students = isGroup
+      ? session.groupCourse!.bookings.map((b) => b.student)
+      : session.booking ? [session.booking.student] : [];
+    const title = isGroup
+      ? session.groupCourse!.title
+      : (session.booking?.oneOnOnePackage?.title ?? "Session");
+
+    if (!teacher) {
+      results.push({ sessionId: session.id, ok: false, error: "teacher not found" });
+      continue;
+    }
+
+    const recipients = [
+      { email: teacher.email, role: "teacher" as const },
+      ...students.filter((s) => s.email).map((s) => ({ email: s.email!, role: "student" as const })),
     ];
 
     try {
-      for (let idx = 0; idx < allEmails.length; idx++) {
-        const email = allEmails[idx];
-        const recipientRole = idx === 0 ? "teacher" : "student";
+      for (const { email, role } of recipients) {
         const html = await render(
           React.createElement(SessionReminderEmail, {
-            teacherName: session.teacher.name,
-            subject: session.subject,
-            scheduledDate: session.scheduledDate,
+            teacherName: teacher.name,
+            subject: title,
+            scheduledDate: session.scheduledAt,
             durationMinutes: session.durationMinutes,
             meetLink: session.meetLink ?? "",
-            recipientRole,
+            recipientRole: role,
           })
         );
         await sendEmail({
           to: email,
-          subject: `Reminder: ${session.subject} tomorrow`,
+          subject: `Reminder: ${title} tomorrow`,
           html,
           text: sessionReminderText({
-            teacherName: session.teacher.name,
-            subject: session.subject,
-            scheduledDate: session.scheduledDate,
+            teacherName: teacher.name,
+            subject: title,
+            scheduledDate: session.scheduledAt,
             durationMinutes: session.durationMinutes,
             meetLink: session.meetLink ?? "",
-            recipientRole,
+            recipientRole: role,
           }),
         });
       }

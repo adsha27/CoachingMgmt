@@ -12,32 +12,64 @@ export default async function StudentDashboard() {
 
   const now = new Date();
 
-  const [upcoming, past] = await Promise.all([
+  const [upcoming, past, bookings] = await Promise.all([
+    // Sessions via 1-on-1 bookings or group courses the student is enrolled in
     prisma.session.findMany({
       where: {
         status: "SCHEDULED",
-        scheduledDate: { gte: now },
-        students: { some: { studentId: user.id } },
+        scheduledAt: { gte: now },
+        OR: [
+          { booking: { studentId: user.id } },
+          { groupCourse: { bookings: { some: { studentId: user.id, status: "ACTIVE" } } } },
+        ],
       },
       include: {
-        teacher: { select: { name: true } },
+        booking: {
+          include: { oneOnOnePackage: { include: { teacher: { select: { name: true } } } } },
+        },
+        groupCourse: { include: { teacher: { select: { name: true } } } },
       },
-      orderBy: { scheduledDate: "asc" },
+      orderBy: { scheduledAt: "asc" },
+      take: 10,
     }),
     prisma.session.findMany({
       where: {
-        students: { some: { studentId: user.id } },
-        OR: [{ status: { not: "SCHEDULED" } }, { scheduledDate: { lt: now } }],
+        OR: [
+          { booking: { studentId: user.id } },
+          { groupCourse: { bookings: { some: { studentId: user.id } } } },
+        ],
+        AND: [
+          { OR: [{ status: { not: "SCHEDULED" } }, { scheduledAt: { lt: now } }] },
+        ],
       },
-      include: { teacher: { select: { name: true } } },
-      orderBy: { scheduledDate: "desc" },
+      include: {
+        booking: {
+          include: { oneOnOnePackage: { include: { teacher: { select: { name: true } } } } },
+        },
+        groupCourse: { include: { teacher: { select: { name: true } } } },
+      },
+      orderBy: { scheduledAt: "desc" },
       take: 20,
+    }),
+    prisma.booking.findMany({
+      where: { studentId: user.id, status: "ACTIVE" },
+      include: {
+        groupCourse: { select: { title: true, subject: true } },
+        oneOnOnePackage: { select: { title: true, subject: true } },
+      },
     }),
   ]);
 
+  function sessionTitle(s: typeof upcoming[number]) {
+    return s.groupCourse?.title ?? s.booking?.oneOnOnePackage?.title ?? "Session";
+  }
+
+  function sessionTeacher(s: typeof upcoming[number]) {
+    return s.groupCourse?.teacher.name ?? s.booking?.oneOnOnePackage?.teacher.name ?? "—";
+  }
+
   return (
     <main className="max-w-2xl mx-auto py-8 px-4">
-      {/* Header */}
       <div className="flex justify-between items-start mb-8">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">{user.name}</h1>
@@ -46,41 +78,73 @@ export default async function StudentDashboard() {
         <LogoutButton />
       </div>
 
+      {/* Active bookings summary */}
+      {bookings.length > 0 && (
+        <section className="mb-8">
+          <h2 className="text-lg font-semibold text-gray-800 mb-3">My enrolments</h2>
+          <div className="space-y-2">
+            {bookings.map((b) => (
+              <div key={b.id} className="flex justify-between items-center bg-white border border-gray-200 rounded-lg px-4 py-3 text-sm">
+                <div>
+                  <span className="font-medium text-gray-800">
+                    {b.groupCourse?.title ?? b.oneOnOnePackage?.title}
+                  </span>
+                  <span className="text-gray-400 ml-2">
+                    {b.groupCourse?.subject ?? b.oneOnOnePackage?.subject}
+                  </span>
+                </div>
+                <span className="text-xs text-gray-500">
+                  {b.sessionsCompleted}/{b.totalSessions} done
+                </span>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Upcoming */}
       <section className="mb-10">
         <h2 className="text-lg font-semibold text-gray-800 mb-4">Upcoming sessions</h2>
         {upcoming.length === 0 ? (
           <p className="text-sm text-gray-500">
-            No upcoming sessions. Your admin will add you to sessions.
+            No upcoming sessions.{" "}
+            <Link href="/browse" className="text-indigo-600 hover:underline">Browse teachers</Link>
+            {" "}to enrol in a course.
           </p>
         ) : (
           <div className="space-y-3">
             {upcoming.map((s) => {
-              const date = new Date(s.scheduledDate);
+              const date = new Date(s.scheduledAt);
               return (
-                <Link
+                <div
                   key={s.id}
-                  href={`/student/sessions/${s.id}`}
-                  className="block bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow"
+                  className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm"
                 >
                   <div className="flex justify-between items-start gap-3">
                     <div>
-                      <p className="font-medium text-gray-900">{s.subject}</p>
+                      <p className="font-medium text-gray-900">{sessionTitle(s)}</p>
                       <p className="text-sm text-gray-500">
-                        {s.teacher.name}
+                        {sessionTeacher(s)}
                         {" · "}
                         {date.toLocaleDateString("en-IN", { weekday: "short", month: "short", day: "numeric" })}
                         {" · "}
                         {date.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
                       </p>
                     </div>
-                    {s.meetLink && (
-                      <span className="shrink-0 text-xs bg-indigo-50 text-indigo-700 px-2 py-1 rounded-full">
-                        Meet ready
-                      </span>
-                    )}
+                    <div className="shrink-0 flex flex-col items-end gap-1">
+                      {s.meetLink && (
+                        <a
+                          href={s.meetLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs bg-indigo-600 text-white px-2 py-1 rounded"
+                        >
+                          Join Meet
+                        </a>
+                      )}
+                    </div>
                   </div>
-                </Link>
+                </div>
               );
             })}
           </div>
@@ -95,14 +159,15 @@ export default async function StudentDashboard() {
             {past.map((s) => (
               <div key={s.id} className="flex justify-between items-center py-2 border-b border-gray-100">
                 <div>
-                  <p className="text-sm font-medium text-gray-700">{s.subject}</p>
+                  <p className="text-sm font-medium text-gray-700">{sessionTitle(s)}</p>
                   <p className="text-xs text-gray-400">
-                    {s.teacher.name} · {new Date(s.scheduledDate).toLocaleDateString("en-IN")}
+                    {sessionTeacher(s)} · {new Date(s.scheduledAt).toLocaleDateString("en-IN")}
                   </p>
                 </div>
                 <span className={`text-xs px-2 py-0.5 rounded-full ${
                   s.status === "COMPLETED" ? "bg-green-100 text-green-700" :
                   s.status === "CANCELLED" ? "bg-gray-100 text-gray-500" :
+                  s.status === "NO_SHOW" ? "bg-red-100 text-red-600" :
                   "bg-blue-100 text-blue-700"
                 }`}>
                   {s.status}

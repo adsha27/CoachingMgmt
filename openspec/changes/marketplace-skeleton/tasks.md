@@ -1,53 +1,53 @@
 ## 0. ENV & Config (do this first — blocks everything else)
 
-- [ ] 0.1 Add `MSG91_API_KEY`, `MSG91_TEMPLATE_ID` to `.env.local` and `.env.local.example`
-- [ ] 0.2 Add `AUTH_MODE=phone` flag (fall back to `email` if MSG91 DLT not yet approved)
-- [ ] 0.3 Verify all existing env vars still apply: `DATABASE_URL`, `RESEND_API_KEY`, Google Calendar service account creds
+- [x] 0.1 Add `MSG91_API_KEY`, `MSG91_TEMPLATE_ID` to `.env.local` and `.env.local.example`
+- [x] 0.2 Add `AUTH_MODE=phone` flag (fall back to `email` if MSG91 DLT not yet approved)
+- [x] 0.3 Verify all existing env vars still apply: `DATABASE_URL`, `RESEND_API_KEY`, Google Calendar service account creds
 
 ## 1. Dead Code Removal
 
-- [ ] 1.1 Delete `/app/register/student/page.tsx` and `/app/register/teacher/page.tsx` (replaced by inline OTP registration)
-- [ ] 1.2 Delete `/app/register/page.tsx`
-- [ ] 1.3 Delete `/app/admin/sessions/new/` directory and all files
-- [ ] 1.4 Delete `/app/admin/sessions/SessionsClient.tsx` (admin no longer creates sessions)
-- [ ] 1.5 Delete `/app/api/register/student/route.ts` and `/app/api/register/teacher/route.ts`
-- [ ] 1.6 Delete `/app/api/sessions/route.tsx` and `/app/api/sessions/[id]/route.tsx` (replaced by booking-driven session creation)
-- [ ] 1.7 Delete `/app/api/admin/registrations/` directory (replaced by teacher verification queue)
-- [ ] 1.8 Delete `/app/admin/registrations/` directory and all files
-- [ ] 1.9 Remove `TeacherToken` model from schema and delete `/app/schedule/[token]/page.tsx` references if superseded, or keep as deferred
+- [x] 1.1 Delete `/app/register/student/page.tsx` and `/app/register/teacher/page.tsx` (replaced by inline OTP registration)
+- [x] 1.2 Delete `/app/register/page.tsx`
+- [x] 1.3 Delete `/app/admin/sessions/new/` directory and all files
+- [x] 1.4 Delete `/app/admin/sessions/SessionsClient.tsx` (admin no longer creates sessions)
+- [x] 1.5 Delete `/app/api/register/student/route.ts` and `/app/api/register/teacher/route.ts`
+- [x] 1.6 Delete `/app/api/sessions/route.tsx` and `/app/api/sessions/[id]/route.tsx` (replaced by booking-driven session creation)
+- [x] 1.7 Delete `/app/api/admin/registrations/` directory (replaced by teacher verification queue)
+- [x] 1.8 Delete `/app/admin/registrations/` directory and all files
+- [x] 1.9 `TeacherToken` kept + `/app/schedule/[token]/page.tsx` kept — per spec "existing public /schedule/[token] page remains unchanged"
 
 ## 2. Database Schema Migration
 
-- [ ] 2.1 Rewrite `prisma/schema.prisma`: add `phone` to User, remove `TeacherToken` model
-- [ ] 2.2 Expand `TeacherProfile`: add `qualifications`, `target_exams String[]`, `profile_photo_url`, `teaching_experience_years`, `demo_video_link`, `social_media_links Json?`, rename `verifyStatus` values to match spec (add `MORE_INFO_REQUESTED`)
-- [ ] 2.3 Rewrite `TeacherAvailability`: replace `startTime/endTime DateTime` with `day_of_week`, `start_time`, `end_time`, `is_recurring`, `specific_date`, `status` fields
-- [ ] 2.4 Expand `GroupCourse`: add `target_exam`, `total_sessions`, `session_duration_minutes`, `enrolled_count`, `start_date`; rename `ACTIVE` status to `LISTED`, add `FULL` status
-- [ ] 2.5 Expand `OneOnOnePackage`: add `target_exam`, `session_duration_minutes`; rename fields to match spec; rename `ACTIVE` to `LISTED`
-- [ ] 2.6 Rewrite `Booking`: add `course_type`, `total_sessions`, `sessions_completed`, `sessions_scheduled`, `sessions_remaining`, `booked_at`
-- [ ] 2.7 Rewrite `Session`: add `booking_id` FK, `session_number`, `NO_SHOW` status; drop direct `teacher_id` / `students[]` junction (sessions are now booking-scoped)
-- [ ] 2.8 Rename `SlotProposal` fields to match spec: `proposed_date`, `proposed_start_time`, `teacher_note`; fix FK to `booking_id` (not `packageId`)
-- [ ] 2.9 Add new tables: `session_feedback`, `topic_requests` (with `status OPEN/FULFILLED` and `fulfilled_by_course_id Int?` FK), `parent_access`, `invite_links` (with `group_course_id Int?` + `one_on_one_package_id Int?` nullable FKs — exactly one set)
-- [ ] 2.10 Add `parentStudentId Int?` to `user_sessions` with explicit FK to `users.id`, indexed; add `@@index([parentStudentId])`
-- [ ] 2.11 Add `reminderSentAt` to sessions (already exists — verify and keep)
-- [ ] 2.12 Generate and run migration: `npx prisma migrate dev --name marketplace-skeleton`
+- [x] 2.1 Rewrite `prisma/schema.prisma`: add `phone` to User, remove `TeacherToken` model
+- [x] 2.2 Expand `TeacherProfile`: add `qualifications`, `target_exams String[]`, `profile_photo_url`, `teaching_experience_years`, `demo_video_link`, `social_media_links Json?`, rename `verifyStatus` values to match spec (add `MORE_INFO_REQUESTED`)
+- [x] 2.3 Rewrite `TeacherAvailability`: replace `startTime/endTime DateTime` with `day_of_week`, `start_time`, `end_time`, `is_recurring`, `specific_date`, `status` fields
+- [x] 2.4 Expand `GroupCourse`: add `target_exam`, `total_sessions`, `session_duration_minutes`, `enrolled_count`, `start_date`; rename `ACTIVE` status to `LISTED`, add `FULL` status
+- [x] 2.5 Expand `OneOnOnePackage`: add `target_exam`, `session_duration_minutes`; rename fields to match spec; rename `ACTIVE` to `LISTED`
+- [x] 2.6 Rewrite `Booking`: add `course_type`, `total_sessions`, `sessions_completed`, `sessions_scheduled`, `sessions_remaining`, `booked_at`
+- [x] 2.7 Rewrite `Session`: add `booking_id` FK, `session_number`, `NO_SHOW` status; drop direct `teacher_id` / `students[]` junction (sessions are now booking-scoped)
+- [x] 2.8 Rename `SlotProposal` fields to match spec: `proposed_date`, `proposed_start_time`, `teacher_note`; fix FK to `booking_id` (not `packageId`)
+- [x] 2.9 Add new tables: `session_feedback`, `topic_requests` (with `status OPEN/FULFILLED` and `fulfilled_by_course_id Int?` FK), `parent_access`, `invite_links` (with `group_course_id Int?` + `one_on_one_package_id Int?` nullable FKs — exactly one set)
+- [x] 2.10 Add `parentStudentId Int?` to `user_sessions` with explicit FK to `users.id`, indexed; add `@@index([parentStudentId])`
+- [x] 2.11 Add `reminderSentAt` to sessions (already exists — verify and keep)
+- [x] 2.12 Generate and run migration: `npx prisma migrate dev --name marketplace-skeleton`
 
 ## 3. Auth — Phone OTP (MSG91)
 
-- [ ] 3.1 Update `otp_codes` table: rename `email` column to `phone`
-- [ ] 3.2 Update `lib/otp.ts`: replace Resend OTP delivery with MSG91 HTTP POST to `https://control.msg91.com/api/v5/otp`; add `MSG91_API_KEY` and `MSG91_TEMPLATE_ID` env vars
-- [ ] 3.3 Update `POST /api/auth/otp/request`: accept `phone` field; validate E.164 format; apply 3/hour rate limit per phone
-- [ ] 3.4 Update `POST /api/auth/otp/verify`: on new phone → return `needs_registration: true` + short-lived token; on existing phone → create session
-- [ ] 3.5 Add `POST /api/auth/register`: accepts registration token + name + email + role → creates User row, issues full session
-- [ ] 3.6 Update `middleware.ts`: keep role-based route guards; add parent-scoped session check (reads `parentStudentId` from session)
-- [ ] 3.7 Update login page `/app/login/page.tsx`: phone number input, OTP input, inline registration step (name/email/role) for new users
+- [x] 3.1 Update `otp_codes` table: rename `email` column to `phone`
+- [x] 3.2 Update `lib/otp.ts`: replace Resend OTP delivery with MSG91 HTTP POST to `https://control.msg91.com/api/v5/otp`; add `MSG91_API_KEY` and `MSG91_TEMPLATE_ID` env vars
+- [x] 3.3 Update `POST /api/auth/otp/request`: accept `phone` field; validate E.164 format; apply 3/hour rate limit per phone
+- [x] 3.4 Update `POST /api/auth/otp/verify`: on new phone → return `needs_registration: true` + short-lived token; on existing phone → create session
+- [x] 3.5 Add `POST /api/auth/register`: accepts registration token + name + email + role → creates User row, issues full session
+- [x] 3.6 Update `middleware.ts`: keep role-based route guards; add parent-scoped session check (reads `parentStudentId` from session)
+- [x] 3.7 Update login page `/app/login/page.tsx`: phone number input, OTP input, inline registration step (name/email/role) for new users
 
 ## 4. Public Browse
 
-- [ ] 4.1 Create `/app/browse/page.tsx`: server component fetching VERIFIED + non-SUSPENDED teachers with LISTED courses
-- [ ] 4.2 Add subject / target_exam / course_type filter UI (client-side, no server round-trip)
-- [ ] 4.3 Add price asc/desc and start_date sort
-- [ ] 4.4 Create `/app/teacher/[id]/page.tsx`: teacher profile page with bio, qualifications, demo video embed, active courses
-- [ ] 4.5 Update landing page `/app/page.tsx`: link to /browse; show hero CTA with "Browse Teachers" button
+- [x] 4.1 Create `/app/browse/page.tsx`: server component fetching VERIFIED + non-SUSPENDED teachers with LISTED courses
+- [x] 4.2 Add subject / target_exam / course_type filter UI (client-side, no server round-trip)
+- [x] 4.3 Add price asc/desc and start_date sort
+- [x] 4.4 Create `/app/teacher/[id]/page.tsx`: teacher profile page with bio, qualifications, demo video embed, active courses
+- [x] 4.5 Update landing page `/app/page.tsx`: link to /browse; show hero CTA with "Browse Teachers" button
 
 ## 5. Teacher Profile Wizard
 
@@ -86,9 +86,9 @@
 
 ## 9. Teacher Availability (Rewrite)
 
-- [ ] 9.1 Rewrite `/app/teacher/dashboard/AvailabilitySection.tsx`: weekly grid UI (day columns, time range rows, recurring toggle, block specific date)
-- [ ] 9.2 Rewrite `POST /api/teacher/availability/route.ts`: create availability row with new schema fields
-- [ ] 9.3 Update `DELETE /api/teacher/availability/[id]/route.ts`: no change needed, verify it still works
+- [x] 9.1 Rewrite `/app/teacher/dashboard/AvailabilitySection.tsx`: weekly grid UI (day columns, time range rows, recurring toggle, block specific date)
+- [x] 9.2 Rewrite `POST /api/teacher/availability/route.ts`: create availability row with new schema fields
+- [x] 9.3 Update `DELETE /api/teacher/availability/[id]/route.ts`: no change needed, verify it still works
 
 ## 10. Booking (Student)
 
@@ -148,7 +148,7 @@
 - [ ] 17.5 Create `lib/emails/slot-confirmed.tsx`: student notification of confirmed slot
 - [ ] 17.6 Create `lib/emails/session-cancelled.tsx`: update existing template if needed
 - [ ] 17.7 Create `lib/emails/teacher-verified.tsx` and `lib/emails/teacher-rejected.tsx`
-- [ ] 17.8 Update cron `/app/api/cron/session-reminders/route.ts`: adapt to new sessions schema (booking-scoped sessions)
+- [x] 17.8 Update cron `/app/api/cron/session-reminders/route.ts`: adapt to new sessions schema (booking-scoped sessions)
 
 ## 18. Deferred (explicitly cut from MVP)
 

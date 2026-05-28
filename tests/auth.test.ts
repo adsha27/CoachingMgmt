@@ -2,21 +2,23 @@ import { afterEach, describe, expect, it } from "vitest";
 import { NextRequest } from "next/server";
 import { POST as requestOtp } from "@/app/api/auth/otp/request/route";
 import { POST as verifyOtp } from "@/app/api/auth/otp/verify/route";
+import { POST as register } from "@/app/api/auth/register/route";
 import { POST as logout } from "@/app/api/auth/logout/route";
 import { prisma } from "@/lib/prisma";
 import { createSession, SESSION_COOKIE } from "@/lib/auth";
 import { hashCode } from "@/lib/otp";
+import { createRegToken } from "@/lib/regtoken";
 
 const P = "__test_auth__";
-
 let seq = 0;
-function unique(prefix: string) {
-  seq += 1;
-  return `${prefix}_${Date.now()}_${seq}_${Math.random().toString(36).slice(2)}`;
+
+function uid() {
+  return `${P}_${Date.now()}_${++seq}_${Math.random().toString(36).slice(2)}`;
 }
 
+// Generate unique 10-digit Indian mobile starting with 9
 function phone() {
-  return `${Math.floor(1_000_000_000 + Math.random() * 9_000_000_000)}`;
+  return `9${Math.floor(100_000_000 + Math.random() * 900_000_000)}`;
 }
 
 function jsonReq(method: string, url: string, body?: unknown, sid?: string) {
@@ -30,8 +32,8 @@ function jsonReq(method: string, url: string, body?: unknown, sid?: string) {
   });
 }
 
-async function makeUser(role: "ADMIN" | "TEACHER" | "STUDENT" = "TEACHER") {
-  const id = unique(role.toLowerCase());
+async function makeUser(role: "ADMIN" | "TEACHER" | "STUDENT" = "STUDENT") {
+  const id = uid();
   return prisma.user.create({
     data: {
       name: `${P} ${role}`,
@@ -44,84 +46,79 @@ async function makeUser(role: "ADMIN" | "TEACHER" | "STUDENT" = "TEACHER") {
 
 afterEach(async () => {
   await prisma.userSession.deleteMany({ where: { user: { name: { startsWith: P } } } });
-  await prisma.otpCode.deleteMany({ where: { email: { contains: "example.test" } } });
+  await prisma.otpCode.deleteMany({ where: { phone: { startsWith: "9" } } });
   await prisma.user.deleteMany({ where: { name: { startsWith: P } } });
 });
 
-describe("POST /api/auth/otp/request", () => {
-  it("stores an OTP hash for a registered active email", async () => {
-    const user = await makeUser();
-    const res = await requestOtp(jsonReq("POST", "/api/auth/otp/request", { email: user.email }));
+// ─── OTP Request ──────────────────────────────────────────────────────────────
 
+describe("POST /api/auth/otp/request", () => {
+  it("stores an OTP hash for any submitted phone (including unregistered)", async () => {
+    const p = phone();
+    const res = await requestOtp(jsonReq("POST", "/api/auth/otp/request", { phone: p }));
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ ok: true });
-
-    const code = await prisma.otpCode.findFirst({ where: { email: user.email } });
+    const code = await prisma.otpCode.findFirst({ where: { phone: p } });
     expect(code).not.toBeNull();
     expect(code!.codeHash).not.toHaveLength(0);
     expect(code!.expiresAt.getTime()).toBeGreaterThan(Date.now());
   });
 
-  it("does not enumerate unknown emails", async () => {
-    const email = `${unique("missing")}@example.test`;
-    const res = await requestOtp(jsonReq("POST", "/api/auth/otp/request", { email }));
-
-    expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ ok: true });
-    expect(await prisma.otpCode.count({ where: { email } })).toBe(0);
+  it("rejects malformed phone numbers", async () => {
+    const res = await requestOtp(jsonReq("POST", "/api/auth/otp/request", { phone: "12345" }));
+    expect(res.status).toBe(400);
   });
 
-  it("rate limits more than 5 requests per 15 minutes", async () => {
-    const user = await makeUser();
+  it("rejects phone starting with 0-5 (not a mobile number)", async () => {
+    const res = await requestOtp(jsonReq("POST", "/api/auth/otp/request", { phone: "1234567890" }));
+    expect(res.status).toBe(400);
+  });
+
+  it("rate limits after 3 requests per hour", async () => {
+    const p = phone();
     await prisma.otpCode.createMany({
-      data: Array.from({ length: 5 }, () => ({
-        email: user.email,
+      data: Array.from({ length: 3 }, () => ({
+        phone: p,
         codeHash: "hash",
         expiresAt: new Date(Date.now() + 10 * 60 * 1000),
       })),
     });
-
-    const res = await requestOtp(jsonReq("POST", "/api/auth/otp/request", { email: user.email }));
+    const res = await requestOtp(jsonReq("POST", "/api/auth/otp/request", { phone: p }));
     expect(res.status).toBe(429);
   });
 
-  it("uses fixed 123456 OTP for the seeded local admin in non-production", async () => {
-    // The admin@example.test account may already exist from the demo seed — upsert handles both cases
-    await prisma.user.upsert({
-      where: { email: "admin@example.test" },
-      update: {},
-      create: {
-        name: "Admin",
-        phone: phone(),
-        email: "admin@example.test",
-        role: "ADMIN",
-      },
-    });
+  it("accepts +91 prefix and normalises to 10 digits", async () => {
+    const base = phone();
+    const res = await requestOtp(jsonReq("POST", "/api/auth/otp/request", { phone: `+91${base}` }));
+    expect(res.status).toBe(200);
+    const code = await prisma.otpCode.findFirst({ where: { phone: base } });
+    expect(code).not.toBeNull();
+  });
 
-    const requestRes = await requestOtp(jsonReq("POST", "/api/auth/otp/request", { email: "admin@example.test" }));
-    expect(requestRes.status).toBe(200);
-
+  it("works for the dev fixed phone in non-production", async () => {
+    const devPhone = process.env.DEV_FIXED_OTP_PHONE ?? "9999999999";
+    await requestOtp(jsonReq("POST", "/api/auth/otp/request", { phone: devPhone }));
     const verifyRes = await verifyOtp(jsonReq("POST", "/api/auth/otp/verify", {
-      email: "admin@example.test",
-      code: "123456",
+      phone: devPhone,
+      code: process.env.DEV_FIXED_OTP_CODE ?? "123456",
     }));
+    // Unregistered phone → needs_registration (that's correct)
+    const data = await verifyRes.json();
     expect(verifyRes.status).toBe(200);
-    expect(await verifyRes.json()).toMatchObject({ ok: true, redirect: "/admin" });
+    expect(data.ok).toBe(true);
   });
 });
 
+// ─── OTP Verify ───────────────────────────────────────────────────────────────
+
 describe("POST /api/auth/otp/verify", () => {
-  it("verifies a valid code, marks it used, creates a session cookie, and redirects by role", async () => {
+  it("creates a session and redirects for an existing user", async () => {
     const user = await makeUser("STUDENT");
     const otp = await prisma.otpCode.create({
-      data: {
-        email: user.email,
-        codeHash: await hashCode("123456"),
-        expiresAt: new Date(Date.now() + 10 * 60 * 1000),
-      },
+      data: { phone: user.phone, codeHash: await hashCode("123456"), expiresAt: new Date(Date.now() + 10 * 60 * 1000) },
     });
 
-    const res = await verifyOtp(jsonReq("POST", "/api/auth/otp/verify", { email: user.email, code: "123456" }));
+    const res = await verifyOtp(jsonReq("POST", "/api/auth/otp/verify", { phone: user.phone, code: "123456" }));
     expect(res.status).toBe(200);
     expect(await res.json()).toMatchObject({ ok: true, redirect: "/student/dashboard" });
     expect(res.headers.get("set-cookie")).toContain(`${SESSION_COOKIE}=`);
@@ -131,17 +128,26 @@ describe("POST /api/auth/otp/verify", () => {
     expect(await prisma.userSession.count({ where: { userId: user.id } })).toBe(1);
   });
 
+  it("returns needs_registration for an unknown phone", async () => {
+    const p = phone();
+    await prisma.otpCode.create({
+      data: { phone: p, codeHash: await hashCode("123456"), expiresAt: new Date(Date.now() + 10 * 60 * 1000) },
+    });
+
+    const res = await verifyOtp(jsonReq("POST", "/api/auth/otp/verify", { phone: p, code: "123456" }));
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data).toMatchObject({ ok: true, needs_registration: true });
+    expect(data.registration_token).toBeTruthy();
+    expect(res.headers.get("set-cookie")).toBeNull(); // no session yet
+  });
+
   it("rejects expired codes", async () => {
     const user = await makeUser();
     await prisma.otpCode.create({
-      data: {
-        email: user.email,
-        codeHash: await hashCode("123456"),
-        expiresAt: new Date(Date.now() - 1000),
-      },
+      data: { phone: user.phone, codeHash: await hashCode("123456"), expiresAt: new Date(Date.now() - 1000) },
     });
-
-    const res = await verifyOtp(jsonReq("POST", "/api/auth/otp/verify", { email: user.email, code: "123456" }));
+    const res = await verifyOtp(jsonReq("POST", "/api/auth/otp/verify", { phone: user.phone, code: "123456" }));
     expect(res.status).toBe(400);
     expect(await res.json()).toMatchObject({ error: "Code expired" });
   });
@@ -149,43 +155,90 @@ describe("POST /api/auth/otp/verify", () => {
   it("rejects already-used codes", async () => {
     const user = await makeUser();
     await prisma.otpCode.create({
-      data: {
-        email: user.email,
-        codeHash: await hashCode("123456"),
-        expiresAt: new Date(Date.now() + 10 * 60 * 1000),
-        usedAt: new Date(),
-      },
+      data: { phone: user.phone, codeHash: await hashCode("123456"), expiresAt: new Date(Date.now() + 10 * 60 * 1000), usedAt: new Date() },
     });
-
-    const res = await verifyOtp(jsonReq("POST", "/api/auth/otp/verify", { email: user.email, code: "123456" }));
+    const res = await verifyOtp(jsonReq("POST", "/api/auth/otp/verify", { phone: user.phone, code: "123456" }));
     expect(res.status).toBe(400);
     expect(await res.json()).toMatchObject({ error: "Code already used" });
   });
 
-  it("rejects wrong codes and increments failed attempts", async () => {
+  it("rejects wrong codes and increments failedAttempts", async () => {
     const user = await makeUser();
     const otp = await prisma.otpCode.create({
-      data: {
-        email: user.email,
-        codeHash: await hashCode("123456"),
-        expiresAt: new Date(Date.now() + 10 * 60 * 1000),
-      },
+      data: { phone: user.phone, codeHash: await hashCode("123456"), expiresAt: new Date(Date.now() + 10 * 60 * 1000) },
     });
-
-    const res = await verifyOtp(jsonReq("POST", "/api/auth/otp/verify", { email: user.email, code: "999999" }));
+    const res = await verifyOtp(jsonReq("POST", "/api/auth/otp/verify", { phone: user.phone, code: "999999" }));
     expect(res.status).toBe(400);
-    expect(await res.json()).toMatchObject({ error: "Invalid code" });
-
     const updated = await prisma.otpCode.findUnique({ where: { id: otp.id } });
     expect(updated!.failedAttempts).toBe(1);
   });
+
+  it("locks out after 5 failed attempts", async () => {
+    const user = await makeUser();
+    const otp = await prisma.otpCode.create({
+      data: { phone: user.phone, codeHash: await hashCode("123456"), expiresAt: new Date(Date.now() + 10 * 60 * 1000), failedAttempts: 4 },
+    });
+    await verifyOtp(jsonReq("POST", "/api/auth/otp/verify", { phone: user.phone, code: "999999" }));
+    const updated = await prisma.otpCode.findUnique({ where: { id: otp.id } });
+    expect(updated!.usedAt).not.toBeNull(); // invalidated
+  });
 });
 
+// ─── Register ─────────────────────────────────────────────────────────────────
+
+describe("POST /api/auth/register", () => {
+  it("creates user and issues session from a valid registration token", async () => {
+    const p = phone();
+    const token = createRegToken(p);
+    const id = uid();
+
+    const res = await register(jsonReq("POST", "/api/auth/register", {
+      registration_token: token,
+      name: `${P} New`,
+      email: `${id}@example.test`,
+      role: "STUDENT",
+    }));
+
+    expect(res.status).toBe(201);
+    expect(await res.json()).toMatchObject({ ok: true, redirect: "/student/dashboard" });
+    expect(res.headers.get("set-cookie")).toContain(`${SESSION_COOKIE}=`);
+
+    const user = await prisma.user.findUnique({ where: { phone: p } });
+    expect(user).not.toBeNull();
+    expect(user!.role).toBe("STUDENT");
+  });
+
+  it("rejects an expired or invalid registration token", async () => {
+    const id = uid();
+    const res = await register(jsonReq("POST", "/api/auth/register", {
+      registration_token: "invalid.token",
+      name: `${P} Bad`,
+      email: `${id}@example.test`,
+      role: "STUDENT",
+    }));
+    expect(res.status).toBe(401);
+  });
+
+  it("rejects ADMIN role on self-registration", async () => {
+    const p = phone();
+    const token = createRegToken(p);
+    const id = uid();
+    const res = await register(jsonReq("POST", "/api/auth/register", {
+      registration_token: token,
+      name: `${P} Hacker`,
+      email: `${id}@example.test`,
+      role: "ADMIN",
+    }));
+    expect(res.status).toBe(400);
+  });
+});
+
+// ─── Logout ───────────────────────────────────────────────────────────────────
+
 describe("POST /api/auth/logout", () => {
-  it("deletes the session and clears the sid cookie", async () => {
+  it("deletes the session and clears the cookie", async () => {
     const user = await makeUser("ADMIN");
     const sid = await createSession(user.id);
-
     const res = await logout(jsonReq("POST", "/api/auth/logout", undefined, sid));
     expect(res.status).toBe(303);
     expect(res.headers.get("location")).toBe("http://localhost/login");

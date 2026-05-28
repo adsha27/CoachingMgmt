@@ -13,8 +13,8 @@ export async function GET(
 
   const { id } = await params;
   const slots = await prisma.teacherAvailability.findMany({
-    where: { teacherId: Number(id), startTime: { gte: new Date() } },
-    orderBy: { startTime: "asc" },
+    where: { teacherId: Number(id), status: "AVAILABLE" },
+    orderBy: [{ dayOfWeek: "asc" }, { startTime: "asc" }],
   });
 
   return NextResponse.json(slots);

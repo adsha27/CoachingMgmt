@@ -12,24 +12,47 @@ export default async function TeacherDashboard() {
   if (!user || user.role !== "TEACHER") redirect("/login");
 
   const now = new Date();
+  const myId = user.id;
 
   const [upcoming, past, slots] = await Promise.all([
     prisma.session.findMany({
-      where: { teacherId: user.id, status: "SCHEDULED", scheduledDate: { gte: now } },
-      include: { students: { include: { student: { select: { name: true, email: true } } } } },
-      orderBy: { scheduledDate: "asc" },
+      where: {
+        status: "SCHEDULED",
+        scheduledAt: { gte: now },
+        OR: [
+          { groupCourse: { teacherId: myId } },
+          { booking: { oneOnOnePackage: { teacherId: myId } } },
+        ],
+      },
+      include: {
+        groupCourse: { select: { title: true, subject: true, enrolledCount: true } },
+        booking: {
+          include: {
+            student: { select: { name: true, email: true } },
+            oneOnOnePackage: { select: { title: true, subject: true } },
+          },
+        },
+      },
+      orderBy: { scheduledAt: "asc" },
     }),
     prisma.session.findMany({
       where: {
-        teacherId: user.id,
-        OR: [{ status: { not: "SCHEDULED" } }, { scheduledDate: { lt: now } }],
+        OR: [
+          { groupCourse: { teacherId: myId } },
+          { booking: { oneOnOnePackage: { teacherId: myId } } },
+        ],
+        AND: [{ OR: [{ status: { not: "SCHEDULED" } }, { scheduledAt: { lt: now } }] }],
       },
-      orderBy: { scheduledDate: "desc" },
+      include: {
+        groupCourse: { select: { title: true, subject: true } },
+        booking: { include: { oneOnOnePackage: { select: { title: true } } } },
+      },
+      orderBy: { scheduledAt: "desc" },
       take: 20,
     }),
     prisma.teacherAvailability.findMany({
-      where: { teacherId: user.id, startTime: { gte: now } },
-      orderBy: { startTime: "asc" },
+      where: { teacherId: myId, status: "AVAILABLE" },
+      orderBy: [{ dayOfWeek: "asc" }, { startTime: "asc" }],
     }),
   ]);
 
@@ -54,8 +77,11 @@ export default async function TeacherDashboard() {
         ) : (
           <div className="space-y-3">
             {upcoming.map((s) => {
-              const date = new Date(s.scheduledDate);
-              const studentNames = s.students.map((ss) => ss.student.name);
+              const date = new Date(s.scheduledAt);
+              const title = s.groupCourse?.title ?? s.booking?.oneOnOnePackage?.title ?? "Session";
+              const subtitle = s.groupCourse
+                ? `${s.groupCourse.enrolledCount} students enrolled`
+                : s.booking?.student.name ?? "";
               return (
                 <Link
                   key={s.id}
@@ -64,7 +90,7 @@ export default async function TeacherDashboard() {
                 >
                   <div className="flex justify-between items-start gap-3">
                     <div>
-                      <p className="font-medium text-gray-900">{s.subject}</p>
+                      <p className="font-medium text-gray-900">{title}</p>
                       <p className="text-sm text-gray-500">
                         {date.toLocaleDateString("en-IN", { weekday: "short", month: "short", day: "numeric" })}
                         {" · "}
@@ -72,8 +98,8 @@ export default async function TeacherDashboard() {
                         {" · "}
                         {s.durationMinutes} min
                       </p>
-                      {studentNames.length > 0 && (
-                        <p className="text-sm text-gray-400 mt-0.5">{studentNames.join(", ")}</p>
+                      {subtitle && (
+                        <p className="text-sm text-gray-400 mt-0.5">{subtitle}</p>
                       )}
                     </div>
                     {s.meetLink && (
@@ -100,9 +126,11 @@ export default async function TeacherDashboard() {
             {past.map((s) => (
               <div key={s.id} className="flex justify-between items-center py-2 border-b border-gray-100">
                 <div>
-                  <p className="text-sm font-medium text-gray-700">{s.subject}</p>
+                  <p className="text-sm font-medium text-gray-700">
+                    {s.groupCourse?.title ?? s.booking?.oneOnOnePackage?.title ?? "Session"}
+                  </p>
                   <p className="text-xs text-gray-400">
-                    {new Date(s.scheduledDate).toLocaleDateString("en-IN")}
+                    {new Date(s.scheduledAt).toLocaleDateString("en-IN")}
                   </p>
                 </div>
                 <span className={`text-xs px-2 py-0.5 rounded-full ${

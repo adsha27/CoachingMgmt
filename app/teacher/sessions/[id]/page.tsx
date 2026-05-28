@@ -17,13 +17,32 @@ export default async function TeacherSessionDetail({
   const session = await prisma.session.findUnique({
     where: { id: Number(id) },
     include: {
-      students: { include: { student: { select: { name: true, email: true } } } },
+      groupCourse: {
+        include: {
+          bookings: {
+            where: { status: "ACTIVE" },
+            include: { student: { select: { name: true, email: true } } },
+          },
+        },
+      },
+      booking: {
+        include: {
+          student: { select: { name: true, email: true } },
+          oneOnOnePackage: { select: { title: true, subject: true, teacherId: true } },
+        },
+      },
     },
   });
 
-  if (!session || session.teacherId !== user.id) notFound();
+  // Confirm this teacher owns the session
+  const teacherId = session?.groupCourse?.teacherId ?? session?.booking?.oneOnOnePackage?.teacherId;
+  if (!session || teacherId !== user.id) notFound();
 
-  const date = new Date(session.scheduledDate);
+  const date = new Date(session.scheduledAt);
+  const title = session.groupCourse?.title ?? session.booking?.oneOnOnePackage?.title ?? "Session";
+  const students = session.groupCourse
+    ? session.groupCourse.bookings.map((b) => b.student)
+    : session.booking ? [session.booking.student] : [];
 
   return (
     <main className="max-w-2xl mx-auto py-8 px-4">
@@ -33,7 +52,7 @@ export default async function TeacherSessionDetail({
 
       <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
         <div className="flex justify-between items-start mb-4">
-          <h1 className="text-xl font-bold text-gray-900">{session.subject}</h1>
+          <h1 className="text-xl font-bold text-gray-900">{title}</h1>
           <span className={`text-xs px-2 py-1 rounded-full ${
             session.status === "SCHEDULED" ? "bg-blue-100 text-blue-800" :
             session.status === "COMPLETED" ? "bg-green-100 text-green-800" :
@@ -60,6 +79,10 @@ export default async function TeacherSessionDetail({
             <dt className="text-gray-500 w-24 shrink-0">Duration</dt>
             <dd className="text-gray-900">{session.durationMinutes} minutes</dd>
           </div>
+          <div className="flex gap-4">
+            <dt className="text-gray-500 w-24 shrink-0">Session #</dt>
+            <dd className="text-gray-900">{session.sessionNumber}</dd>
+          </div>
         </dl>
 
         {session.meetLink && (
@@ -75,16 +98,16 @@ export default async function TeacherSessionDetail({
           </div>
         )}
 
-        {session.students.length > 0 && (
+        {students.length > 0 && (
           <div className="mt-6 pt-5 border-t border-gray-100">
             <h2 className="text-sm font-semibold text-gray-700 mb-3">
-              Students ({session.students.length})
+              Students ({students.length})
             </h2>
             <div className="space-y-2">
-              {session.students.map((ss) => (
-                <div key={ss.student.email} className="flex justify-between items-center">
-                  <span className="text-sm text-gray-900">{ss.student.name}</span>
-                  <span className="text-sm text-gray-400">{ss.student.email}</span>
+              {students.map((s) => (
+                <div key={s.email ?? s.name} className="flex justify-between items-center">
+                  <span className="text-sm text-gray-900">{s.name}</span>
+                  {s.email && <span className="text-sm text-gray-400">{s.email}</span>}
                 </div>
               ))}
             </div>

@@ -7,14 +7,14 @@ export default function HomePage() {
       <nav className="flex justify-between items-center px-6 py-4 border-b border-gray-100">
         <span className="font-bold text-gray-900 text-lg">CoachingMgmt</span>
         <div className="flex gap-3">
-          <Link
-            href="/login"
-            className="text-sm text-gray-600 hover:text-gray-900 px-3 py-1.5"
-          >
+          <Link href="/browse" className="text-sm text-gray-600 hover:text-gray-900 px-3 py-1.5">
+            Browse
+          </Link>
+          <Link href="/login" className="text-sm text-gray-600 hover:text-gray-900 px-3 py-1.5">
             Sign in
           </Link>
           <Link
-            href="/register"
+            href="/login"
             className="text-sm bg-indigo-600 text-white px-4 py-1.5 rounded-md hover:bg-indigo-700"
           >
             Register
@@ -25,17 +25,17 @@ export default function HomePage() {
       {/* Hero */}
       <section className="max-w-3xl mx-auto px-6 pt-20 pb-16 text-center">
         <h1 className="text-4xl font-bold text-gray-900 mb-4 leading-tight">
-          Run your coaching institute<br />without the paperwork
+          Find the right teacher<br />for JEE &amp; NEET
         </h1>
         <p className="text-lg text-gray-500 mb-10 max-w-xl mx-auto">
-          Schedule sessions, manage teachers and students, send reminders, and track attendance — all in one place.
+          Browse verified teachers, enrol in group courses or book 1-on-1 packages — all in one place.
         </p>
         <div className="flex gap-4 justify-center">
           <Link
-            href="/register"
+            href="/browse"
             className="px-6 py-3 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700"
           >
-            Get started
+            Browse Teachers
           </Link>
           <Link
             href="/login"
@@ -53,21 +53,21 @@ export default function HomePage() {
             <div className="text-2xl mb-3">👨‍🏫</div>
             <h3 className="font-semibold text-gray-900 mb-1">For Teachers</h3>
             <p className="text-sm text-gray-500">
-              See your full schedule, get reminders before every session, and share your availability with the admin.
+              Create group courses or 1-on-1 packages, set availability, get bookings, and teach — we handle the scheduling.
             </p>
           </div>
           <div className="rounded-xl border border-gray-100 bg-gray-50 p-6">
             <div className="text-2xl mb-3">🎓</div>
             <h3 className="font-semibold text-gray-900 mb-1">For Students</h3>
             <p className="text-sm text-gray-500">
-              See your upcoming sessions, get Google Meet links the moment a session is scheduled, and never miss a class.
+              Browse teachers, enrol in courses, propose session slots, and get Google Meet links automatically.
             </p>
           </div>
           <div className="rounded-xl border border-gray-100 bg-gray-50 p-6">
-            <div className="text-2xl mb-3">⚙️</div>
-            <h3 className="font-semibold text-gray-900 mb-1">For Admins</h3>
+            <div className="text-2xl mb-3">👪</div>
+            <h3 className="font-semibold text-gray-900 mb-1">For Parents</h3>
             <p className="text-sm text-gray-500">
-              Approve registrations, schedule sessions, assign students, and cancel classes — with automatic emails sent to everyone.
+              Track your child&apos;s sessions, view feedback, and stay in the loop — with read-only access linked to their account.
             </p>
           </div>
         </div>
