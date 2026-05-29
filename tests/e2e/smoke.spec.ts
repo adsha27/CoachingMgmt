@@ -113,7 +113,7 @@ test("admin, teacher, student, and public schedule smoke flow", async ({ page, c
   await context.addCookies([await sessionCookie(teacher.id)]);
   await page.goto("/teacher/dashboard");
   await expect(page.getByRole("heading", { name: `${P} Teacher` })).toBeVisible();
-  await expect(page.getByText(`${P} Physics Tutoring`)).toBeVisible();
+  await expect(page.getByText(`${P} Physics Tutoring`).first()).toBeVisible();
 
   // Teacher can see session detail with student info
   await page.goto(`/teacher/sessions/${session.id}`);
@@ -124,7 +124,7 @@ test("admin, teacher, student, and public schedule smoke flow", async ({ page, c
   await context.addCookies([await sessionCookie(student.id)]);
   await page.goto("/student/dashboard");
   await expect(page.getByRole("heading", { name: `${P} Student` })).toBeVisible();
-  await expect(page.getByText(`${P} Physics Tutoring`)).toBeVisible();
+  await expect(page.getByText(`${P} Physics Tutoring`).first()).toBeVisible();
 
   // Student session detail shows teacher name
   await page.goto(`/student/sessions/${session.id}`);
@@ -134,5 +134,5 @@ test("admin, teacher, student, and public schedule smoke flow", async ({ page, c
   await context.clearCookies();
   await page.goto(`/schedule/${teacher.teacherToken!.token}`);
   await expect(page.getByRole("heading", { name: `${P} Teacher` })).toBeVisible();
-  await expect(page.getByText(`${P} Physics Tutoring`)).toBeVisible();
+  await expect(page.getByText(`${P} Physics Tutoring`).first()).toBeVisible();
 });
