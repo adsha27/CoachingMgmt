@@ -28,6 +28,7 @@ jobs:
       EMAIL_DELIVERY_MODE: console
       RESEND_API_KEY: re_ci_placeholder
       EMAIL_FROM: noreply@example.test
+      AUTH_MODE: email
       NEXT_PUBLIC_BASE_URL: http://127.0.0.1:3000
       CRON_SECRET: ci-cron-secret
     steps:

@@ -61,6 +61,8 @@ export default function TeacherWizardPage() {
   const [saving, setSaving] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [verifyStatus, setVerifyStatus] = useState<string | null>(null);
+  const [rejectionReason, setRejectionReason] = useState<string | null>(null);
 
   // Profile fields
   const [bio, setBio] = useState("");
@@ -82,6 +84,10 @@ export default function TeacherWizardPage() {
         if (p.teachingExperienceYears) setExperienceYears(String(p.teachingExperienceYears));
         if (p.demoVideoLink) setDemoVideoLink(p.demoVideoLink);
         if (p.socialMediaLinks) setSocial(p.socialMediaLinks as SocialLinks);
+        if (p.verifyStatus) setVerifyStatus(p.verifyStatus);
+        if ((p as Profile & { rejectionReason?: string }).rejectionReason) {
+          setRejectionReason((p as Profile & { rejectionReason?: string }).rejectionReason ?? null);
+        }
       })
       .catch(() => {});
   }, []);
@@ -152,6 +158,32 @@ export default function TeacherWizardPage() {
         <p className="text-sm text-gray-500 mb-8">
           Complete your profile so we can verify and list you for students to find.
         </p>
+
+        {verifyStatus === "REJECTED" && (
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-sm font-semibold text-red-800 mb-1">Profile not approved</p>
+            {rejectionReason && (
+              <p className="text-sm text-red-700">{rejectionReason}</p>
+            )}
+            <p className="text-xs text-red-500 mt-1">Update your profile and resubmit for review.</p>
+          </div>
+        )}
+
+        {verifyStatus === "MORE_INFO_REQUESTED" && (
+          <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+            <p className="text-sm font-semibold text-amber-800 mb-1">More information needed</p>
+            {rejectionReason && (
+              <p className="text-sm text-amber-700">{rejectionReason}</p>
+            )}
+            <p className="text-xs text-amber-500 mt-1">Please update and resubmit.</p>
+          </div>
+        )}
+
+        {verifyStatus === "PENDING" && (
+          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-sm text-blue-700">Your profile is under review. We&apos;ll notify you once verified.</p>
+          </div>
+        )}
 
         {/* Step indicator */}
         <div className="flex items-center gap-1 mb-8">

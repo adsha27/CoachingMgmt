@@ -30,9 +30,16 @@ export async function POST(req: NextRequest) {
 
   await prisma.otpCode.create({ data: { phone, codeHash, expiresAt } });
 
-  await sendOtp(phone, code, user?.email).catch((err) => {
+  try {
+    await sendOtp(phone, code, user?.email);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "OTP delivery unavailable";
+    // Misconfigured SMS provider — tell the client rather than silently failing
+    if (msg.includes("not configured")) {
+      return NextResponse.json({ error: "SMS service not configured. Contact support." }, { status: 503 });
+    }
     console.error("OTP send failed:", err);
-  });
+  }
 
   return NextResponse.json({ ok: true });
 }

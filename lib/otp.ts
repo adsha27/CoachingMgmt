@@ -45,8 +45,7 @@ export async function sendOtp(phone: string, code: string, email?: string): Prom
   const apiKey = process.env.MSG91_API_KEY;
   const templateId = process.env.MSG91_TEMPLATE_ID;
   if (!apiKey || !templateId) {
-    console.warn("MSG91_API_KEY / MSG91_TEMPLATE_ID not set — OTP not sent");
-    return;
+    throw new Error("MSG91_API_KEY / MSG91_TEMPLATE_ID not configured");
   }
   const mobile = `91${phone}`;
   const res = await fetch("https://control.msg91.com/api/v5/otp", {
