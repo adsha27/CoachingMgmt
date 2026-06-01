@@ -13,8 +13,8 @@ export async function GET(req: NextRequest) {
   }
 
   const now = new Date();
-  const windowStart = new Date(now.getTime() + 23 * 60 * 60 * 1000);
-  const windowEnd = new Date(now.getTime() + 25 * 60 * 60 * 1000);
+  const windowStart = new Date(now.getTime() + 55 * 60 * 1000);
+  const windowEnd = new Date(now.getTime() + 75 * 60 * 1000);
 
   const sessions = await prisma.session.findMany({
     where: {
@@ -82,7 +82,7 @@ export async function GET(req: NextRequest) {
         );
         await sendEmail({
           to: email,
-          subject: `Reminder: ${title} tomorrow`,
+          subject: `Reminder: ${title} in 1 hour`,
           html,
           text: sessionReminderText({
             teacherName: teacher.name,

@@ -70,7 +70,7 @@ async function make1on1Session(opts: {
     data: {
       bookingId: booking.id,
       sessionNumber: 1,
-      scheduledAt: opts.scheduledAt ?? new Date(Date.now() + 24 * 60 * 60 * 1000),
+      scheduledAt: opts.scheduledAt ?? new Date(Date.now() + 60 * 60 * 1000),
       durationMinutes: 60,
       meetLink: "https://meet.google.com/test-reminder",
       reminderSentAt: opts.reminderSentAt ?? null,
@@ -109,7 +109,7 @@ describe("GET /api/cron/session-reminders", () => {
     expect(res.status).toBe(401);
   });
 
-  it("sends a reminder for a 1-on-1 session in the 23-25 hour window", async () => {
+  it("sends a reminder for a 1-on-1 session in the 55-75 minute window", async () => {
     const session = await make1on1Session({ reminderSentAt: null });
 
     const res = await GET(cronReq("test-cron-secret"));
@@ -136,16 +136,16 @@ describe("GET /api/cron/session-reminders", () => {
     expect(await res.json()).toMatchObject({ sent: 0, errors: [] });
   });
 
-  it("skips sessions outside the 23-25h window (too soon)", async () => {
-    await make1on1Session({ scheduledAt: new Date(Date.now() + 1 * 60 * 60 * 1000) });
+  it("skips sessions outside the 55-75 min window (too soon)", async () => {
+    await make1on1Session({ scheduledAt: new Date(Date.now() + 10 * 60 * 1000) });
 
     const res = await GET(cronReq("test-cron-secret"));
     expect(res.status).toBe(200);
     expect(await res.json()).toMatchObject({ sent: 0, errors: [] });
   });
 
-  it("skips sessions outside the 23-25h window (too far)", async () => {
-    await make1on1Session({ scheduledAt: new Date(Date.now() + 48 * 60 * 60 * 1000) });
+  it("skips sessions outside the 55-75 min window (too far)", async () => {
+    await make1on1Session({ scheduledAt: new Date(Date.now() + 3 * 60 * 60 * 1000) });
 
     const res = await GET(cronReq("test-cron-secret"));
     expect(res.status).toBe(200);

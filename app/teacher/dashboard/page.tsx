@@ -6,6 +6,7 @@ import LogoutButton from "@/app/_components/LogoutButton";
 import AvailabilitySection from "./AvailabilitySection";
 import PublishCourseButton from "./PublishCourseButton";
 import ProposalsSection from "./ProposalsSection";
+import InviteLinkButton from "./InviteLinkButton";
 
 export const dynamic = "force-dynamic";
 
@@ -187,6 +188,9 @@ export default async function TeacherDashboard() {
                     {c.status === "DRAFT" && (
                       <PublishCourseButton id={c.id} type="group" />
                     )}
+                    {c.status === "LISTED" && (
+                      <InviteLinkButton groupCourseId={c.id} />
+                    )}
                   </div>
                 </div>
               </div>
@@ -209,6 +213,9 @@ export default async function TeacherDashboard() {
                     }`}>{p.status}</span>
                     {p.status === "DRAFT" && (
                       <PublishCourseButton id={p.id} type="package" />
+                    )}
+                    {p.status === "LISTED" && (
+                      <InviteLinkButton oneOnOnePackageId={p.id} />
                     )}
                   </div>
                 </div>
