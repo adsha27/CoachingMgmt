@@ -27,9 +27,6 @@ export async function POST(req: NextRequest) {
   if (!course || course.status !== "LISTED") {
     return NextResponse.json({ error: "Course not available" }, { status: 404 });
   }
-  if (course.enrolledCount >= course.maxStudents) {
-    return NextResponse.json({ error: "Course is full" }, { status: 409 });
-  }
 
   const existing = await prisma.booking.findFirst({
     where: { studentId: user.id, groupCourseId: courseId, status: "ACTIVE" },
@@ -38,10 +35,22 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Already enrolled" }, { status: 409 });
   }
 
-  const newEnrolled = course.enrolledCount + 1;
-
+  // Atomic capacity check + increment: the WHERE condition ensures we only
+  // increment if there is still room, preventing double-booking under concurrency.
+  let newEnrolled = 0;
   const booking = await prisma.$transaction(async (tx) => {
-    const created = await tx.booking.create({
+    const updated = await tx.groupCourse.updateManyAndReturn({
+      where: { id: courseId, enrolledCount: { lt: course.maxStudents }, status: "LISTED" },
+      data: { enrolledCount: { increment: 1 } },
+    });
+    if (updated.length === 0) {
+      throw Object.assign(new Error("Course is full"), { code: "COURSE_FULL" });
+    }
+    newEnrolled = updated[0].enrolledCount;
+    if (newEnrolled >= course.maxStudents) {
+      await tx.groupCourse.update({ where: { id: courseId }, data: { status: "FULL" } });
+    }
+    return tx.booking.create({
       data: {
         studentId: user.id,
         courseType: "GROUP",
@@ -51,15 +60,14 @@ export async function POST(req: NextRequest) {
         status: "ACTIVE",
       },
     });
-    await tx.groupCourse.update({
-      where: { id: courseId },
-      data: {
-        enrolledCount: { increment: 1 },
-        status: newEnrolled >= course.maxStudents ? "FULL" : course.status,
-      },
-    });
-    return created;
+  }).catch((err: Error & { code?: string }) => {
+    if (err.code === "COURSE_FULL") return null;
+    throw err;
   });
+
+  if (!booking) {
+    return NextResponse.json({ error: "Course is full" }, { status: 409 });
+  }
 
   // Send confirmation emails (non-blocking, best-effort)
   const firstSession = course.sessions[0];
