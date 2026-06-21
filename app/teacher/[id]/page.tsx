@@ -1,8 +1,62 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 
 export const revalidate = 60;
+
+const BASE = process.env.NEXT_PUBLIC_APP_URL ?? "https://educonnect.in";
+
+export async function generateStaticParams() {
+  const profiles = await prisma.teacherProfile.findMany({
+    where: { verifyStatus: "VERIFIED" },
+    select: { teacherId: true },
+  });
+  return profiles.map((p) => ({ id: String(p.teacherId) }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const teacherId = Number(id);
+  if (isNaN(teacherId)) return {};
+
+  const teacher = await prisma.user.findFirst({
+    where: { id: teacherId, role: "TEACHER", status: "ACTIVE", teacherProfile: { verifyStatus: "VERIFIED" } },
+    select: {
+      name: true,
+      teacherProfile: {
+        select: { bio: true, subjects: true, targetExams: true, profilePhotoUrl: true, rating: true },
+      },
+    },
+  });
+  if (!teacher) return {};
+
+  const p = teacher.teacherProfile;
+  const subjects = p?.subjects?.join(", ") ?? "";
+  const exams = p?.targetExams?.join(", ") ?? "";
+  const title = `${teacher.name} — ${subjects} Teacher${exams ? ` for ${exams}` : ""} | EduConnect`;
+  const description =
+    p?.bio?.slice(0, 155) ??
+    `Book ${teacher.name} for ${subjects} coaching on EduConnect. Verified JEE & NEET teacher.`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url: `${BASE}/teacher/${teacherId}`,
+      type: "profile",
+      images: p?.profilePhotoUrl ? [{ url: p.profilePhotoUrl, alt: teacher.name }] : [],
+    },
+    twitter: { card: "summary", title, description },
+    alternates: { canonical: `${BASE}/teacher/${teacherId}` },
+  };
+}
 
 function youtubeEmbedId(url: string): string | null {
   try {
@@ -84,8 +138,43 @@ export default async function TeacherProfilePage({
   const social = (p?.socialMediaLinks ?? {}) as Record<string, string>;
   const embedId = p?.demoVideoLink ? youtubeEmbedId(p.demoVideoLink) : null;
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Person",
+        "@id": `${BASE}/teacher/${teacher.id}`,
+        name: teacher.name,
+        jobTitle: `${p?.subjects?.join(", ") ?? ""}${p?.targetExams?.length ? ` Teacher (${p.targetExams.join(", ")})` : " Teacher"}`,
+        description: p?.bio ?? undefined,
+        image: p?.profilePhotoUrl ?? undefined,
+        url: `${BASE}/teacher/${teacher.id}`,
+        ...(p?.rating ? { aggregateRating: { "@type": "AggregateRating", ratingValue: p.rating, bestRating: 5 } } : {}),
+      },
+      ...teacher.groupCourses.map((c) => ({
+        "@type": "Course",
+        name: c.title,
+        description: c.description ?? undefined,
+        provider: { "@type": "Person", name: teacher.name },
+        url: `${BASE}/courses/${c.id}/book`,
+        offers: {
+          "@type": "Offer",
+          price: c.priceINR,
+          priceCurrency: "INR",
+          availability: c.enrolledCount < c.maxStudents
+            ? "https://schema.org/InStock"
+            : "https://schema.org/SoldOut",
+        },
+      })),
+    ],
+  };
+
   return (
     <main className="min-h-screen bg-gray-50">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Back link */}
         <Link href="/browse" className="text-sm text-indigo-600 hover:underline mb-6 inline-block">

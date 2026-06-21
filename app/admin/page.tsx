@@ -10,12 +10,13 @@ export default async function AdminPage() {
   const user = await getCurrentUser();
   if (!user || user.role !== "ADMIN") redirect("/login");
 
-  const [pendingVerifications, cancellationRequests, teacherCount, studentCount, recentFeedback] =
+  const [pendingVerifications, cancellationRequests, teacherCount, studentCount, openTopicRequests, recentFeedback] =
     await Promise.all([
       prisma.teacherProfile.count({ where: { verifyStatus: "PENDING" } }),
       prisma.cancellationRequest.count({ where: { status: "PENDING" } }),
       prisma.user.count({ where: { role: "TEACHER", status: "ACTIVE" } }),
       prisma.user.count({ where: { role: "STUDENT", status: "ACTIVE" } }),
+      prisma.topicRequest.count({ where: { status: "OPEN" } }),
       prisma.sessionFeedback.findMany({
         orderBy: { createdAt: "desc" },
         take: 10,
@@ -43,6 +44,7 @@ export default async function AdminPage() {
     { href: "/admin/teachers", label: "Teachers" },
     { href: "/admin/courses", label: "All courses" },
     { href: "/admin/cancellations", label: "Cancellations", badge: cancellationRequests },
+    { href: "/admin/topic-requests", label: "Topic requests", badge: openTopicRequests },
   ];
 
   return (

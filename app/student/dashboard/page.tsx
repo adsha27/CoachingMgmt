@@ -66,6 +66,7 @@ export default async function StudentDashboard() {
           include: { oneOnOnePackage: { include: { teacher: { select: { name: true } } } } },
         },
         groupCourse: { include: { teacher: { select: { name: true } } } },
+        feedback: { where: { studentId: user.id }, select: { id: true }, take: 1 },
       },
       orderBy: { scheduledAt: "desc" },
       take: 20,
@@ -274,24 +275,39 @@ export default async function StudentDashboard() {
           <section>
             <h2 className="text-base font-bold text-gray-900 mb-3">Past sessions</h2>
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-              {past.map((s, i) => (
-                <div key={s.id} className={`flex justify-between items-center px-4 py-3 ${i !== past.length - 1 ? "border-b border-gray-50" : ""}`}>
-                  <div>
-                    <p className="text-sm font-medium text-gray-800">{sessionTitle(s)}</p>
-                    <p className="text-xs text-gray-400">
-                      {sessionTeacher(s)} · {new Date(s.scheduledAt).toLocaleDateString("en-IN")}
-                    </p>
+              {past.map((s, i) => {
+                const hasRated = s.feedback.length > 0;
+                const canRate = s.status === "COMPLETED" && !hasRated;
+                return (
+                  <div key={s.id} className={`flex justify-between items-center px-4 py-3 ${i !== past.length - 1 ? "border-b border-gray-50" : ""}`}>
+                    <div>
+                      <p className="text-sm font-medium text-gray-800">{sessionTitle(s)}</p>
+                      <p className="text-xs text-gray-400">
+                        {sessionTeacher(s)} · {new Date(s.scheduledAt).toLocaleDateString("en-IN")}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {canRate && (
+                        <Link href={`/student/sessions/${s.id}`}
+                          className="text-xs font-semibold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-lg hover:bg-amber-100 transition-colors">
+                          Rate ★
+                        </Link>
+                      )}
+                      {hasRated && (
+                        <span className="text-xs text-gray-300">★ rated</span>
+                      )}
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                        s.status === "COMPLETED" ? "bg-green-100 text-green-700" :
+                        s.status === "CANCELLED" ? "bg-gray-100 text-gray-500" :
+                        s.status === "NO_SHOW" ? "bg-red-100 text-red-600" :
+                        "bg-blue-100 text-blue-700"
+                      }`}>
+                        {s.status === "COMPLETED" ? "Done" : s.status === "CANCELLED" ? "Cancelled" : s.status === "NO_SHOW" ? "Missed" : s.status}
+                      </span>
+                    </div>
                   </div>
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                    s.status === "COMPLETED" ? "bg-green-100 text-green-700" :
-                    s.status === "CANCELLED" ? "bg-gray-100 text-gray-500" :
-                    s.status === "NO_SHOW" ? "bg-red-100 text-red-600" :
-                    "bg-blue-100 text-blue-700"
-                  }`}>
-                    {s.status === "COMPLETED" ? "Done" : s.status === "CANCELLED" ? "Cancelled" : s.status === "NO_SHOW" ? "Missed" : s.status}
-                  </span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </section>
         )}

@@ -1,7 +1,27 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
+
+const BASE = process.env.NEXT_PUBLIC_APP_URL ?? "https://educonnect.in";
+
+export const metadata: Metadata = {
+  title: "EduConnect — Find Verified JEE & NEET Teachers",
+  description: "Browse verified JEE and NEET coaching teachers. Book affordable group courses or private 1-on-1 sessions from your phone.",
+  openGraph: {
+    title: "EduConnect — Find Verified JEE & NEET Teachers",
+    description: "Verified teachers, group courses from ₹299/session, instant Google Meet links.",
+    url: BASE,
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "EduConnect — JEE & NEET Coaching",
+    description: "Verified teachers, affordable group courses, 1-on-1 sessions.",
+  },
+  alternates: { canonical: BASE },
+};
 
 export default async function HomePage() {
   const [teacherCount, courseCount, subjectCount] = await Promise.all([
