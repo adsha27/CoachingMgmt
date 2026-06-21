@@ -18,7 +18,14 @@ export function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
-    "/teacher/:path*",
+    // /teacher/[id] is the public profile page — do NOT protect it.
+    // All other /teacher/* sub-paths are authenticated portal pages.
+    "/teacher/dashboard",
+    "/teacher/dashboard/:path*",
+    "/teacher/wizard",
+    "/teacher/courses/:path*",
+    "/teacher/packages/:path*",
+    "/teacher/sessions/:path*",
     "/student/:path*",
     "/admin",
     "/admin/:path*",
