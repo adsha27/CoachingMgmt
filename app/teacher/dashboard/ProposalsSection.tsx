@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/app/_components/Toast";
 
 interface Proposal {
   id: number;
@@ -15,14 +16,13 @@ interface Proposal {
 
 export default function ProposalsSection({ proposals: initial }: { proposals: Proposal[] }) {
   const router = useRouter();
+  const { toast } = useToast();
   const [proposals, setProposals] = useState(initial);
   const [notes, setNotes] = useState<Record<number, string>>({});
   const [loading, setLoading] = useState<number | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
   async function respond(id: number, action: "confirm" | "reject") {
     setLoading(id);
-    setError(null);
     const res = await fetch(`/api/proposals/${id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -31,10 +31,11 @@ export default function ProposalsSection({ proposals: initial }: { proposals: Pr
     setLoading(null);
     if (!res.ok) {
       const body = await res.json().catch(() => ({}));
-      setError(body.error ?? "Failed");
+      toast(body.error ?? "Something went wrong", "error");
       return;
     }
     setProposals((prev) => prev.filter((p) => p.id !== id));
+    toast(action === "confirm" ? "Slot confirmed — session added to schedule" : "Proposal declined", action === "confirm" ? "success" : "info");
     router.refresh();
   }
 
@@ -42,10 +43,7 @@ export default function ProposalsSection({ proposals: initial }: { proposals: Pr
 
   return (
     <section className="mb-10">
-      <h2 className="text-lg font-semibold text-gray-800 mb-4">Pending slot proposals</h2>
-      {error && (
-        <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-md text-sm text-red-700">{error}</div>
-      )}
+      <h2 className="text-base font-bold text-gray-900 mb-3">Pending slot proposals</h2>
       <div className="space-y-3">
         {proposals.map((p) => {
           const date = new Date(p.proposedDate);

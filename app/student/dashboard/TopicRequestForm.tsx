@@ -2,17 +2,18 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/app/_components/Toast";
 
 const SUBJECTS = ["Physics", "Chemistry", "Mathematics", "Biology", "Other"];
 
 export default function TopicRequestForm() {
   const router = useRouter();
+  const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [subject, setSubject] = useState("Physics");
   const [topic, setTopic] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -31,9 +32,8 @@ export default function TopicRequestForm() {
       return;
     }
     setTopic("");
-    setSuccess(true);
-    setTimeout(() => setSuccess(false), 3000);
     setOpen(false);
+    toast("Topic request submitted — teachers will see it as demand signal");
     router.refresh();
   }
 
@@ -89,9 +89,6 @@ export default function TopicRequestForm() {
             </button>
           </div>
         </form>
-      )}
-      {success && (
-        <p className="text-xs text-green-600 mt-1">✓ Topic request submitted!</p>
       )}
     </div>
   );

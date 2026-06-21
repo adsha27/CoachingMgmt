@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/app/_components/Toast";
 
 export default function ProposeSlotButton({ bookingId }: { bookingId: number }) {
   const router = useRouter();
+  const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [date, setDate] = useState("");
   const [time, setTime] = useState("10:00");
@@ -32,6 +34,7 @@ export default function ProposeSlotButton({ bookingId }: { bookingId: number }) 
       return;
     }
     setOpen(false);
+    toast("Slot proposal sent — waiting for teacher to confirm");
     router.refresh();
   }
 

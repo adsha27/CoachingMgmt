@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { ToastProvider } from "./_components/Toast";
 
 export const metadata: Metadata = {
-  title: "Coaching Management",
-  description: "JEE/NEET coaching operations platform",
+  title: "EduConnect — JEE & NEET Coaching",
+  description: "Find verified JEE and NEET teachers. Book group courses or 1-on-1 sessions.",
 };
 
 export default function RootLayout({
@@ -13,7 +14,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="bg-gray-50 text-gray-900 antialiased">{children}</body>
+      <body className="bg-gray-50 text-gray-900 antialiased">
+        <ToastProvider>{children}</ToastProvider>
+      </body>
     </html>
   );
 }

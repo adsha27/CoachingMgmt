@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import Link from "next/link";
 
 type GroupCourse = {
@@ -75,224 +75,247 @@ function earliestStart(t: Teacher): string {
   return dates[0] ?? "9999";
 }
 
+function Chip({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`shrink-0 px-3 py-1.5 rounded-full text-sm font-medium transition-all whitespace-nowrap ${
+        active
+          ? "bg-indigo-600 text-white shadow-sm"
+          : "bg-white border border-gray-200 text-gray-600 hover:border-indigo-300 hover:text-indigo-600"
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
+
+function Stars({ rating }: { rating: number }) {
+  const full = Math.floor(rating);
+  return (
+    <span className="flex items-center gap-0.5">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <svg key={i} viewBox="0 0 20 20" fill="currentColor"
+          className={`w-3.5 h-3.5 ${i < full ? "text-amber-400" : "text-gray-200"}`}>
+          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+        </svg>
+      ))}
+      <span className="ml-1 text-xs text-gray-500 font-medium">{rating.toFixed(1)}</span>
+    </span>
+  );
+}
+
+function TeacherCard({ teacher }: { teacher: Teacher }) {
+  const p = teacher.teacherProfile;
+  const lowest = minPrice(teacher);
+
+  return (
+    <Link
+      href={`/teacher/${teacher.id}`}
+      className="block bg-white rounded-2xl border border-gray-100 p-4 sm:p-5 hover:border-indigo-200 hover:shadow-md transition-all"
+    >
+      <div className="flex items-start gap-3 sm:gap-4">
+        {p?.profilePhotoUrl ? (
+          <img src={p.profilePhotoUrl} alt={teacher.name}
+            className="w-14 h-14 rounded-2xl object-cover bg-gray-100 shrink-0" />
+        ) : (
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-400 to-indigo-600 flex items-center justify-center text-white font-bold text-xl shrink-0">
+            {teacher.name[0]}
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-2">
+            <div>
+              <h2 className="font-bold text-gray-900 text-base">{teacher.name}</h2>
+              {(p?.subjects?.length ?? 0) > 0 && (
+                <p className="text-xs text-indigo-600 font-medium mt-0.5">
+                  {p!.subjects.slice(0, 3).join(" · ")}
+                </p>
+              )}
+            </div>
+            {lowest !== Infinity && (
+              <div className="text-right shrink-0">
+                <div className="text-xs text-gray-400">from</div>
+                <div className="text-base font-bold text-gray-900">₹{lowest.toLocaleString("en-IN")}</div>
+              </div>
+            )}
+          </div>
+          <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+            {p?.rating && p.rating > 0 && <Stars rating={p.rating} />}
+            {p?.teachingExperienceYears && (
+              <span className="text-xs text-gray-400">{p.teachingExperienceYears}y exp</span>
+            )}
+            {(p?.targetExams?.length ?? 0) > 0 && (
+              <span className="text-xs text-gray-400">{p!.targetExams.slice(0, 2).join(", ")}</span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {p?.bio && (
+        <p className="mt-3 text-sm text-gray-600 line-clamp-2 leading-relaxed">{p.bio}</p>
+      )}
+
+      {(teacher.groupCourses.length > 0 || teacher.oneOnOnePackages.length > 0) && (
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          {teacher.groupCourses.slice(0, 2).map((c) => (
+            <span key={c.id}
+              className="inline-flex items-center gap-1 rounded-lg bg-indigo-50 px-2.5 py-1 text-xs font-medium text-indigo-700">
+              <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 shrink-0" />
+              {c.title}
+              <span className="text-indigo-400 font-normal ml-0.5">· ₹{c.priceINR.toLocaleString("en-IN")}</span>
+            </span>
+          ))}
+          {teacher.oneOnOnePackages.slice(0, 1).map((pkg) => (
+            <span key={pkg.id}
+              className="inline-flex items-center gap-1 rounded-lg bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
+              1-on-1 · {pkg.subject}
+              <span className="text-emerald-500 font-normal ml-0.5">· ₹{pkg.priceINR.toLocaleString("en-IN")}</span>
+            </span>
+          ))}
+        </div>
+      )}
+
+      <div className="mt-3 flex justify-end">
+        <span className="text-xs font-semibold text-indigo-600">View profile →</span>
+      </div>
+    </Link>
+  );
+}
+
 export default function BrowseClient({ teachers }: { teachers: Teacher[] }) {
+  const [query, setQuery] = useState("");
   const [subject, setSubject] = useState("");
   const [exam, setExam] = useState("");
   const [typeFilter, setTypeFilter] = useState<"" | "GROUP" | "ONE_ON_ONE">("");
   const [sort, setSort] = useState<Sort>("default");
+  const chipRef = useRef<HTMLDivElement>(null);
 
   const subjects = useMemo(() => allSubjects(teachers), [teachers]);
   const exams = useMemo(() => allExams(teachers), [teachers]);
+  const hasFilters = !!(query || subject || exam || typeFilter);
 
   const filtered = useMemo(() => {
     let list = teachers.map((t) => {
       const gc = t.groupCourses.filter(
-        (c) =>
-          (!subject || c.subject === subject) &&
-          (!exam || c.targetExam === exam) &&
-          (!typeFilter || typeFilter === "GROUP")
+        (c) => (!subject || c.subject === subject) && (!exam || c.targetExam === exam) && (!typeFilter || typeFilter === "GROUP")
       );
       const p11 = t.oneOnOnePackages.filter(
-        (p) =>
-          (!subject || p.subject === subject) &&
-          (!exam || p.targetExam === exam) &&
-          (!typeFilter || typeFilter === "ONE_ON_ONE")
+        (pkg) => (!subject || pkg.subject === subject) && (!exam || pkg.targetExam === exam) && (!typeFilter || typeFilter === "ONE_ON_ONE")
       );
       return { ...t, groupCourses: gc, oneOnOnePackages: p11 };
-    });
-
-    // Remove teachers with no matching courses
-    list = list.filter(
-      (t) => t.groupCourses.length > 0 || t.oneOnOnePackages.length > 0
+    }).filter(
+      (t) =>
+        (t.groupCourses.length > 0 || t.oneOnOnePackages.length > 0) &&
+        (!query || t.name.toLowerCase().includes(query.toLowerCase()) ||
+          t.teacherProfile?.subjects?.some((s) => s.toLowerCase().includes(query.toLowerCase())))
     );
 
-    // Sort
     if (sort === "price_asc") list.sort((a, b) => minPrice(a) - minPrice(b));
     if (sort === "price_desc") list.sort((a, b) => minPrice(b) - minPrice(a));
-    if (sort === "date_asc")
-      list.sort((a, b) => earliestStart(a).localeCompare(earliestStart(b)));
-
+    if (sort === "date_asc") list.sort((a, b) => earliestStart(a).localeCompare(earliestStart(b)));
     return list;
-  }, [teachers, subject, exam, typeFilter, sort]);
+  }, [teachers, query, subject, exam, typeFilter, sort]);
+
+  function clearAll() { setQuery(""); setSubject(""); setExam(""); setTypeFilter(""); }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-6xl mx-auto px-4 py-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-1">
-            Browse Teachers
-          </h1>
-          <p className="text-sm text-gray-500">
-            {filtered.length} teacher{filtered.length !== 1 ? "s" : ""} found
-          </p>
+      {/* Sticky header */}
+      <div className="sticky top-0 z-10 bg-white border-b border-gray-100 shadow-sm">
+        <div className="max-w-4xl mx-auto px-4 py-3 space-y-3">
+          {/* Search bar */}
+          <div className="flex items-center gap-3">
+            <a href="/" className="text-indigo-600 font-bold text-lg shrink-0 hidden sm:block">EduConnect</a>
+            <div className="relative flex-1">
+              <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search teachers or subjects…"
+                className="w-full pl-9 pr-8 py-2.5 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-indigo-400 focus:ring-1 focus:ring-indigo-400 transition-all"
+              />
+              {query && (
+                <button onClick={() => setQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs">✕</button>
+              )}
+            </div>
+            <select value={sort} onChange={(e) => setSort(e.target.value as Sort)}
+              className="hidden sm:block shrink-0 text-sm border border-gray-200 rounded-xl px-3 py-2.5 bg-white text-gray-600 focus:outline-none focus:border-indigo-400">
+              <option value="default">Relevant</option>
+              <option value="price_asc">Price ↑</option>
+              <option value="price_desc">Price ↓</option>
+              <option value="date_asc">Starts soon</option>
+            </select>
+          </div>
+
+          {/* Filter chips — horizontal scroll (no scrollbar shown) */}
+          <div ref={chipRef} className="flex gap-2 overflow-x-auto pb-0.5"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+            <Chip label="All" active={!subject && !exam && !typeFilter && !query} onClick={clearAll} />
+            {subjects.map((s) => (
+              <Chip key={s} label={s} active={subject === s} onClick={() => setSubject(subject === s ? "" : s)} />
+            ))}
+            <span className="w-px bg-gray-100 shrink-0 self-stretch" />
+            {exams.map((e) => (
+              <Chip key={e} label={e} active={exam === e} onClick={() => setExam(exam === e ? "" : e)} />
+            ))}
+            <span className="w-px bg-gray-100 shrink-0 self-stretch" />
+            <Chip label="Group course" active={typeFilter === "GROUP"} onClick={() => setTypeFilter(typeFilter === "GROUP" ? "" : "GROUP")} />
+            <Chip label="1-on-1" active={typeFilter === "ONE_ON_ONE"} onClick={() => setTypeFilter(typeFilter === "ONE_ON_ONE" ? "" : "ONE_ON_ONE")} />
+          </div>
+
+          {/* Mobile: sort + count */}
+          <div className="flex items-center justify-between sm:hidden">
+            <select value={sort} onChange={(e) => setSort(e.target.value as Sort)}
+              className="text-sm border border-gray-200 rounded-xl px-3 py-1.5 bg-white text-gray-600 focus:outline-none">
+              <option value="default">Relevant</option>
+              <option value="price_asc">Price ↑</option>
+              <option value="price_desc">Price ↓</option>
+              <option value="date_asc">Starts soon</option>
+            </select>
+            <span className="text-sm text-gray-400">{filtered.length} result{filtered.length !== 1 ? "s" : ""}</span>
+          </div>
         </div>
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 py-6 flex gap-6">
-        {/* Sidebar filters */}
-        <aside className="w-48 shrink-0 space-y-5">
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-              Subject
-            </label>
-            <select
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              className="w-full rounded-md border border-gray-300 py-1.5 px-2 text-sm focus:border-indigo-500 focus:outline-none"
-            >
-              <option value="">All subjects</option>
-              {subjects.map((s) => (
-                <option key={s} value={s}>{s}</option>
-              ))}
-            </select>
+      {/* Cards */}
+      <div className="max-w-4xl mx-auto px-4 py-5">
+        <p className="hidden sm:block text-sm text-gray-400 mb-4">
+          {filtered.length} teacher{filtered.length !== 1 ? "s" : ""}
+          {hasFilters && <> · <button onClick={clearAll} className="text-indigo-600 hover:underline">clear filters</button></>}
+        </p>
+
+        {filtered.length === 0 && (
+          <div className="text-center py-24">
+            <div className="text-5xl mb-4">🔍</div>
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">No teachers found</h3>
+            <p className="text-sm text-gray-500 mb-6">
+              {hasFilters ? "Try removing a filter or searching by name." : "No teachers available right now."}
+            </p>
+            {hasFilters && (
+              <button onClick={clearAll}
+                className="px-5 py-2.5 bg-indigo-600 text-white text-sm font-semibold rounded-xl hover:bg-indigo-700 transition-colors">
+                Clear all filters
+              </button>
+            )}
           </div>
+        )}
 
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-              Target exam
-            </label>
-            <select
-              value={exam}
-              onChange={(e) => setExam(e.target.value)}
-              className="w-full rounded-md border border-gray-300 py-1.5 px-2 text-sm focus:border-indigo-500 focus:outline-none"
-            >
-              <option value="">All exams</option>
-              {exams.map((e) => (
-                <option key={e} value={e}>{e}</option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-              Course type
-            </label>
-            <select
-              value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value as "" | "GROUP" | "ONE_ON_ONE")}
-              className="w-full rounded-md border border-gray-300 py-1.5 px-2 text-sm focus:border-indigo-500 focus:outline-none"
-            >
-              <option value="">All types</option>
-              <option value="GROUP">Group course</option>
-              <option value="ONE_ON_ONE">1-on-1 package</option>
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
-              Sort by
-            </label>
-            <select
-              value={sort}
-              onChange={(e) => setSort(e.target.value as Sort)}
-              className="w-full rounded-md border border-gray-300 py-1.5 px-2 text-sm focus:border-indigo-500 focus:outline-none"
-            >
-              <option value="default">Relevant</option>
-              <option value="price_asc">Price: low to high</option>
-              <option value="price_desc">Price: high to low</option>
-              <option value="date_asc">Start date: soonest</option>
-            </select>
-          </div>
-
-          {(subject || exam || typeFilter) && (
-            <button
-              onClick={() => { setSubject(""); setExam(""); setTypeFilter(""); }}
-              className="text-xs text-indigo-600 hover:underline"
-            >
-              Clear filters
-            </button>
-          )}
-        </aside>
-
-        {/* Cards */}
-        <div className="flex-1 space-y-4">
-          {filtered.length === 0 && (
-            <div className="text-center py-20 text-gray-400 text-sm">
-              No teachers match these filters.
-            </div>
-          )}
-
+        <div className="space-y-3">
           {filtered.map((teacher) => (
-            <Link
-              key={teacher.id}
-              href={`/teacher/${teacher.id}`}
-              className="block bg-white rounded-xl border border-gray-200 p-5 hover:border-indigo-300 hover:shadow-sm transition-all"
-            >
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex items-start gap-4">
-                  {teacher.teacherProfile?.profilePhotoUrl ? (
-                    <img
-                      src={teacher.teacherProfile.profilePhotoUrl}
-                      alt={teacher.name}
-                      className="w-12 h-12 rounded-full object-cover bg-gray-100"
-                    />
-                  ) : (
-                    <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-semibold text-lg">
-                      {teacher.name[0]}
-                    </div>
-                  )}
-                  <div>
-                    <h2 className="font-semibold text-gray-900">{teacher.name}</h2>
-                    {(teacher.teacherProfile?.subjects?.length ?? 0) > 0 && (
-                      <p className="text-xs text-gray-500 mt-0.5">
-                        {teacher.teacherProfile!.subjects.join(" · ")}
-                      </p>
-                    )}
-                    {teacher.teacherProfile?.bio && (
-                      <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-                        {teacher.teacherProfile.bio}
-                      </p>
-                    )}
-                  </div>
-                </div>
-                <div className="text-right shrink-0">
-                  {teacher.teacherProfile?.rating && (
-                    <div className="text-sm font-medium text-amber-600">
-                      ★ {teacher.teacherProfile.rating.toFixed(1)}
-                    </div>
-                  )}
-                  {teacher.teacherProfile?.teachingExperienceYears && (
-                    <div className="text-xs text-gray-400 mt-0.5">
-                      {teacher.teacherProfile.teachingExperienceYears}y exp
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Courses */}
-              {(teacher.groupCourses.length > 0 || teacher.oneOnOnePackages.length > 0) && (
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {teacher.groupCourses.map((c) => (
-                    <div
-                      key={c.id}
-                      className="rounded-md bg-indigo-50 border border-indigo-100 px-3 py-1.5 text-xs"
-                    >
-                      <span className="font-medium text-indigo-800">{c.title}</span>
-                      <span className="text-indigo-500 ml-1">
-                        · ₹{c.priceINR.toLocaleString("en-IN")}
-                        · {c.totalSessions} sessions
-                        · starts {new Date(c.startDate).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}
-                      </span>
-                    </div>
-                  ))}
-                  {teacher.oneOnOnePackages.map((p) => (
-                    <div
-                      key={p.id}
-                      className="rounded-md bg-emerald-50 border border-emerald-100 px-3 py-1.5 text-xs"
-                    >
-                      <span className="font-medium text-emerald-800">{p.title}</span>
-                      <span className="text-emerald-600 ml-1">
-                        · ₹{p.priceINR.toLocaleString("en-IN")}
-                        · {p.totalSessions}×{p.sessionDurationMinutes}min
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </Link>
+            <TeacherCard key={teacher.id} teacher={teacher} />
           ))}
         </div>
+
+        {filtered.length > 0 && (
+          <p className="text-center text-xs text-gray-300 mt-10 pb-6">
+            All teachers are verified by our team before appearing here.
+          </p>
+        )}
       </div>
     </div>
   );
