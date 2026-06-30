@@ -23,7 +23,7 @@ export default async function AdminCoursesPage() {
   return (
     <main className="max-w-5xl mx-auto py-8 px-4">
       <div className="flex items-center gap-4 mb-8">
-        <Link href="/admin" className="text-sm text-indigo-600 hover:underline">← Admin</Link>
+        <Link href="/admin" className="text-sm text-orange-600 hover:underline">← Admin</Link>
         <h1 className="text-2xl font-bold text-gray-900">All Courses</h1>
       </div>
 

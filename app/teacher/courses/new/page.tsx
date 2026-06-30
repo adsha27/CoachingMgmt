@@ -71,7 +71,7 @@ export default function NewGroupCoursePage() {
   return (
     <main className="max-w-2xl mx-auto py-10 px-4">
       <div className="flex items-center gap-3 mb-8">
-        <Link href="/teacher/dashboard" className="text-sm text-indigo-600 hover:underline">← Dashboard</Link>
+        <Link href="/teacher/dashboard" className="text-sm text-orange-600 hover:underline">← Dashboard</Link>
         <h1 className="text-2xl font-bold text-gray-900">New Group Course</h1>
       </div>
 
@@ -89,7 +89,7 @@ export default function NewGroupCoursePage() {
             value={form.title}
             onChange={(e) => set("title", e.target.value)}
             placeholder="e.g., JEE Advanced Physics 2025 Batch"
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none"
           />
         </div>
 
@@ -100,7 +100,7 @@ export default function NewGroupCoursePage() {
             <select
               value={form.subject}
               onChange={(e) => set("subject", e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none"
             >
               {SUBJECTS.map((s) => <option key={s}>{s}</option>)}
             </select>
@@ -110,7 +110,7 @@ export default function NewGroupCoursePage() {
             <select
               value={form.targetExam}
               onChange={(e) => set("targetExam", e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none"
             >
               <option value="">— None —</option>
               {EXAMS.map((ex) => <option key={ex}>{ex}</option>)}
@@ -126,7 +126,7 @@ export default function NewGroupCoursePage() {
             value={form.description}
             onChange={(e) => set("description", e.target.value)}
             placeholder="What students will learn, syllabus coverage, batch details…"
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none resize-none"
+            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none resize-none"
           />
         </div>
 
@@ -141,7 +141,7 @@ export default function NewGroupCoursePage() {
               required
               value={form.totalSessions}
               onChange={(e) => set("totalSessions", Number(e.target.value))}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none"
             />
           </div>
           <div>
@@ -149,7 +149,7 @@ export default function NewGroupCoursePage() {
             <select
               value={form.sessionDurationMinutes}
               onChange={(e) => set("sessionDurationMinutes", Number(e.target.value))}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none"
             >
               {DURATIONS.map((d) => <option key={d} value={d}>{d} min</option>)}
             </select>
@@ -167,7 +167,7 @@ export default function NewGroupCoursePage() {
               value={form.priceINR}
               onChange={(e) => set("priceINR", e.target.value)}
               placeholder="e.g., 12000"
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none"
             />
           </div>
           <div>
@@ -178,7 +178,7 @@ export default function NewGroupCoursePage() {
               max={500}
               value={form.maxStudents}
               onChange={(e) => set("maxStudents", Number(e.target.value))}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none"
             />
           </div>
         </div>
@@ -198,7 +198,7 @@ export default function NewGroupCoursePage() {
                   onClick={() => toggleDay(d)}
                   className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
                     form.weekDays.includes(d)
-                      ? "bg-indigo-600 text-white"
+                      ? "bg-orange-600 text-white"
                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
                   }`}
                 >
@@ -216,7 +216,7 @@ export default function NewGroupCoursePage() {
                 type="date"
                 value={form.startDate}
                 onChange={(e) => set("startDate", e.target.value)}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none"
               />
             </div>
             <div>
@@ -225,7 +225,7 @@ export default function NewGroupCoursePage() {
                 type="time"
                 value={form.sessionTime}
                 onChange={(e) => set("sessionTime", e.target.value)}
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none"
               />
             </div>
           </div>
@@ -243,7 +243,7 @@ export default function NewGroupCoursePage() {
         <button
           type="submit"
           disabled={submitting}
-          className="w-full py-2.5 bg-indigo-600 text-white rounded-md font-medium hover:bg-indigo-700 disabled:opacity-50"
+          className="w-full py-2.5 bg-orange-600 text-white rounded-md font-medium hover:bg-orange-700 disabled:opacity-50"
         >
           {submitting ? "Creating course…" : "Create Course (save as draft)"}
         </button>

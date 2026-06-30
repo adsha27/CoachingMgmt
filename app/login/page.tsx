@@ -69,8 +69,8 @@ function OtpBoxes({ value, onChange, onComplete }: {
           autoComplete={i === 0 ? "one-time-code" : "off"}
           autoFocus={i === 0}
           className={`w-11 h-14 text-center text-xl font-bold rounded-xl border-2 outline-none transition-colors
-            ${value[i] ? "border-indigo-500 bg-indigo-50 text-indigo-900" : "border-gray-200 bg-white text-gray-900"}
-            focus:border-indigo-500 focus:ring-0`}
+            ${value[i] ? "border-orange-500 bg-orange-50 text-orange-900" : "border-gray-200 bg-white text-gray-900"}
+            focus:border-orange-500 focus:ring-0`}
         />
       ))}
     </div>
@@ -94,7 +94,7 @@ function ResendButton({ phone, onResent }: { phone: string; onResent: () => void
 
   return seconds > 0
     ? <p className="text-center text-sm text-gray-400">Resend OTP in <span className="font-medium text-gray-600">{seconds}s</span></p>
-    : <button type="button" onClick={resend} className="w-full text-sm text-indigo-600 hover:text-indigo-800 font-medium">Resend OTP</button>;
+    : <button type="button" onClick={resend} className="w-full text-sm text-orange-600 hover:text-orange-800 font-medium">Resend OTP</button>;
 }
 
 // ── Step components ───────────────────────────────────────────────────────────
@@ -108,7 +108,7 @@ function PhoneStep({ phone, setPhone, loading, onSubmit }: {
     <form onSubmit={onSubmit} className="space-y-4">
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1.5">Mobile number</label>
-        <div className="flex rounded-xl border border-gray-300 overflow-hidden focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500 transition-all shadow-sm">
+        <div className="flex rounded-xl border border-gray-300 overflow-hidden focus-within:border-orange-500 focus-within:ring-1 focus-within:ring-orange-500 transition-all shadow-sm">
           <span className="flex items-center pl-3 pr-2 text-sm text-gray-500 bg-gray-50 border-r border-gray-300 select-none shrink-0">+91</span>
           <input type="tel" inputMode="numeric"
             value={phone}
@@ -119,7 +119,7 @@ function PhoneStep({ phone, setPhone, loading, onSubmit }: {
         </div>
       </div>
       <button type="submit" disabled={loading || phone.length < 10}
-        className="w-full py-3 bg-indigo-600 text-white text-sm font-semibold rounded-xl hover:bg-indigo-700 disabled:opacity-50 transition-colors shadow-sm">
+        className="w-full py-3 bg-orange-600 text-white text-sm font-semibold rounded-xl hover:bg-orange-700 disabled:opacity-50 transition-colors shadow-sm">
         {loading ? "Sending…" : "Send OTP"}
       </button>
       <p className="text-xs text-center text-gray-400">By continuing you agree to our terms of service.</p>
@@ -139,7 +139,7 @@ function OtpStep({ phone, otp, setOtp, loading, onComplete, onBack, onResent }: 
   return (
     <div className="space-y-6">
       <OtpBoxes value={otp} onChange={(v) => setOtp(v)} onComplete={onComplete} />
-      {loading && <p className="text-center text-sm text-indigo-600 animate-pulse">Verifying…</p>}
+      {loading && <p className="text-center text-sm text-orange-600 animate-pulse">Verifying…</p>}
       <ResendButton phone={phone} onResent={onResent} />
       <button type="button" onClick={onBack} className="w-full text-sm text-gray-400 hover:text-gray-600 transition-colors">
         ← Change number
@@ -161,13 +161,13 @@ function RegisterStep({ name, setName, email, setEmail, role, setRole, loading, 
         <label className="block text-sm font-medium text-gray-700 mb-1.5">Full name</label>
         <input type="text" value={name} onChange={(e) => setName(e.target.value)}
           required autoFocus placeholder="Arjun Mehta"
-          className="w-full rounded-xl border border-gray-300 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all" />
+          className="w-full rounded-xl border border-gray-300 px-3 py-3 text-sm shadow-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500 transition-all" />
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1.5">Email address</label>
         <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
           required placeholder="arjun@example.com"
-          className="w-full rounded-xl border border-gray-300 px-3 py-3 text-sm shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 transition-all" />
+          className="w-full rounded-xl border border-gray-300 px-3 py-3 text-sm shadow-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500 transition-all" />
       </div>
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">I am a…</label>
@@ -176,7 +176,7 @@ function RegisterStep({ name, setName, email, setEmail, role, setRole, loading, 
             <label key={r} className="cursor-pointer">
               <input type="radio" name="role" value={r} checked={role === r} onChange={() => setRole(r)} className="sr-only" />
               <div className={`rounded-xl border-2 px-4 py-3 text-sm font-semibold text-center transition-all ${
-                role === r ? "border-indigo-600 bg-indigo-50 text-indigo-700" : "border-gray-200 text-gray-600 hover:border-gray-300"
+                role === r ? "border-orange-600 bg-orange-50 text-orange-700" : "border-gray-200 text-gray-600 hover:border-gray-300"
               }`}>
                 {r === "STUDENT" ? "🎓 Student" : "👨‍🏫 Teacher"}
               </div>
@@ -185,7 +185,7 @@ function RegisterStep({ name, setName, email, setEmail, role, setRole, loading, 
         </div>
       </div>
       <button type="submit" disabled={loading}
-        className="w-full py-3 bg-indigo-600 text-white text-sm font-semibold rounded-xl hover:bg-indigo-700 disabled:opacity-50 transition-colors shadow-sm">
+        className="w-full py-3 bg-orange-600 text-white text-sm font-semibold rounded-xl hover:bg-orange-700 disabled:opacity-50 transition-colors shadow-sm">
         {loading ? "Creating account…" : "Create account"}
       </button>
     </form>
@@ -273,13 +273,13 @@ function LoginForm() {
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-white px-4 py-12">
-      <a href="/" className="mb-10 text-xl font-bold text-indigo-600 tracking-tight">EduConnect</a>
+      <a href="/" className="mb-10 text-xl font-bold text-slate-900 tracking-tight">EduConnect</a>
 
       <div className="w-full max-w-sm">
         <div className="flex justify-center gap-1.5 mb-8">
           {(step === "register" ? STEPS : (["phone", "code"] as Step[])).map((s, i) => (
             <div key={s} className={`h-1.5 rounded-full transition-all duration-300 ${
-              step === s ? "w-6 bg-indigo-600" : i < (step === "register" ? STEPS : ["phone", "code"]).indexOf(step) ? "w-1.5 bg-indigo-300" : "w-1.5 bg-gray-200"
+              step === s ? "w-6 bg-orange-600" : i < (step === "register" ? STEPS : ["phone", "code"]).indexOf(step) ? "w-1.5 bg-orange-300" : "w-1.5 bg-gray-200"
             }`} />
           ))}
         </div>

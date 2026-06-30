@@ -120,7 +120,7 @@ export default async function TeacherDashboard() {
           </div>
           <div className="flex items-center gap-3">
             <Link href={`/teacher/${user.id}`}
-              className="text-xs font-medium text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg hover:bg-indigo-100 transition-colors">
+              className="text-xs font-medium text-orange-600 bg-orange-50 px-3 py-1.5 rounded-lg hover:bg-orange-100 transition-colors">
               My page
             </Link>
             <LogoutButton />
@@ -182,7 +182,7 @@ export default async function TeacherDashboard() {
                     {item.label}
                   </span>
                   {!item.done && item.href && (
-                    <Link href={item.href} className="text-xs font-semibold text-indigo-600 shrink-0">
+                    <Link href={item.href} className="text-xs font-semibold text-orange-600 shrink-0">
                       Start →
                     </Link>
                   )}
@@ -212,7 +212,7 @@ export default async function TeacherDashboard() {
                   <Link
                     key={s.id}
                     href={`/teacher/sessions/${s.id}`}
-                    className="block bg-white border border-gray-100 rounded-2xl p-4 shadow-sm hover:border-indigo-200 hover:shadow-md transition-all"
+                    className="block bg-white border border-gray-100 rounded-2xl p-4 shadow-sm hover:border-orange-200 hover:shadow-md transition-all"
                   >
                     <div className="flex justify-between items-start gap-3">
                       <div className="flex-1 min-w-0">
@@ -228,7 +228,7 @@ export default async function TeacherDashboard() {
                       </div>
                       <div className="flex flex-col items-end gap-1.5 shrink-0">
                         {s.meetLink && (
-                          <span className="text-xs bg-indigo-50 text-indigo-700 font-semibold px-2.5 py-1 rounded-lg">
+                          <span className="text-xs bg-orange-50 text-orange-700 font-semibold px-2.5 py-1 rounded-lg">
                             Meet ready
                           </span>
                         )}
@@ -250,7 +250,7 @@ export default async function TeacherDashboard() {
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-base font-bold text-gray-900">My courses</h2>
             <div className="flex gap-3">
-              <Link href="/teacher/courses/new" className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-1.5 rounded-lg hover:bg-indigo-100 transition-colors">
+              <Link href="/teacher/courses/new" className="text-xs font-semibold text-orange-600 bg-orange-50 px-2.5 py-1.5 rounded-lg hover:bg-orange-100 transition-colors">
                 + Group
               </Link>
               <Link href="/teacher/packages/new" className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-1.5 rounded-lg hover:bg-emerald-100 transition-colors">
@@ -264,7 +264,7 @@ export default async function TeacherDashboard() {
               <p className="text-sm text-gray-500 mb-4">No courses yet.</p>
               <div className="flex gap-3 justify-center">
                 <Link href="/teacher/courses/new"
-                  className="text-sm font-semibold text-white bg-indigo-600 px-4 py-2 rounded-xl hover:bg-indigo-700 transition-colors">
+                  className="text-sm font-semibold text-white bg-orange-600 px-4 py-2 rounded-xl hover:bg-orange-700 transition-colors">
                   Create group course
                 </Link>
                 <Link href="/teacher/packages/new"

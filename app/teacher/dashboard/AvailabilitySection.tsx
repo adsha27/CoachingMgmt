@@ -79,7 +79,7 @@ export default function AvailabilitySection({ slots }: { slots: Slot[] }) {
             <select
               value={dayOfWeek}
               onChange={(e) => setDayOfWeek(e.target.value as Day)}
-              className="w-full rounded-md border border-gray-300 py-1.5 px-2 text-sm focus:border-indigo-500 focus:outline-none"
+              className="w-full rounded-md border border-gray-300 py-1.5 px-2 text-sm focus:border-orange-500 focus:outline-none"
             >
               {DAYS.map((d) => <option key={d} value={d}>{d}</option>)}
             </select>
@@ -91,7 +91,7 @@ export default function AvailabilitySection({ slots }: { slots: Slot[] }) {
               value={startTime}
               onChange={(e) => setStartTime(e.target.value)}
               required
-              className="w-full rounded-md border border-gray-300 py-1.5 px-2 text-sm focus:border-indigo-500 focus:outline-none"
+              className="w-full rounded-md border border-gray-300 py-1.5 px-2 text-sm focus:border-orange-500 focus:outline-none"
             />
           </div>
           <div>
@@ -101,7 +101,7 @@ export default function AvailabilitySection({ slots }: { slots: Slot[] }) {
               value={endTime}
               onChange={(e) => setEndTime(e.target.value)}
               required
-              className="w-full rounded-md border border-gray-300 py-1.5 px-2 text-sm focus:border-indigo-500 focus:outline-none"
+              className="w-full rounded-md border border-gray-300 py-1.5 px-2 text-sm focus:border-orange-500 focus:outline-none"
             />
           </div>
         </div>
@@ -121,7 +121,7 @@ export default function AvailabilitySection({ slots }: { slots: Slot[] }) {
               type="date"
               value={specificDate}
               onChange={(e) => setSpecificDate(e.target.value)}
-              className="rounded-md border border-gray-300 py-1 px-2 text-sm focus:border-indigo-500 focus:outline-none"
+              className="rounded-md border border-gray-300 py-1 px-2 text-sm focus:border-orange-500 focus:outline-none"
             />
           )}
         </div>
@@ -129,7 +129,7 @@ export default function AvailabilitySection({ slots }: { slots: Slot[] }) {
         <button
           type="submit"
           disabled={submitting}
-          className="py-2 px-4 bg-indigo-600 text-white text-sm rounded-md hover:bg-indigo-700 disabled:opacity-50"
+          className="py-2 px-4 bg-orange-600 text-white text-sm rounded-md hover:bg-orange-700 disabled:opacity-50"
         >
           {submitting ? "Adding…" : "Add slot"}
         </button>

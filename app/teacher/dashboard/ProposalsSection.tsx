@@ -62,7 +62,7 @@ export default function ProposalsSection({ proposals: initial }: { proposals: Pr
                 placeholder="Note to student (optional)"
                 value={notes[p.id] ?? ""}
                 onChange={(e) => setNotes({ ...notes, [p.id]: e.target.value })}
-                className="w-full rounded border border-gray-300 px-2 py-1.5 text-xs mb-2 focus:border-indigo-500 focus:outline-none"
+                className="w-full rounded border border-gray-300 px-2 py-1.5 text-xs mb-2 focus:border-orange-500 focus:outline-none"
               />
               <div className="flex gap-2">
                 <button

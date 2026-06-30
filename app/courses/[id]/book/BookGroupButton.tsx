@@ -33,7 +33,7 @@ export default function BookGroupButton({ courseId }: { courseId: number }) {
       <button
         onClick={confirm}
         disabled={loading}
-        className="w-full py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 disabled:opacity-50"
+        className="w-full py-3 bg-orange-600 text-white font-semibold rounded-lg hover:bg-orange-700 disabled:opacity-50"
       >
         {loading ? "Enrolling…" : "Confirm Enrolment"}
       </button>

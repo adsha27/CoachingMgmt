@@ -47,7 +47,7 @@ export default async function TeacherSessionDetail({
 
   return (
     <main className="max-w-2xl mx-auto py-8 px-4">
-      <Link href="/teacher/dashboard" className="text-sm text-indigo-600 hover:underline mb-6 block">
+      <Link href="/teacher/dashboard" className="text-sm text-orange-600 hover:underline mb-6 block">
         &larr; Dashboard
       </Link>
 
@@ -92,7 +92,7 @@ export default async function TeacherSessionDetail({
               href={session.meetLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-orange-600 text-white text-sm rounded-lg hover:bg-orange-700"
             >
               Join Google Meet
             </a>

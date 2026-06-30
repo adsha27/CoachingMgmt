@@ -71,12 +71,12 @@ export default function ParentLoginPage() {
               onChange={(e) => setPhone(e.target.value)}
               placeholder="10-digit mobile number"
               required
-              className="w-full rounded-md border border-gray-300 px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none"
+              className="w-full rounded-md border border-gray-300 px-3 py-2.5 text-sm focus:border-orange-500 focus:outline-none"
             />
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 bg-indigo-600 text-white rounded-md font-medium hover:bg-indigo-700 disabled:opacity-50"
+              className="w-full py-2.5 bg-orange-600 text-white rounded-md font-medium hover:bg-orange-700 disabled:opacity-50"
             >
               {loading ? "Sending…" : "Send code"}
             </button>
@@ -90,12 +90,12 @@ export default function ParentLoginPage() {
               onChange={(e) => setCode(e.target.value)}
               placeholder="6-digit code"
               required
-              className="w-full rounded-md border border-gray-300 px-3 py-2.5 text-sm focus:border-indigo-500 focus:outline-none tracking-widest text-center"
+              className="w-full rounded-md border border-gray-300 px-3 py-2.5 text-sm focus:border-orange-500 focus:outline-none tracking-widest text-center"
             />
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 bg-indigo-600 text-white rounded-md font-medium hover:bg-indigo-700 disabled:opacity-50"
+              className="w-full py-2.5 bg-orange-600 text-white rounded-md font-medium hover:bg-orange-700 disabled:opacity-50"
             >
               {loading ? "Verifying…" : "Verify"}
             </button>

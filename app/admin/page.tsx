@@ -78,7 +78,7 @@ export default async function AdminPage() {
           <Link
             key={href}
             href={href}
-            className="flex items-center justify-between rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-700 hover:border-indigo-300 hover:text-indigo-700 transition-colors"
+            className="flex items-center justify-between rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm font-medium text-gray-700 hover:border-orange-300 hover:text-orange-700 transition-colors"
           >
             <span>{label}</span>
             {badge != null && badge > 0 && (

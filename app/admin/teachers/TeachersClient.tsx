@@ -84,7 +84,7 @@ export default function TeachersClient({ teachers: initial }: { teachers: Teache
                   <p className="text-xs mt-1">
                     <span className="text-gray-400">Schedule: </span>
                     <a href={scheduleUrl} target="_blank" rel="noopener noreferrer"
-                      className="text-indigo-600 hover:underline break-all">
+                      className="text-orange-600 hover:underline break-all">
                       {scheduleUrl}
                     </a>
                   </p>

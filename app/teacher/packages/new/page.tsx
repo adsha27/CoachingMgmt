@@ -52,7 +52,7 @@ export default function NewPackagePage() {
   return (
     <main className="max-w-2xl mx-auto py-10 px-4">
       <div className="flex items-center gap-3 mb-8">
-        <Link href="/teacher/dashboard" className="text-sm text-indigo-600 hover:underline">← Dashboard</Link>
+        <Link href="/teacher/dashboard" className="text-sm text-orange-600 hover:underline">← Dashboard</Link>
         <h1 className="text-2xl font-bold text-gray-900">New 1-on-1 Package</h1>
       </div>
 
@@ -69,7 +69,7 @@ export default function NewPackagePage() {
             value={form.title}
             onChange={(e) => set("title", e.target.value)}
             placeholder="e.g., JEE Physics 1-on-1 Doubt Clearing"
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none"
           />
         </div>
 
@@ -79,7 +79,7 @@ export default function NewPackagePage() {
             <select
               value={form.subject}
               onChange={(e) => set("subject", e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none"
             >
               {SUBJECTS.map((s) => <option key={s}>{s}</option>)}
             </select>
@@ -89,7 +89,7 @@ export default function NewPackagePage() {
             <select
               value={form.targetExam}
               onChange={(e) => set("targetExam", e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none"
             >
               <option value="">— None —</option>
               {EXAMS.map((ex) => <option key={ex}>{ex}</option>)}
@@ -104,7 +104,7 @@ export default function NewPackagePage() {
             value={form.description}
             onChange={(e) => set("description", e.target.value)}
             placeholder="What's included, teaching approach, who this is for…"
-            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none resize-none"
+            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none resize-none"
           />
         </div>
 
@@ -118,7 +118,7 @@ export default function NewPackagePage() {
               required
               value={form.totalSessions}
               onChange={(e) => set("totalSessions", Number(e.target.value))}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none"
             />
           </div>
           <div>
@@ -126,7 +126,7 @@ export default function NewPackagePage() {
             <select
               value={form.sessionDurationMinutes}
               onChange={(e) => set("sessionDurationMinutes", Number(e.target.value))}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none"
             >
               {DURATIONS.map((d) => <option key={d} value={d}>{d} min</option>)}
             </select>
@@ -140,7 +140,7 @@ export default function NewPackagePage() {
               value={form.priceINR}
               onChange={(e) => set("priceINR", e.target.value)}
               placeholder="e.g., 5000"
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none"
             />
           </div>
         </div>

@@ -69,13 +69,13 @@ export default function FeedbackForm({ sessionId }: { sessionId: number }) {
         value={comment}
         onChange={(e) => setComment(e.target.value)}
         placeholder="Optional comments for your teacher…"
-        className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none resize-none"
+        className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none resize-none"
       />
 
       <button
         type="submit"
         disabled={loading || !rating}
-        className="px-4 py-2 bg-indigo-600 text-white text-sm rounded-md hover:bg-indigo-700 disabled:opacity-50"
+        className="px-4 py-2 bg-orange-600 text-white text-sm rounded-md hover:bg-orange-700 disabled:opacity-50"
       >
         {loading ? "Submitting…" : "Submit feedback"}
       </button>

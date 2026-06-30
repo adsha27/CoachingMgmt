@@ -34,7 +34,7 @@ export default async function HomePage() {
     <main className="min-h-screen bg-white">
       {/* Nav */}
       <nav className="flex justify-between items-center px-5 py-4 border-b border-gray-100 sticky top-0 bg-white z-10">
-        <span className="font-bold text-indigo-600 text-lg tracking-tight">EduConnect</span>
+        <span className="font-bold text-slate-900 text-lg tracking-tight">EduConnect</span>
         <div className="flex items-center gap-2">
           <Link href="/browse" className="text-sm text-gray-600 hover:text-gray-900 px-3 py-1.5 hidden sm:block">
             Browse
@@ -43,7 +43,7 @@ export default async function HomePage() {
             Sign in
           </Link>
           <Link href="/login?next=/student/dashboard"
-            className="text-sm bg-indigo-600 text-white px-4 py-2 rounded-xl hover:bg-indigo-700 font-semibold transition-colors">
+            className="text-sm bg-orange-600 text-white px-4 py-2 rounded-xl hover:bg-orange-700 font-semibold transition-colors">
             Get started
           </Link>
         </div>
@@ -51,8 +51,8 @@ export default async function HomePage() {
 
       {/* Hero */}
       <section className="max-w-2xl mx-auto px-5 pt-14 pb-12 text-center">
-        <div className="inline-flex items-center gap-2 bg-indigo-50 text-indigo-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-6">
-          <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
+        <div className="inline-flex items-center gap-2 bg-orange-50 text-orange-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-6">
+          <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
           Verified teachers only
         </div>
         <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4 leading-tight tracking-tight">
@@ -65,7 +65,7 @@ export default async function HomePage() {
         {/* CTAs — stacked on mobile, side by side on sm+ */}
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link href="/browse"
-            className="px-6 py-3.5 bg-indigo-600 text-white text-sm font-bold rounded-xl hover:bg-indigo-700 transition-colors shadow-md shadow-indigo-200">
+            className="px-6 py-3.5 bg-orange-600 text-white text-sm font-bold rounded-xl hover:bg-orange-700 transition-colors shadow-md shadow-orange-200">
             Browse teachers
           </Link>
           <Link href="/login"
@@ -76,19 +76,19 @@ export default async function HomePage() {
       </section>
 
       {/* Stats bar */}
-      <section className="bg-indigo-600 text-white py-8 px-5">
+      <section className="bg-slate-900 text-white py-8 px-5">
         <div className="max-w-2xl mx-auto grid grid-cols-3 gap-4 text-center">
           <div>
             <div className="text-3xl font-bold">{teacherCount > 0 ? `${teacherCount}+` : "—"}</div>
-            <div className="text-xs text-indigo-200 mt-1">Verified teachers</div>
+            <div className="text-xs text-slate-400 mt-1">Verified teachers</div>
           </div>
           <div>
             <div className="text-3xl font-bold">{courseCount > 0 ? `${courseCount}+` : "—"}</div>
-            <div className="text-xs text-indigo-200 mt-1">Active courses</div>
+            <div className="text-xs text-slate-400 mt-1">Active courses</div>
           </div>
           <div>
             <div className="text-3xl font-bold">{subjectCount > 0 ? `${subjectCount}+` : "—"}</div>
-            <div className="text-xs text-indigo-200 mt-1">Subjects covered</div>
+            <div className="text-xs text-slate-400 mt-1">Subjects covered</div>
           </div>
         </div>
       </section>
@@ -122,7 +122,7 @@ export default async function HomePage() {
               <ul className="space-y-1.5 flex-1 mb-4">
                 {card.bullets.map((b) => (
                   <li key={b} className="flex items-start gap-1.5 text-sm text-gray-600">
-                    <svg className="w-3.5 h-3.5 text-indigo-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <svg className="w-3.5 h-3.5 text-orange-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
                     {b}
@@ -130,7 +130,7 @@ export default async function HomePage() {
                 ))}
               </ul>
               <Link href={card.href}
-                className="text-center text-sm font-semibold py-2.5 rounded-xl transition-colors bg-indigo-600 text-white hover:bg-indigo-700">
+                className="text-center text-sm font-semibold py-2.5 rounded-xl transition-colors bg-orange-600 text-white hover:bg-orange-700">
                 {card.cta}
               </Link>
             </div>
@@ -148,7 +148,7 @@ export default async function HomePage() {
             "Works on any phone",
           ].map((item) => (
             <div key={item} className="flex items-center gap-2 text-sm text-gray-500">
-              <svg className="w-4 h-4 text-indigo-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <svg className="w-4 h-4 text-orange-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
               {item}
@@ -162,7 +162,7 @@ export default async function HomePage() {
         <h2 className="text-2xl font-bold text-gray-900 mb-3">Ready to start preparing?</h2>
         <p className="text-sm text-gray-500 mb-6">Join thousands of students cracking JEE and NEET with verified teachers.</p>
         <Link href="/browse"
-          className="inline-block px-8 py-3.5 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors shadow-md shadow-indigo-200">
+          className="inline-block px-8 py-3.5 bg-orange-600 text-white font-bold rounded-xl hover:bg-orange-700 transition-colors shadow-md shadow-orange-200">
           Browse teachers now
         </Link>
       </section>

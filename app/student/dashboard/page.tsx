@@ -106,7 +106,7 @@ export default async function StudentDashboard() {
           </div>
           <div className="flex items-center gap-3">
             <Link href="/browse"
-              className="text-sm font-medium text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg hover:bg-indigo-100 transition-colors">
+              className="text-sm font-medium text-orange-600 bg-orange-50 px-3 py-1.5 rounded-lg hover:bg-orange-100 transition-colors">
               Browse
             </Link>
             <LogoutButton />
@@ -119,8 +119,8 @@ export default async function StudentDashboard() {
         {/* ── Empty state for brand-new users ───────────────────────────── */}
         {!hasAnything && (
           <div className="text-center py-12">
-            <div className="w-20 h-20 bg-indigo-50 rounded-3xl flex items-center justify-center mx-auto mb-5">
-              <svg className="w-10 h-10 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <div className="w-20 h-20 bg-orange-50 rounded-3xl flex items-center justify-center mx-auto mb-5">
+              <svg className="w-10 h-10 text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
               </svg>
             </div>
@@ -129,7 +129,7 @@ export default async function StudentDashboard() {
               Explore verified teachers, join group courses or book 1-on-1 sessions.
             </p>
             <Link href="/browse"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white text-sm font-semibold rounded-xl hover:bg-indigo-700 transition-colors shadow-sm">
+              className="inline-flex items-center gap-2 px-6 py-3 bg-orange-600 text-white text-sm font-semibold rounded-xl hover:bg-orange-700 transition-colors shadow-sm">
               Find a teacher
             </Link>
             <div className="mt-8 grid grid-cols-3 gap-3 text-center">
@@ -149,7 +149,7 @@ export default async function StudentDashboard() {
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-base font-bold text-gray-900">Upcoming sessions</h2>
               {upcoming.length === 0 && (
-                <Link href="/browse" className="text-xs text-indigo-600 font-medium">Browse →</Link>
+                <Link href="/browse" className="text-xs text-orange-600 font-medium">Browse →</Link>
               )}
             </div>
 
@@ -157,7 +157,7 @@ export default async function StudentDashboard() {
               <div className="bg-white rounded-2xl border border-dashed border-gray-200 px-5 py-8 text-center">
                 <p className="text-sm text-gray-500 mb-3">No upcoming sessions scheduled.</p>
                 <Link href="/browse"
-                  className="inline-block text-sm font-semibold text-indigo-600 bg-indigo-50 px-4 py-2 rounded-xl hover:bg-indigo-100 transition-colors">
+                  className="inline-block text-sm font-semibold text-orange-600 bg-orange-50 px-4 py-2 rounded-xl hover:bg-orange-100 transition-colors">
                   Browse teachers
                 </Link>
               </div>
@@ -171,7 +171,7 @@ export default async function StudentDashboard() {
                       key={s.id}
                       className={`rounded-2xl border p-4 transition-all ${
                         today
-                          ? "bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-200"
+                          ? "bg-orange-600 border-orange-600 text-white shadow-md shadow-orange-200"
                           : "bg-white border-gray-100 shadow-sm"
                       }`}
                     >
@@ -185,7 +185,7 @@ export default async function StudentDashboard() {
                               {sessionTitle(s)}
                             </p>
                           </div>
-                          <p className={`text-xs ${today ? "text-indigo-200" : "text-gray-500"}`}>
+                          <p className={`text-xs ${today ? "text-orange-200" : "text-gray-500"}`}>
                             {sessionTeacher(s)} · {dayLabel(date)} · {date.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
                           </p>
                         </div>
@@ -196,8 +196,8 @@ export default async function StudentDashboard() {
                             rel="noopener noreferrer"
                             className={`shrink-0 text-xs font-bold px-3 py-2 rounded-xl transition-colors ${
                               today
-                                ? "bg-white text-indigo-700 hover:bg-indigo-50"
-                                : "bg-indigo-600 text-white hover:bg-indigo-700"
+                                ? "bg-white text-orange-700 hover:bg-orange-50"
+                                : "bg-orange-600 text-white hover:bg-orange-700"
                             }`}
                           >
                             Join
@@ -238,7 +238,7 @@ export default async function StudentDashboard() {
                     {/* Progress bar */}
                     <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden mb-3">
                       <div
-                        className="h-full bg-indigo-500 rounded-full transition-all"
+                        className="h-full bg-orange-500 rounded-full transition-all"
                         style={{ width: `${pct}%` }}
                       />
                     </div>

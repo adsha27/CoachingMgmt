@@ -27,7 +27,7 @@ export default async function InvitePage({
       <main className="max-w-md mx-auto py-20 px-4 text-center">
         <h1 className="text-xl font-bold text-gray-900 mb-2">Link expired</h1>
         <p className="text-sm text-gray-500 mb-6">This invite link has expired. Ask your teacher for a new one.</p>
-        <Link href="/browse" className="text-indigo-600 hover:underline text-sm">Browse all teachers</Link>
+        <Link href="/browse" className="text-orange-600 hover:underline text-sm">Browse all teachers</Link>
       </main>
     );
   }
@@ -61,7 +61,7 @@ export default async function InvitePage({
       {isListed ? (
         <Link
           href={bookPath}
-          className="inline-block px-6 py-3 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700"
+          className="inline-block px-6 py-3 bg-orange-600 text-white rounded-lg font-medium hover:bg-orange-700"
         >
           Enrol now
         </Link>

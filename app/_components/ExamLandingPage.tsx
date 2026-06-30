@@ -21,12 +21,12 @@ export type ExamConfig = {
 
 const THEME = {
   indigo: {
-    badge: "bg-indigo-50 text-indigo-700",
-    cta: "bg-indigo-600 hover:bg-indigo-700 text-white",
-    cardHover: "hover:border-indigo-200",
-    avatar: "from-indigo-400 to-indigo-600",
-    subject: "text-indigo-600",
-    footerLink: "border-indigo-200 text-indigo-600 hover:bg-indigo-50",
+    badge: "bg-orange-50 text-orange-700",
+    cta: "bg-orange-600 hover:bg-orange-700 text-white",
+    cardHover: "hover:border-orange-200",
+    avatar: "from-orange-400 to-orange-600",
+    subject: "text-orange-600",
+    footerLink: "border-orange-200 text-orange-600 hover:bg-orange-50",
   },
   emerald: {
     badge: "bg-emerald-50 text-emerald-700",
@@ -110,7 +110,7 @@ export default async function ExamLandingPage({ config }: { config: ExamConfig }
         {teachers.length === 0 ? (
           <div className="text-center py-16">
             <p className="text-gray-500 mb-4">{config.emptyMsg}</p>
-            <Link href="/browse" className="text-indigo-600 font-semibold hover:underline">Browse all teachers</Link>
+            <Link href="/browse" className="text-orange-600 font-semibold hover:underline">Browse all teachers</Link>
           </div>
         ) : (
           <div className="space-y-3">

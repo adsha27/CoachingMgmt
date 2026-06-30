@@ -50,7 +50,7 @@ export default function ParentAccessSection({ parents: initial }: { parents: Par
     <section className="mt-8 pt-6 border-t border-gray-100">
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-lg font-semibold text-gray-800">Parent Access</h2>
-        <button onClick={() => setOpen(!open)} className="text-sm text-indigo-600 hover:underline">
+        <button onClick={() => setOpen(!open)} className="text-sm text-orange-600 hover:underline">
           + Add parent
         </button>
       </div>
@@ -88,7 +88,7 @@ export default function ParentAccessSection({ parents: initial }: { parents: Par
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:border-indigo-500"
+                className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:border-orange-500"
               />
             </div>
             <div>
@@ -98,7 +98,7 @@ export default function ParentAccessSection({ parents: initial }: { parents: Par
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 required
-                className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:border-indigo-500"
+                className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:border-orange-500"
               />
             </div>
           </div>
@@ -108,11 +108,11 @@ export default function ParentAccessSection({ parents: initial }: { parents: Par
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:border-indigo-500"
+              className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:border-orange-500"
             />
           </div>
           <div className="flex gap-2">
-            <button type="submit" disabled={loading} className="px-3 py-1.5 bg-indigo-600 text-white text-xs rounded hover:bg-indigo-700 disabled:opacity-50">
+            <button type="submit" disabled={loading} className="px-3 py-1.5 bg-orange-600 text-white text-xs rounded hover:bg-orange-700 disabled:opacity-50">
               {loading ? "Adding…" : "Add & send OTP"}
             </button>
             <button type="button" onClick={() => setOpen(false)} className="px-3 py-1.5 text-gray-500 text-xs rounded hover:bg-gray-100">

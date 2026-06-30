@@ -181,7 +181,7 @@ export default async function TeacherProfilePage({
       />
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Back link */}
-        <Link href="/browse" className="text-sm text-indigo-600 hover:underline mb-6 inline-block">
+        <Link href="/browse" className="text-sm text-orange-600 hover:underline mb-6 inline-block">
           ← Browse teachers
         </Link>
 
@@ -195,7 +195,7 @@ export default async function TeacherProfilePage({
                 className="w-20 h-20 rounded-full object-cover bg-gray-100 shrink-0"
               />
             ) : (
-              <div className="w-20 h-20 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-2xl shrink-0">
+              <div className="w-20 h-20 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold text-2xl shrink-0">
                 {teacher.name[0]}
               </div>
             )}
@@ -297,7 +297,7 @@ export default async function TeacherProfilePage({
                       </div>
                       <Link
                         href={`/login?next=/courses/${c.id}/book`}
-                        className="mt-2 inline-block text-sm px-5 py-2.5 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700"
+                        className="mt-2 inline-block text-sm px-5 py-2.5 bg-orange-600 text-white rounded-xl font-semibold hover:bg-orange-700"
                       >
                         Enrol
                       </Link>

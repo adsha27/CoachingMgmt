@@ -42,7 +42,7 @@ export default function TopicRequestForm() {
       {!open ? (
         <button
           onClick={() => setOpen(true)}
-          className="text-sm text-indigo-600 hover:underline"
+          className="text-sm text-orange-600 hover:underline"
         >
           + Request a topic
         </button>
@@ -56,7 +56,7 @@ export default function TopicRequestForm() {
               <select
                 value={subject}
                 onChange={(e) => setSubject(e.target.value)}
-                className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:border-indigo-500"
+                className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:border-orange-500"
               >
                 {SUBJECTS.map((s) => <option key={s}>{s}</option>)}
               </select>
@@ -69,14 +69,14 @@ export default function TopicRequestForm() {
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
               placeholder="e.g., Electrostatics: Gauss's law problems, or Organic chemistry: SN1/SN2 mechanisms"
-              className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:border-indigo-500 resize-none"
+              className="w-full rounded border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:border-orange-500 resize-none"
             />
           </div>
           <div className="flex gap-2">
             <button
               type="submit"
               disabled={loading}
-              className="px-3 py-1.5 bg-indigo-600 text-white text-xs rounded hover:bg-indigo-700 disabled:opacity-50"
+              className="px-3 py-1.5 bg-orange-600 text-white text-xs rounded hover:bg-orange-700 disabled:opacity-50"
             >
               {loading ? "Sending…" : "Submit"}
             </button>

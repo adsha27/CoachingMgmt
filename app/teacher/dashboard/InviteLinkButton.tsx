@@ -35,7 +35,7 @@ export default function InviteLinkButton({ groupCourseId, oneOnOnePackageId }: P
     <button
       onClick={handleClick}
       disabled={state === "loading"}
-      className="text-xs px-2.5 py-1.5 rounded-lg border border-gray-200 text-gray-500 hover:border-indigo-400 hover:text-indigo-600 transition-colors disabled:opacity-50 font-medium"
+      className="text-xs px-2.5 py-1.5 rounded-lg border border-gray-200 text-gray-500 hover:border-orange-400 hover:text-orange-600 transition-colors disabled:opacity-50 font-medium"
     >
       {state === "loading" ? "…" : "Invite link"}
     </button>

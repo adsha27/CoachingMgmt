@@ -43,8 +43,8 @@ function Toggle({ items, selected, onChange }: {
             onClick={() => onChange(active ? selected.filter((x) => x !== item) : [...selected, item])}
             className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
               active
-                ? "bg-indigo-600 text-white border-indigo-600"
-                : "bg-white text-gray-700 border-gray-300 hover:border-indigo-400"
+                ? "bg-orange-600 text-white border-orange-600"
+                : "bg-white text-gray-700 border-gray-300 hover:border-orange-400"
             }`}
           >
             {item}
@@ -194,16 +194,16 @@ export default function TeacherWizardPage() {
                 onClick={() => step > s.id && setStep(s.id)}
                 className={`w-8 h-8 rounded-full text-xs font-semibold flex items-center justify-center transition-colors ${
                   s.id === step
-                    ? "bg-indigo-600 text-white"
+                    ? "bg-orange-600 text-white"
                     : s.id < step
-                    ? "bg-indigo-100 text-indigo-700 cursor-pointer hover:bg-indigo-200"
+                    ? "bg-orange-100 text-orange-700 cursor-pointer hover:bg-orange-200"
                     : "bg-gray-200 text-gray-500"
                 }`}
               >
                 {s.id}
               </button>
               {i < STEPS.length - 1 && (
-                <div className={`h-0.5 w-8 ${s.id < step ? "bg-indigo-300" : "bg-gray-200"}`} />
+                <div className={`h-0.5 w-8 ${s.id < step ? "bg-orange-300" : "bg-gray-200"}`} />
               )}
             </div>
           ))}
@@ -240,7 +240,7 @@ export default function TeacherWizardPage() {
                   max={60}
                   value={experienceYears}
                   onChange={(e) => setExperienceYears(e.target.value)}
-                  className="w-24 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+                  className="w-24 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none"
                 />
               </div>
               <div>
@@ -250,7 +250,7 @@ export default function TeacherWizardPage() {
                   onChange={(e) => setBio(e.target.value)}
                   rows={4}
                   placeholder="Tell students about yourself — your teaching style, achievements, motivation…"
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none resize-none"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none resize-none"
                 />
               </div>
             </div>
@@ -265,7 +265,7 @@ export default function TeacherWizardPage() {
                 onChange={(e) => setQualifications(e.target.value)}
                 rows={6}
                 placeholder="e.g. B.Tech (IIT Delhi), 3 years at FIITJEE, JEE Advanced rank 120 (2018)…"
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none resize-none"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none resize-none"
               />
             </div>
           )}
@@ -282,7 +282,7 @@ export default function TeacherWizardPage() {
                 value={demoVideoLink}
                 onChange={(e) => setDemoVideoLink(e.target.value)}
                 placeholder="https://youtu.be/…"
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none"
               />
               {demoVideoLink && demoVideoLink.includes("youtu") && (
                 <p className="text-xs text-green-600">✓ YouTube link detected</p>
@@ -305,7 +305,7 @@ export default function TeacherWizardPage() {
                     value={social[platform] ?? ""}
                     onChange={(e) => setSocial({ ...social, [platform]: e.target.value || undefined })}
                     placeholder={`https://${platform}.com/…`}
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none"
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none"
                   />
                 </div>
               ))}
@@ -365,7 +365,7 @@ export default function TeacherWizardPage() {
               type="button"
               onClick={nextStep}
               disabled={saving}
-              className="px-6 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 disabled:opacity-50"
+              className="px-6 py-2 bg-orange-600 text-white text-sm font-medium rounded-md hover:bg-orange-700 disabled:opacity-50"
             >
               {saving ? "Saving…" : "Save & continue"}
             </button>
@@ -374,7 +374,7 @@ export default function TeacherWizardPage() {
               type="button"
               onClick={submit}
               disabled={submitting}
-              className="px-6 py-2 bg-indigo-600 text-white text-sm font-medium rounded-md hover:bg-indigo-700 disabled:opacity-50"
+              className="px-6 py-2 bg-orange-600 text-white text-sm font-medium rounded-md hover:bg-orange-700 disabled:opacity-50"
             >
               {submitting ? "Submitting…" : "Submit for review"}
             </button>

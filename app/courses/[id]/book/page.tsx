@@ -44,7 +44,7 @@ export default async function BookGroupCoursePage({
   return (
     <main className="max-w-lg mx-auto py-10 px-4">
       <div className="flex items-center gap-3 mb-8">
-        <Link href={`/teacher/${course.teacher.id}`} className="text-sm text-indigo-600 hover:underline">
+        <Link href={`/teacher/${course.teacher.id}`} className="text-sm text-orange-600 hover:underline">
           ← Teacher profile
         </Link>
       </div>

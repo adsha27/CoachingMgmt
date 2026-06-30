@@ -33,7 +33,7 @@ export default function PublishCourseButton({ id, type }: { id: number; type: "g
       <button
         onClick={publish}
         disabled={loading}
-        className="text-xs px-3 py-1.5 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 font-medium"
+        className="text-xs px-3 py-1.5 bg-orange-600 text-white rounded-md hover:bg-orange-700 disabled:opacity-50 font-medium"
       >
         {loading ? "…" : "Publish"}
       </button>

@@ -72,7 +72,7 @@ export default function CancellationsClient({ items }: { items: CancellationItem
               onChange={(e) => setNotes({ ...notes, [item.id]: e.target.value })}
               rows={2}
               placeholder="Admin note (optional)"
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none resize-none"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none resize-none"
             />
             <div className="flex gap-3">
               <button

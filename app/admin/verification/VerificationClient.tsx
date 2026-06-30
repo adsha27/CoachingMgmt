@@ -65,7 +65,7 @@ export default function VerificationClient({ items }: { items: Item[] }) {
     return (
       <main className="max-w-4xl mx-auto py-8 px-4">
         <div className="flex items-center gap-4 mb-8">
-          <Link href="/admin" className="text-sm text-indigo-600 hover:underline">← Admin</Link>
+          <Link href="/admin" className="text-sm text-orange-600 hover:underline">← Admin</Link>
           <h1 className="text-2xl font-bold text-gray-900">Verification Queue</h1>
         </div>
         <p className="text-sm text-gray-500">No pending verifications.</p>
@@ -76,7 +76,7 @@ export default function VerificationClient({ items }: { items: Item[] }) {
   return (
     <main className="max-w-4xl mx-auto py-8 px-4">
       <div className="flex items-center gap-4 mb-8">
-        <Link href="/admin" className="text-sm text-indigo-600 hover:underline">← Admin</Link>
+        <Link href="/admin" className="text-sm text-orange-600 hover:underline">← Admin</Link>
         <h1 className="text-2xl font-bold text-gray-900">
           Verification Queue <span className="text-base font-normal text-gray-500">({items.length})</span>
         </h1>
@@ -146,7 +146,7 @@ export default function VerificationClient({ items }: { items: Item[] }) {
                   <div>
                     <p className="text-gray-500 text-xs font-medium mb-1">Demo video</p>
                     <a href={item.demoVideoLink} target="_blank" rel="noopener noreferrer"
-                      className="text-sm text-indigo-600 hover:underline">{item.demoVideoLink}</a>
+                      className="text-sm text-orange-600 hover:underline">{item.demoVideoLink}</a>
                   </div>
                 )}
                 {item.rejectionReason && (
@@ -164,7 +164,7 @@ export default function VerificationClient({ items }: { items: Item[] }) {
                     onChange={(e) => setReason(e.target.value)}
                     rows={2}
                     placeholder="Optional for Approve"
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none resize-none"
+                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none resize-none"
                   />
                 </div>
 

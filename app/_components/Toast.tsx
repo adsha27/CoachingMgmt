@@ -55,7 +55,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               className={`flex items-center gap-3 px-4 py-3 rounded-xl shadow-lg text-sm font-medium pointer-events-auto cursor-pointer animate-slide-up
                 ${t.type === "success" ? "bg-gray-900 text-white" : ""}
                 ${t.type === "error" ? "bg-red-600 text-white" : ""}
-                ${t.type === "info" ? "bg-indigo-600 text-white" : ""}
+                ${t.type === "info" ? "bg-orange-600 text-white" : ""}
               `}
             >
               {t.type === "success" && <span className="text-green-400">✓</span>}

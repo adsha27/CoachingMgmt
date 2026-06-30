@@ -37,7 +37,7 @@ export default async function AdminTopicRequestsPage() {
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <Link href="/admin" className="text-sm text-indigo-600 hover:underline">← Admin</Link>
+            <Link href="/admin" className="text-sm text-orange-600 hover:underline">← Admin</Link>
             <h1 className="text-2xl font-bold text-gray-900 mt-1">Topic Requests</h1>
             <p className="text-sm text-gray-500 mt-0.5">{openCount} open demand signals from students</p>
           </div>
@@ -50,9 +50,9 @@ export default async function AdminTopicRequestsPage() {
             <div className="flex flex-wrap gap-2">
               {topSubjects.map(([subject, count]) => (
                 <span key={subject}
-                  className="inline-flex items-center gap-1.5 bg-indigo-50 text-indigo-700 text-sm font-medium px-3 py-1.5 rounded-full">
+                  className="inline-flex items-center gap-1.5 bg-orange-50 text-orange-700 text-sm font-medium px-3 py-1.5 rounded-full">
                   {subject}
-                  <span className="bg-indigo-200 text-indigo-800 text-xs font-bold px-1.5 py-0.5 rounded-full">
+                  <span className="bg-orange-200 text-orange-800 text-xs font-bold px-1.5 py-0.5 rounded-full">
                     {count}
                   </span>
                 </span>
@@ -71,7 +71,7 @@ export default async function AdminTopicRequestsPage() {
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">
+                      <span className="text-xs font-semibold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full">
                         {r.subject}
                       </span>
                       <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${STATUS_COLORS[r.status]}`}>
