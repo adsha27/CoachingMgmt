@@ -25,9 +25,9 @@ export const metadata: Metadata = {
 
 export default async function HomePage() {
   const [teacherCount, courseCount, subjectCount] = await Promise.all([
-    prisma.teacherProfile.count({ where: { verifyStatus: "VERIFIED" } }),
-    prisma.groupCourse.count({ where: { status: "LISTED" } }),
-    prisma.groupCourse.groupBy({ by: ["subject"], where: { status: "LISTED" } }).then((r) => r.length),
+    prisma.teacherProfile.count({ where: { verifyStatus: "VERIFIED" } }).catch(() => 0),
+    prisma.groupCourse.count({ where: { status: "LISTED" } }).catch(() => 0),
+    prisma.groupCourse.groupBy({ by: ["subject"], where: { status: "LISTED" } }).then((r) => r.length).catch(() => 0),
   ]);
 
   return (
@@ -76,24 +76,22 @@ export default async function HomePage() {
       </section>
 
       {/* Stats bar */}
-      {(teacherCount > 0 || courseCount > 0) && (
-        <section className="bg-indigo-600 text-white py-8 px-5">
-          <div className="max-w-2xl mx-auto grid grid-cols-3 gap-4 text-center">
-            <div>
-              <div className="text-3xl font-bold">{teacherCount}+</div>
-              <div className="text-xs text-indigo-200 mt-1">Verified teachers</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold">{courseCount > 0 ? courseCount + "+" : "–"}</div>
-              <div className="text-xs text-indigo-200 mt-1">Active courses</div>
-            </div>
-            <div>
-              <div className="text-3xl font-bold">{subjectCount > 0 ? subjectCount : "5"}+</div>
-              <div className="text-xs text-indigo-200 mt-1">Subjects covered</div>
-            </div>
+      <section className="bg-indigo-600 text-white py-8 px-5">
+        <div className="max-w-2xl mx-auto grid grid-cols-3 gap-4 text-center">
+          <div>
+            <div className="text-3xl font-bold">{teacherCount > 0 ? `${teacherCount}+` : "—"}</div>
+            <div className="text-xs text-indigo-200 mt-1">Verified teachers</div>
           </div>
-        </section>
-      )}
+          <div>
+            <div className="text-3xl font-bold">{courseCount > 0 ? `${courseCount}+` : "—"}</div>
+            <div className="text-xs text-indigo-200 mt-1">Active courses</div>
+          </div>
+          <div>
+            <div className="text-3xl font-bold">{subjectCount > 0 ? `${subjectCount}+` : "—"}</div>
+            <div className="text-xs text-indigo-200 mt-1">Subjects covered</div>
+          </div>
+        </div>
+      </section>
 
       {/* Feature cards */}
       <section className="max-w-2xl mx-auto px-5 py-14">
@@ -101,32 +99,25 @@ export default async function HomePage() {
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           {[
             {
-              icon: "🎓",
               title: "Students",
               bullets: ["Browse verified JEE/NEET teachers", "Join group courses from ₹299/session", "Book private 1-on-1 sessions", "Get Google Meet links instantly"],
               cta: "Find a teacher",
               href: "/browse",
-              color: "indigo",
             },
             {
-              icon: "👨‍🏫",
               title: "Teachers",
               bullets: ["List group courses and packages", "Students book and pay online", "Automated scheduling & Meet links", "Get reviews and grow your reach"],
               cta: "Join as teacher",
               href: "/login",
-              color: "emerald",
             },
             {
-              icon: "👪",
               title: "Parents",
               bullets: ["Track your child's sessions", "View session feedback and ratings", "Read-only access — no extra app", "Stay informed automatically"],
               cta: "Learn more",
               href: "/login",
-              color: "purple",
             },
           ].map((card) => (
             <div key={card.title} className="rounded-2xl border border-gray-100 bg-gray-50 p-5 flex flex-col">
-              <div className="text-3xl mb-3">{card.icon}</div>
               <h3 className="font-bold text-gray-900 mb-3">{card.title}</h3>
               <ul className="space-y-1.5 flex-1 mb-4">
                 {card.bullets.map((b) => (
@@ -139,11 +130,7 @@ export default async function HomePage() {
                 ))}
               </ul>
               <Link href={card.href}
-                className={`text-center text-sm font-semibold py-2.5 rounded-xl transition-colors ${
-                  card.color === "indigo" ? "bg-indigo-600 text-white hover:bg-indigo-700" :
-                  card.color === "emerald" ? "bg-emerald-600 text-white hover:bg-emerald-700" :
-                  "bg-purple-600 text-white hover:bg-purple-700"
-                }`}>
+                className="text-center text-sm font-semibold py-2.5 rounded-xl transition-colors bg-indigo-600 text-white hover:bg-indigo-700">
                 {card.cta}
               </Link>
             </div>
@@ -152,23 +139,21 @@ export default async function HomePage() {
       </section>
 
       {/* Trust signals */}
-      <section className="bg-gray-50 border-t border-gray-100 py-10 px-5">
-        <div className="max-w-2xl mx-auto text-center">
-          <h2 className="text-lg font-bold text-gray-900 mb-6">Why students trust EduConnect</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {[
-              { icon: "✅", label: "Admin-verified", sub: "Every teacher reviewed" },
-              { icon: "📱", label: "Mobile-first", sub: "Works on any phone" },
-              { icon: "🔗", label: "Auto Meet links", sub: "One tap to join" },
-              { icon: "⭐", label: "Real reviews", sub: "From verified students" },
-            ].map((item) => (
-              <div key={item.label} className="bg-white rounded-xl p-3 border border-gray-100">
-                <div className="text-xl mb-1">{item.icon}</div>
-                <p className="text-xs font-bold text-gray-800">{item.label}</p>
-                <p className="text-xs text-gray-400 mt-0.5">{item.sub}</p>
-              </div>
-            ))}
-          </div>
+      <section className="border-t border-gray-100 py-8 px-5">
+        <div className="max-w-2xl mx-auto flex flex-wrap justify-center gap-x-8 gap-y-3">
+          {[
+            "Admin-verified teachers",
+            "Auto Google Meet links",
+            "Real student reviews",
+            "Works on any phone",
+          ].map((item) => (
+            <div key={item} className="flex items-center gap-2 text-sm text-gray-500">
+              <svg className="w-4 h-4 text-indigo-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+              {item}
+            </div>
+          ))}
         </div>
       </section>
 

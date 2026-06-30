@@ -3,16 +3,20 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 const BASE = process.env.NEXT_PUBLIC_APP_URL ?? "https://educonnect.in";
 
 export async function generateStaticParams() {
-  const profiles = await prisma.teacherProfile.findMany({
-    where: { verifyStatus: "VERIFIED" },
-    select: { teacherId: true },
-  });
-  return profiles.map((p) => ({ id: String(p.teacherId) }));
+  try {
+    const profiles = await prisma.teacherProfile.findMany({
+      where: { verifyStatus: "VERIFIED" },
+      select: { teacherId: true },
+    });
+    return profiles.map((p) => ({ id: String(p.teacherId) }));
+  } catch {
+    return [];
+  }
 }
 
 export async function generateMetadata({
@@ -293,7 +297,7 @@ export default async function TeacherProfilePage({
                       </div>
                       <Link
                         href={`/login?next=/courses/${c.id}/book`}
-                        className="mt-2 inline-block text-sm px-4 py-1.5 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+                        className="mt-2 inline-block text-sm px-5 py-2.5 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700"
                       >
                         Enrol
                       </Link>
@@ -329,7 +333,7 @@ export default async function TeacherProfilePage({
                       </div>
                       <Link
                         href={`/login?next=/packages/${p.id}/book`}
-                        className="mt-2 inline-block text-sm px-4 py-1.5 bg-emerald-600 text-white rounded-md hover:bg-emerald-700"
+                        className="mt-2 inline-block text-sm px-5 py-2.5 bg-emerald-600 text-white rounded-xl font-semibold hover:bg-emerald-700"
                       >
                         Book
                       </Link>

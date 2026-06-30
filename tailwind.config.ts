@@ -6,7 +6,11 @@ const config: Config = {
     "./lib/emails/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        sans: ["Plus Jakarta Sans", "system-ui", "sans-serif"],
+      },
+    },
   },
   plugins: [require("@tailwindcss/forms")],
 };

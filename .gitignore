@@ -39,3 +39,4 @@ test-results/
 
 # gstack local artifacts (security reports, analytics — keep local)
 .gstack/
+.gbrain-source

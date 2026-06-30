@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import BrowseClient from "./BrowseClient";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 const BASE = process.env.NEXT_PUBLIC_APP_URL ?? "https://educonnect.in";
 
@@ -73,7 +73,7 @@ export default async function BrowsePage() {
       },
     },
     orderBy: { name: "asc" },
-  });
+  }).catch((): never[] => []);
 
   // Serialize dates for client component
   const data = teachers.map((t) => ({

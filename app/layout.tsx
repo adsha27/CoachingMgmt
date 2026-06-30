@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { ToastProvider } from "./_components/Toast";
+
+const jakartaSans = Plus_Jakarta_Sans({ subsets: ["latin"], display: "swap" });
 
 export const metadata: Metadata = {
   title: {
@@ -25,7 +28,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className={jakartaSans.className}>
       <body className="bg-gray-50 text-gray-900 antialiased">
         <ToastProvider>{children}</ToastProvider>
       </body>

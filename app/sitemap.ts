@@ -8,11 +8,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     prisma.teacherProfile.findMany({
       where: { verifyStatus: "VERIFIED" },
       select: { teacherId: true, updatedAt: true },
-    }),
+    }).catch(() => [] as { teacherId: number; updatedAt: Date }[]),
     prisma.groupCourse.findMany({
       where: { status: "LISTED" },
       select: { id: true, createdAt: true },
-    }),
+    }).catch(() => [] as { id: number; createdAt: Date }[]),
   ]);
 
   const now = new Date();
