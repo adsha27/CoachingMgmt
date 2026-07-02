@@ -20,7 +20,8 @@
     "db:migrate": "prisma migrate deploy",
     "db:seed-marketplace": "node scripts/seed-marketplace-demo.mjs",
     "db:seed": "node scripts/seed-admin.mjs",
-    "db:demo": "node scripts/seed-admin.mjs && node scripts/seed-demo.mjs"
+    "db:demo": "node scripts/seed-admin.mjs && node scripts/seed-demo.mjs",
+    "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.0.0",
@@ -47,6 +48,7 @@
     "postcss": "^8.4.0",
     "prisma": "^6.0.0",
     "tailwindcss": "^3.4.0",
+    "tsx": "^4.0.0",
     "typescript": "^5.0.0",
     "vitest": "^3.0.0"
   }
