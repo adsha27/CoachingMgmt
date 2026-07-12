@@ -17,11 +17,11 @@
     "test:db": "node scripts/test-db.mjs unit",
     "test:e2e:db": "node scripts/test-db.mjs e2e",
     "ci": "npm run typecheck && npx prisma validate && npm run test:db && npm run test:e2e:db && npm run build",
-    "db:migrate": "prisma migrate deploy",
+    "db:migrate": "prisma migrate deploy --env-file .env.local",
     "db:seed-marketplace": "node scripts/seed-marketplace-demo.mjs",
     "db:seed": "node scripts/seed-admin.mjs",
     "db:demo": "node scripts/seed-admin.mjs && node scripts/seed-demo.mjs",
-    "seed": "tsx prisma/seed.ts"
+    "seed": "tsx --env-file=.env.local prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.0.0",
