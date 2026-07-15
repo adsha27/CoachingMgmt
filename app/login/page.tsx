@@ -78,7 +78,7 @@ function OtpBoxes({ value, onChange, onComplete }: {
 }
 
 // ── Resend timer ──────────────────────────────────────────────────────────────
-function ResendButton({ phone, onResent }: { phone: string; onResent: () => void }) {
+function ResendButton({ phone, email, onResent }: { phone: string; email: string; onResent: () => void }) {
   const [seconds, setSeconds] = useState(30);
   useEffect(() => {
     if (seconds <= 0) return;
@@ -88,7 +88,7 @@ function ResendButton({ phone, onResent }: { phone: string; onResent: () => void
 
   async function resend() {
     setSeconds(30);
-    await fetch("/api/auth/otp/request", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ phone }) });
+    await fetch("/api/auth/otp/request", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ phone, email: email || undefined }) });
     onResent();
   }
 
@@ -98,9 +98,12 @@ function ResendButton({ phone, onResent }: { phone: string; onResent: () => void
 }
 
 // ── Step components ───────────────────────────────────────────────────────────
-function PhoneStep({ phone, setPhone, loading, onSubmit }: {
+function PhoneStep({ phone, setPhone, needsEmail, email, setEmail, loading, onSubmit }: {
   phone: string;
   setPhone: (v: string) => void;
+  needsEmail: boolean;
+  email: string;
+  setEmail: (v: string) => void;
   loading: boolean;
   onSubmit: (e: React.FormEvent) => void;
 }) {
@@ -118,7 +121,19 @@ function PhoneStep({ phone, setPhone, loading, onSubmit }: {
           />
         </div>
       </div>
-      <button type="submit" disabled={loading || phone.length < 10}
+      {needsEmail && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1.5">Email address</label>
+          <input type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required autoFocus placeholder="you@example.com"
+            className="w-full rounded-xl border border-gray-300 px-3 py-3 text-sm shadow-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500 transition-all"
+          />
+          <p className="mt-1.5 text-xs text-gray-400">We&apos;ll send your login code here.</p>
+        </div>
+      )}
+      <button type="submit" disabled={loading || phone.length < 10 || (needsEmail && !email.includes("@"))}
         className="w-full py-3 bg-orange-600 text-white text-sm font-semibold rounded-xl hover:bg-orange-700 disabled:opacity-50 transition-colors shadow-sm">
         {loading ? "Sending…" : "Send OTP"}
       </button>
@@ -127,8 +142,9 @@ function PhoneStep({ phone, setPhone, loading, onSubmit }: {
   );
 }
 
-function OtpStep({ phone, otp, setOtp, loading, onComplete, onBack, onResent }: {
+function OtpStep({ phone, email, otp, setOtp, loading, onComplete, onBack, onResent }: {
   phone: string;
+  email: string;
   otp: string;
   setOtp: (v: string) => void;
   loading: boolean;
@@ -140,7 +156,7 @@ function OtpStep({ phone, otp, setOtp, loading, onComplete, onBack, onResent }: 
     <div className="space-y-6">
       <OtpBoxes value={otp} onChange={(v) => setOtp(v)} onComplete={onComplete} />
       {loading && <p className="text-center text-sm text-orange-600 animate-pulse">Verifying…</p>}
-      <ResendButton phone={phone} onResent={onResent} />
+      <ResendButton phone={phone} email={email} onResent={onResent} />
       <button type="button" onClick={onBack} className="w-full text-sm text-gray-400 hover:text-gray-600 transition-colors">
         ← Change number
       </button>
@@ -208,6 +224,7 @@ function LoginForm() {
 
   const [step, setStep] = useState<Step>("phone");
   const [phone, setPhone] = useState("");
+  const [needsEmail, setNeedsEmail] = useState(false);
   const [otp, setOtp] = useState("");
   const [regToken, setRegToken] = useState("");
   const [name, setName] = useState("");
@@ -232,11 +249,13 @@ function LoginForm() {
     setLoading(true); setError(null);
     const res = await fetch("/api/auth/otp/request", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phone }),
+      body: JSON.stringify({ phone, email: needsEmail ? email : undefined }),
     });
+    const data = await res.json();
     setLoading(false);
+    if (data.needs_email) { setNeedsEmail(true); return; }
     if (res.status === 429) setError("Too many requests. Wait an hour before trying again.");
-    else if (!res.ok) { const d = await res.json(); setError(d.error ?? "Could not send OTP. Please try again."); }
+    else if (!res.ok) setError(data.error ?? "Could not send OTP. Please try again.");
     else setStep("code");
   }
 
@@ -295,11 +314,15 @@ function LoginForm() {
         )}
 
         {step === "phone" && (
-          <PhoneStep phone={phone} setPhone={setPhone} loading={loading} onSubmit={requestOtp} />
+          <PhoneStep
+            phone={phone} setPhone={setPhone}
+            needsEmail={needsEmail} email={email} setEmail={setEmail}
+            loading={loading} onSubmit={requestOtp}
+          />
         )}
         {step === "code" && (
           <OtpStep
-            phone={phone} otp={otp}
+            phone={phone} email={email} otp={otp}
             setOtp={(v) => { setOtp(v); setError(null); setResentMsg(false); }}
             loading={loading} onComplete={submitOtp}
             onBack={() => { setStep("phone"); setOtp(""); setError(null); }}

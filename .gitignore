@@ -25,6 +25,9 @@ npm-debug.log*
 # vercel
 .vercel
 
+# neon CLI local link state (org/project IDs — differs per machine)
+.neon
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

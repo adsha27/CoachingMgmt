@@ -40,6 +40,7 @@ export default async function AdminPage() {
   ];
 
   const navLinks = [
+    { href: "/admin/users/new", label: "Add teacher/student" },
     { href: "/admin/verification", label: "Verification queue", badge: pendingVerifications },
     { href: "/admin/teachers", label: "Teachers" },
     { href: "/admin/courses", label: "All courses" },

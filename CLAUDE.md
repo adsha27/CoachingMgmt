@@ -17,3 +17,24 @@ Key routing rules:
 - Save progress → invoke /context-save
 - Resume context → invoke /context-restore
 - Author a backlog-ready spec/issue → invoke /spec
+
+## Design System
+Always read DESIGN.md before making any visual or UI decisions.
+All font choices, colors, spacing, and aesthetic direction are defined there.
+Do not deviate without explicit user approval.
+In QA mode, flag any code that doesn't match DESIGN.md.
+
+## Git & Deployment Discipline
+
+Workflow: **trunk-based** (short-lived branches, frequent merges to `main`) — not GitFlow. GitFlow's long-lived release branches only earn their cost with scheduled/versioned releases; this project ships continuously.
+
+1. **Never deploy uncommitted code.** `vercel --prod` (or any deploy) only runs against a clean tree that matches what's committed — commit first, deploy second, never the reverse. Production must always be reconstructable from git history alone.
+2. **Commit, then push, every session.** Don't let local commits sit unpushed — `origin` is the backup. A crashed laptop should never be the only copy of finished work.
+3. **Branch for anything non-trivial**: schema changes, auth/security changes, new features touching 3+ files. One-line fixes and config tweaks can go straight to `main`. Merge/delete the branch same-day — no long-lived branches.
+4. **Conventional Commits** format (`feat:`, `fix:`, `chore:`, `refactor:`, `test:`, `docs:`) — one logical change per commit, imperative mood, why over what in the body when it's not obvious.
+5. **Secrets never touch git.** Env vars only, injected at deploy time (Vercel env, not `.env` files committed). If a secret-protected endpoint or token is created for a one-off task (e.g. a bootstrap script), delete it immediately after use — don't leave standing unauthenticated-except-for-a-secret surface area.
+6. **Schema changes go through Prisma migrations**, not ad hoc `db push` against the production Neon branch. Prefer testing against a Neon dev branch before touching `production`.
+7. **One change per deploy where feasible** — smaller diffs are easier to attribute if something breaks, and easier to revert.
+8. **Before shipping**: typecheck clean, tests passing where runnable in the current environment (call out explicitly if a test suite couldn't run — e.g. no local DB/Docker — never claim untested code is verified).
+
+Sources consulted: [Trunk-Based Development vs Gitflow (Mergify)](https://mergify.com/blog/trunk-based-development-vs-gitflow-which-branching-model-actually-works), [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/), [CI/CD Best Practices (Harness)](https://www.harness.io/blog/ci-cd-best-practices), [The startup founders' guide to software delivery (CircleCI)](https://circleci.com/blog/startup-founders-guide-to-software-delivery/).

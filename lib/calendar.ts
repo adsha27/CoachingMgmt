@@ -9,12 +9,13 @@ function getAuth() {
 
   const key = JSON.parse(Buffer.from(keyJson, "base64").toString("utf-8"));
 
+  // No Workspace/domain-wide delegation: the calendar owner (any Google
+  // account, personal Gmail included) shares their calendar directly with
+  // this service account's client_email as an editor.
   return new google.auth.JWT({
     email: key.client_email,
     key: key.private_key,
     scopes: ["https://www.googleapis.com/auth/calendar"],
-    // impersonate the platform calendar owner
-    subject: process.env.GOOGLE_CALENDAR_OWNER_EMAIL,
   });
 }
 
@@ -37,7 +38,7 @@ export async function createMeetSession(params: {
   );
 
   const event = await calendar.events.insert({
-    calendarId: "primary",
+    calendarId: process.env.GOOGLE_CALENDAR_OWNER_EMAIL,
     conferenceDataVersion: 1,
     requestBody: {
       summary: params.summary,
@@ -60,7 +61,7 @@ export async function createMeetSession(params: {
 
   if (!meetLink) {
     throw new Error(
-      "Google Calendar returned no Meet link. Check Workspace tier and domain-wide delegation."
+      "Google Calendar returned no Meet link. Check the owner account has Meet enabled and the calendar is shared with the service account."
     );
   }
 
@@ -74,7 +75,7 @@ export async function cancelCalendarEvent(calendarEventId: string) {
   const auth = getAuth();
   const calendar = google.calendar({ version: "v3", auth });
   await calendar.events.delete({
-    calendarId: "primary",
+    calendarId: process.env.GOOGLE_CALENDAR_OWNER_EMAIL,
     eventId: calendarEventId,
     sendUpdates: "all",
   });
