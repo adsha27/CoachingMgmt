@@ -21,17 +21,18 @@ export async function POST(req: NextRequest) {
   // Look up user — respond identically whether phone exists or not (no enumeration)
   const user = await prisma.user.findUnique({ where: { phone } });
 
-  // AUTH_MODE=email delivers the code by email, but a brand-new phone has no
-  // User row yet (and thus no email on file) — ask the client to collect one
-  // before we generate a code that can never be delivered.
-  const deliveryEmail = user?.email ?? body.email?.trim();
-  if ((process.env.AUTH_MODE ?? "phone") === "email" && !deliveryEmail) {
-    return NextResponse.json({ needs_email: true });
-  }
-
   const fixedDevPhone = process.env.DEV_FIXED_OTP_PHONE ?? "9999999999";
   const fixedDevCode = process.env.DEV_FIXED_OTP_CODE ?? "123456";
   const isDevFixed = process.env.NODE_ENV !== "production" && phone === fixedDevPhone;
+
+  // AUTH_MODE=email delivers the code by email, but a brand-new phone has no
+  // User row yet (and thus no email on file) — ask the client to collect one
+  // before we generate a code that can never be delivered. The fixed dev/test
+  // phone is exempt — its code is already known, delivery is irrelevant.
+  const deliveryEmail = user?.email ?? body.email?.trim();
+  if (!isDevFixed && (process.env.AUTH_MODE ?? "phone") === "email" && !deliveryEmail) {
+    return NextResponse.json({ needs_email: true });
+  }
   const code = isDevFixed ? fixedDevCode : generateCode();
   const codeHash = await hashCode(code);
   const expiresAt = new Date(Date.now() + OTP_TTL_MINUTES * 60 * 1000);

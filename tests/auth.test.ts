@@ -53,15 +53,24 @@ afterEach(async () => {
 // ─── OTP Request ──────────────────────────────────────────────────────────────
 
 describe("POST /api/auth/otp/request", () => {
-  it("stores an OTP hash for any submitted phone (including unregistered)", async () => {
+  it("stores an OTP hash for any submitted phone+email (including unregistered)", async () => {
     const p = phone();
-    const res = await requestOtp(jsonReq("POST", "/api/auth/otp/request", { phone: p }));
+    const res = await requestOtp(jsonReq("POST", "/api/auth/otp/request", { phone: p, email: `${uid()}@example.test` }));
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ ok: true });
     const code = await prisma.otpCode.findFirst({ where: { phone: p } });
     expect(code).not.toBeNull();
     expect(code!.codeHash).not.toHaveLength(0);
     expect(code!.expiresAt.getTime()).toBeGreaterThan(Date.now());
+  });
+
+  it("asks for an email instead of generating a code for an unregistered phone with no email (AUTH_MODE=email)", async () => {
+    const p = phone();
+    const res = await requestOtp(jsonReq("POST", "/api/auth/otp/request", { phone: p }));
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ needs_email: true });
+    const code = await prisma.otpCode.findFirst({ where: { phone: p } });
+    expect(code).toBeNull();
   });
 
   it("rejects malformed phone numbers", async () => {
@@ -89,7 +98,7 @@ describe("POST /api/auth/otp/request", () => {
 
   it("accepts +91 prefix and normalises to 10 digits", async () => {
     const base = phone();
-    const res = await requestOtp(jsonReq("POST", "/api/auth/otp/request", { phone: `+91${base}` }));
+    const res = await requestOtp(jsonReq("POST", "/api/auth/otp/request", { phone: `+91${base}`, email: `${uid()}@example.test` }));
     expect(res.status).toBe(200);
     const code = await prisma.otpCode.findFirst({ where: { phone: base } });
     expect(code).not.toBeNull();
