@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { discountPct } from "@/lib/pricing";
 
 const SUBJECTS = ["Physics", "Chemistry", "Mathematics", "Biology"];
 const EXAMS = ["JEE Main", "JEE Advanced", "NEET", "CUET"];
@@ -20,6 +21,7 @@ export default function NewPackagePage() {
     description: "",
     totalSessions: 10,
     sessionDurationMinutes: 60,
+    originalPriceINR: "",
     priceINR: "",
   });
 
@@ -37,7 +39,11 @@ export default function NewPackagePage() {
     const res = await fetch("/api/teacher/packages", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...form, priceINR: Number(form.priceINR) }),
+      body: JSON.stringify({
+        ...form,
+        priceINR: Number(form.priceINR),
+        originalPriceINR: form.originalPriceINR ? Number(form.originalPriceINR) : null,
+      }),
     });
 
     setSubmitting(false);
@@ -108,7 +114,7 @@ export default function NewPackagePage() {
           />
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Sessions</label>
             <input
@@ -131,18 +137,41 @@ export default function NewPackagePage() {
               {DURATIONS.map((d) => <option key={d} value={d}>{d} min</option>)}
             </select>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Price (₹)</label>
-            <input
-              type="number"
-              min={0}
-              required
-              value={form.priceINR}
-              onChange={(e) => set("priceINR", e.target.value)}
-              placeholder="e.g., 5000"
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none"
-            />
+        </div>
+
+        {/* Pricing */}
+        <div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Original price (₹) <span className="text-gray-400">(optional)</span></label>
+              <input
+                type="number"
+                min={0}
+                value={form.originalPriceINR}
+                onChange={(e) => set("originalPriceINR", e.target.value)}
+                placeholder="e.g., 6500"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Final price student pays (₹)</label>
+              <input
+                type="number"
+                min={0}
+                required
+                value={form.priceINR}
+                onChange={(e) => set("priceINR", e.target.value)}
+                placeholder="e.g., 5000"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none"
+              />
+            </div>
           </div>
+          {(() => {
+            const off = discountPct(Number(form.originalPriceINR) || null, Number(form.priceINR) || 0);
+            return off !== null ? (
+              <p className="mt-2 text-xs text-emerald-600 font-medium">Students see {off}% off — ₹{Number(form.priceINR).toLocaleString("en-IN")} instead of ₹{Number(form.originalPriceINR).toLocaleString("en-IN")}.</p>
+            ) : null;
+          })()}
         </div>
 
         <p className="text-xs text-gray-500">

@@ -1,43 +1,38 @@
-import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import BookGroupButton from "./BookGroupButton";
+import { discountPct } from "@/lib/pricing";
+import ApplyButton from "@/app/_components/ApplyButton";
 
 export const dynamic = "force-dynamic";
 
-export default async function BookGroupCoursePage({
+export default async function ApplyGroupCoursePage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const user = await getCurrentUser();
-  if (!user) redirect(`/login?next=/courses/${(await params).id}/book`);
-  if (user.role !== "STUDENT") redirect("/");
-
   const { id } = await params;
   const courseId = Number(id);
+  const user = await getCurrentUser();
 
   const course = await prisma.groupCourse.findUnique({
     where: { id: courseId },
     include: {
       teacher: { select: { id: true, name: true } },
-      sessions: {
-        where: { status: "SCHEDULED" },
-        orderBy: { scheduledAt: "asc" },
-        take: 3,
-      },
+      sessions: { where: { status: "SCHEDULED" }, orderBy: { scheduledAt: "asc" }, take: 3 },
     },
   });
 
-  if (!course || course.status !== "LISTED") notFound();
+  if (!course || course.status === "DRAFT") notFound();
 
-  const existingBooking = await prisma.booking.findFirst({
-    where: { studentId: user.id, groupCourseId: courseId, status: "ACTIVE" },
-  });
+  const existingBooking = user && user.role === "STUDENT"
+    ? await prisma.booking.findFirst({
+        where: { studentId: user.id, groupCourseId: courseId, status: { in: ["PENDING", "ACTIVE"] } },
+      })
+    : null;
 
   const isFull = course.enrolledCount >= course.maxStudents;
-
   const firstSession = course.sessions[0];
   const lastSession = course.sessions[course.sessions.length - 1];
 
@@ -70,7 +65,21 @@ export default async function BookGroupCoursePage({
           </div>
           <div className="bg-gray-50 rounded-lg p-3">
             <p className="text-xs text-gray-400 mb-0.5">Price</p>
-            <p className="font-semibold text-gray-800">₹{course.priceINR.toLocaleString("en-IN")}</p>
+            {(() => {
+              const off = discountPct(course.originalPriceINR, course.priceINR);
+              return (
+                <p className="font-semibold text-gray-800">
+                  ₹{course.priceINR.toLocaleString("en-IN")}
+                  {off !== null && (
+                    <>
+                      {" "}
+                      <span className="text-xs font-normal text-gray-400 line-through">₹{course.originalPriceINR!.toLocaleString("en-IN")}</span>{" "}
+                      <span className="text-xs font-semibold text-emerald-600">{off}% off</span>
+                    </>
+                  )}
+                </p>
+              );
+            })()}
           </div>
           <div className="bg-gray-50 rounded-lg p-3">
             <p className="text-xs text-gray-400 mb-0.5">Seats left</p>
@@ -96,16 +105,35 @@ export default async function BookGroupCoursePage({
           </p>
         )}
 
-        {existingBooking ? (
+        {existingBooking?.status === "ACTIVE" ? (
           <div className="text-center py-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700 font-medium">
-            ✓ Already enrolled · <Link href="/student/dashboard" className="underline">Go to dashboard</Link>
+            ✓ Enrolled · <Link href="/student/dashboard" className="underline">Go to dashboard</Link>
+          </div>
+        ) : existingBooking?.status === "PENDING" ? (
+          <div className="text-center py-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-700 font-medium">
+            ⏳ Application submitted — awaiting your teacher&apos;s approval.
           </div>
         ) : isFull ? (
           <div className="text-center py-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
             This course is full. Check back later.
           </div>
+        ) : user && user.role === "STUDENT" ? (
+          <ApplyButton courseId={courseId} />
+        ) : user ? (
+          <div className="text-center py-3 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-500">
+            Applying is for student accounts.
+          </div>
         ) : (
-          <BookGroupButton courseId={courseId} />
+          <div className="space-y-2">
+            <Link href={`/login?applyCourseId=${courseId}`}
+              className="block text-center w-full py-3 bg-orange-600 text-white font-semibold rounded-lg hover:bg-orange-700 transition-colors">
+              Create profile &amp; apply
+            </Link>
+            <Link href={`/login?next=/courses/${courseId}/book`}
+              className="block text-center w-full py-2.5 text-sm text-gray-500 hover:text-gray-700">
+              Already have an account? Sign in
+            </Link>
+          </div>
         )}
       </div>
     </main>

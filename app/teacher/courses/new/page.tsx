@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { discountPct } from "@/lib/pricing";
 
 const SUBJECTS = ["Physics", "Chemistry", "Mathematics", "Biology"];
 const EXAMS = ["JEE Main", "JEE Advanced", "NEET", "CUET"];
@@ -24,6 +25,7 @@ export default function NewGroupCoursePage() {
     description: "",
     totalSessions: 20,
     sessionDurationMinutes: 60,
+    originalPriceINR: "",
     priceINR: "",
     maxStudents: 30,
     startDate: "",
@@ -56,6 +58,7 @@ export default function NewGroupCoursePage() {
       body: JSON.stringify({
         ...form,
         priceINR: Number(form.priceINR),
+        originalPriceINR: form.originalPriceINR ? Number(form.originalPriceINR) : null,
       }),
     });
 
@@ -156,31 +159,52 @@ export default function NewGroupCoursePage() {
           </div>
         </div>
 
-        {/* Price + Max students */}
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Price (₹)</label>
-            <input
-              type="number"
-              min={0}
-              required
-              value={form.priceINR}
-              onChange={(e) => set("priceINR", e.target.value)}
-              placeholder="e.g., 12000"
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none"
-            />
+        {/* Pricing */}
+        <div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Original price (₹) <span className="text-gray-400">(optional)</span></label>
+              <input
+                type="number"
+                min={0}
+                value={form.originalPriceINR}
+                onChange={(e) => set("originalPriceINR", e.target.value)}
+                placeholder="e.g., 15000"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Final price student pays (₹)</label>
+              <input
+                type="number"
+                min={0}
+                required
+                value={form.priceINR}
+                onChange={(e) => set("priceINR", e.target.value)}
+                placeholder="e.g., 12000"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none"
+              />
+            </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Max Students</label>
-            <input
-              type="number"
-              min={1}
-              max={500}
-              value={form.maxStudents}
-              onChange={(e) => set("maxStudents", Number(e.target.value))}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none"
-            />
-          </div>
+          {(() => {
+            const off = discountPct(Number(form.originalPriceINR) || null, Number(form.priceINR) || 0);
+            return off !== null ? (
+              <p className="mt-2 text-xs text-emerald-600 font-medium">Students see {off}% off — ₹{Number(form.priceINR).toLocaleString("en-IN")} instead of ₹{Number(form.originalPriceINR).toLocaleString("en-IN")}.</p>
+            ) : null;
+          })()}
+        </div>
+
+        {/* Max students */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Max Students</label>
+          <input
+            type="number"
+            min={1}
+            max={500}
+            value={form.maxStudents}
+            onChange={(e) => set("maxStudents", Number(e.target.value))}
+            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none"
+          />
         </div>
 
         {/* Schedule */}

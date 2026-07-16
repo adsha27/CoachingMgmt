@@ -1,43 +1,67 @@
 import { NextRequest, NextResponse } from "next/server";
+import bcryptjs from "bcryptjs";
 import { prisma } from "@/lib/prisma";
-import { verifyRegToken } from "@/lib/regtoken";
 import { createSession, SESSION_COOKIE, dashboardFor } from "@/lib/auth";
+import { normalisePhone } from "@/lib/otp";
+import { createApplication } from "@/lib/applications";
 
+const MIN_PASSWORD = 8;
+
+// Email + password registration. Doubles as the "apply to a class" entry point:
+// pass applyCourseId / applyPackageId and a PENDING application is created for
+// the new student in the same request.
 export async function POST(req: NextRequest) {
   const body = await req.json() as {
-    registration_token?: string;
     name?: string;
     email?: string;
+    phone?: string;
+    password?: string;
     role?: string;
+    targetExam?: string;
+    currentClass?: string;
+    applyCourseId?: number;
+    applyPackageId?: number;
   };
 
-  const { registration_token, name, email, role } = body;
+  const name = body.name?.trim();
+  const email = body.email?.trim().toLowerCase();
+  const phone = normalisePhone(body.phone ?? "");
+  const password = body.password ?? "";
+  const role = body.role;
 
-  if (!registration_token || !name?.trim() || !email?.includes("@") || !role) {
-    return NextResponse.json({ error: "registration_token, name, email, and role required" }, { status: 400 });
-  }
+  if (!name) return NextResponse.json({ error: "Name is required" }, { status: 400 });
+  if (!email || !email.includes("@")) return NextResponse.json({ error: "A valid email is required" }, { status: 400 });
+  if (!phone) return NextResponse.json({ error: "A valid 10-digit Indian mobile number is required" }, { status: 400 });
+  if (password.length < MIN_PASSWORD) return NextResponse.json({ error: `Password must be at least ${MIN_PASSWORD} characters` }, { status: 400 });
+  // ADMIN can never be self-assigned — only STUDENT/TEACHER self-register.
+  if (role !== "STUDENT" && role !== "TEACHER") return NextResponse.json({ error: "role must be STUDENT or TEACHER" }, { status: 400 });
 
-  const validRoles = ["TEACHER", "STUDENT"];
-  if (!validRoles.includes(role)) {
-    return NextResponse.json({ error: "role must be TEACHER or STUDENT" }, { status: 400 });
-  }
-
-  const payload = verifyRegToken(registration_token);
-  if (!payload) {
-    return NextResponse.json({ error: "Invalid or expired registration token" }, { status: 401 });
-  }
-
-  const { phone } = payload;
-
-  // Guard against race conditions — phone may have been registered between OTP verify and here
   const existing = await prisma.user.findFirst({ where: { OR: [{ phone }, { email }] } });
   if (existing) {
-    return NextResponse.json({ error: "Phone or email already registered" }, { status: 409 });
+    return NextResponse.json({ error: "An account with this email or phone already exists. Try signing in." }, { status: 409 });
   }
 
+  const passwordHash = await bcryptjs.hash(password, 10);
+
   const user = await prisma.user.create({
-    data: { phone, name: name.trim(), email, role: role as "TEACHER" | "STUDENT" },
+    data: {
+      name,
+      email,
+      phone,
+      password: passwordHash,
+      role,
+      targetExam: role === "STUDENT" ? body.targetExam?.trim() || null : null,
+      currentClass: role === "STUDENT" ? body.currentClass?.trim() || null : null,
+    },
   });
+
+  // Optional: apply to a class as part of signing up.
+  if (role === "STUDENT" && (body.applyCourseId || body.applyPackageId)) {
+    const target = body.applyCourseId
+      ? { groupCourseId: body.applyCourseId }
+      : { oneOnOnePackageId: body.applyPackageId! };
+    await createApplication(user.id, target); // best-effort — account is created regardless
+  }
 
   const sessionId = await createSession(user.id);
   const res = NextResponse.json({ ok: true, redirect: dashboardFor(user.role) }, { status: 201 });

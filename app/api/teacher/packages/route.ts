@@ -28,6 +28,7 @@ export async function POST(req: NextRequest) {
     totalSessions?: number;
     sessionDurationMinutes?: number;
     priceINR?: number;
+    originalPriceINR?: number | null;
   };
 
   const { title, subject, totalSessions, sessionDurationMinutes, priceINR } = body;
@@ -48,6 +49,7 @@ export async function POST(req: NextRequest) {
       totalSessions,
       sessionDurationMinutes,
       priceINR,
+      originalPriceINR: body.originalPriceINR && body.originalPriceINR > priceINR ? body.originalPriceINR : null,
       status: "DRAFT",
     },
   });

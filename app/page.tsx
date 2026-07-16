@@ -96,19 +96,13 @@ export default async function HomePage() {
       {/* Feature cards */}
       <section className="max-w-2xl mx-auto px-5 py-14">
         <h2 className="text-xl font-bold text-gray-900 text-center mb-8">Who is EduConnect for?</h2>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {[
             {
               title: "Students",
               bullets: ["Browse verified JEE/NEET teachers", "Join group courses from ₹299/session", "Book private 1-on-1 sessions", "Get Google Meet links instantly"],
               cta: "Find a teacher",
               href: "/browse",
-            },
-            {
-              title: "Teachers",
-              bullets: ["List group courses and packages", "Students book and pay online", "Automated scheduling & Meet links", "Get reviews and grow your reach"],
-              cta: "Join as teacher",
-              href: "/login",
             },
             {
               title: "Parents",
@@ -167,8 +161,14 @@ export default async function HomePage() {
         </Link>
       </section>
 
-      <footer className="border-t border-gray-100 py-6 px-5 text-center">
+      <footer className="border-t border-gray-100 py-6 px-5 text-center space-y-2">
         <p className="text-xs text-gray-400">© 2025 EduConnect · Helping students crack JEE &amp; NEET</p>
+        <p className="text-xs text-gray-400">
+          Are you a teacher?{" "}
+          <Link href="/login?portal=teacher&next=/teacher/dashboard" className="text-gray-500 underline hover:text-gray-700">
+            Teacher login
+          </Link>
+        </p>
       </footer>
     </main>
   );

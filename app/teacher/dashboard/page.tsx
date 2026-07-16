@@ -6,6 +6,7 @@ import LogoutButton from "@/app/_components/LogoutButton";
 import AvailabilitySection from "./AvailabilitySection";
 import PublishCourseButton from "./PublishCourseButton";
 import ProposalsSection from "./ProposalsSection";
+import ApplicationsSection from "./ApplicationsSection";
 import InviteLinkButton from "./InviteLinkButton";
 
 export const dynamic = "force-dynamic";
@@ -17,7 +18,7 @@ export default async function TeacherDashboard() {
   const now = new Date();
   const myId = user.id;
 
-  const [upcoming, past, slots, groupCourses, oneOnOnePackages, pendingProposals, teacherProfile] = await Promise.all([
+  const [upcoming, past, slots, groupCourses, oneOnOnePackages, pendingProposals, pendingApplications, teacherProfile] = await Promise.all([
     prisma.session.findMany({
       where: {
         status: "SCHEDULED",
@@ -81,8 +82,34 @@ export default async function TeacherDashboard() {
       },
       orderBy: { createdAt: "asc" },
     }),
+    prisma.booking.findMany({
+      where: {
+        status: "PENDING",
+        OR: [
+          { groupCourse: { teacherId: myId } },
+          { oneOnOnePackage: { teacherId: myId } },
+        ],
+      },
+      include: {
+        student: { select: { name: true, email: true, phone: true, targetExam: true, currentClass: true } },
+        groupCourse: { select: { title: true } },
+        oneOnOnePackage: { select: { title: true } },
+      },
+      orderBy: { bookedAt: "asc" },
+    }),
     prisma.teacherProfile.findUnique({ where: { teacherId: myId } }),
   ]);
+
+  const applicationData = pendingApplications.map((b) => ({
+    id: b.id,
+    studentName: b.student.name,
+    studentEmail: b.student.email,
+    studentPhone: b.student.phone,
+    targetExam: b.student.targetExam,
+    currentClass: b.student.currentClass,
+    classTitle: b.groupCourse?.title ?? b.oneOnOnePackage?.title ?? "Class",
+    kind: b.groupCourse ? "Group" : "1-on-1",
+  }));
 
   const proposalData = pendingProposals.map((p) => ({
     id: p.id,
@@ -241,6 +268,9 @@ export default async function TeacherDashboard() {
             </div>
           )}
         </section>
+
+        {/* ── Class applications (awaiting approval) ─────────────────────── */}
+        <ApplicationsSection applications={applicationData} />
 
         {/* ── Pending slot proposals ─────────────────────────────────────── */}
         <ProposalsSection proposals={proposalData} />

@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
+import { discountPct } from "@/lib/pricing";
 
 export const dynamic = "force-dynamic";
 
@@ -112,6 +113,7 @@ export default async function TeacherProfilePage({
           subject: true,
           targetExam: true,
           priceINR: true,
+          originalPriceINR: true,
           startDate: true,
           totalSessions: true,
           sessionDurationMinutes: true,
@@ -129,6 +131,7 @@ export default async function TeacherProfilePage({
           subject: true,
           targetExam: true,
           priceINR: true,
+          originalPriceINR: true,
           totalSessions: true,
           sessionDurationMinutes: true,
         },
@@ -292,14 +295,23 @@ export default async function TeacherProfilePage({
                       </p>
                     </div>
                     <div className="text-right shrink-0">
+                      {(() => {
+                        const off = discountPct(c.originalPriceINR, c.priceINR);
+                        return off !== null ? (
+                          <div className="text-xs">
+                            <span className="text-gray-400 line-through">₹{c.originalPriceINR!.toLocaleString("en-IN")}</span>{" "}
+                            <span className="font-semibold text-emerald-600">{off}% off</span>
+                          </div>
+                        ) : null;
+                      })()}
                       <div className="text-lg font-bold text-gray-900">
                         ₹{c.priceINR.toLocaleString("en-IN")}
                       </div>
                       <Link
-                        href={`/login?next=/courses/${c.id}/book`}
+                        href={`/courses/${c.id}/book`}
                         className="mt-2 inline-block text-sm px-5 py-2.5 bg-orange-600 text-white rounded-xl font-semibold hover:bg-orange-700"
                       >
-                        Enrol
+                        Apply
                       </Link>
                     </div>
                   </div>
@@ -328,14 +340,23 @@ export default async function TeacherProfilePage({
                       )}
                     </div>
                     <div className="text-right shrink-0">
+                      {(() => {
+                        const off = discountPct(p.originalPriceINR, p.priceINR);
+                        return off !== null ? (
+                          <div className="text-xs">
+                            <span className="text-gray-400 line-through">₹{p.originalPriceINR!.toLocaleString("en-IN")}</span>{" "}
+                            <span className="font-semibold text-emerald-600">{off}% off</span>
+                          </div>
+                        ) : null;
+                      })()}
                       <div className="text-lg font-bold text-gray-900">
                         ₹{p.priceINR.toLocaleString("en-IN")}
                       </div>
                       <Link
-                        href={`/login?next=/packages/${p.id}/book`}
+                        href={`/packages/${p.id}/book`}
                         className="mt-2 inline-block text-sm px-5 py-2.5 bg-emerald-600 text-white rounded-xl font-semibold hover:bg-emerald-700"
                       >
-                        Book
+                        Apply
                       </Link>
                     </div>
                   </div>

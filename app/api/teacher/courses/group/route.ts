@@ -47,6 +47,7 @@ export async function POST(req: NextRequest) {
     totalSessions?: number;
     sessionDurationMinutes?: number;
     priceINR?: number;
+    originalPriceINR?: number | null;
     maxStudents?: number;
     startDate?: string;
     sessionTime?: string;
@@ -84,6 +85,7 @@ export async function POST(req: NextRequest) {
         totalSessions,
         sessionDurationMinutes,
         priceINR,
+        originalPriceINR: body.originalPriceINR && body.originalPriceINR > priceINR ? body.originalPriceINR : null,
         maxStudents: body.maxStudents ?? 30,
         startDate: actualStartDate,
         status: "DRAFT",
