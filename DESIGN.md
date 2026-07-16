@@ -17,6 +17,18 @@
 - **Mood:** Confident, direct, unfussy, with real moments of drama. Should feel like it respects the user's time and intelligence, not trying to charm them with cartoon mascots, but also not afraid to be visually assertive at the right moments.
 - **The memorable thing:** A verified teacher, booked in two minutes, no WhatsApp chaos.
 
+## Brand Mark
+
+- **Mark:** a rounded-square lettermark, the letter "N" set in Plus Jakarta Sans weight 800, white on the emerald accent (`#0F7A52`). Square viewBox 48x48, corner radius 11 (matches the system's `lg` card-radius ratio). Deliberately not an illustrated icon, same reasoning as the rest of the system: no custom illustration, typography carries the identity.
+- **Lockup:** mark + wordmark, "Novus" in ink (`#101113`), "Classes" in the accent color, both weight 800, tight tracking (-0.4 letter-spacing). This is the nav/header treatment, already reflected in `design/preview.html`.
+- **Files (all in `design/logo/`):**
+  - `mark.svg` — icon only, emerald background, white N. Use for favicon and app icon. Legible down to 16px.
+  - `mark-mono.svg` — icon only, ink background, cream N. Use on dark surfaces where the emerald mark would clash, or for single-color print contexts.
+  - `lockup.svg` — full horizontal lockup, light mode. Primary nav/header logo.
+  - `lockup-dark.svg` — full horizontal lockup using the dark-mode token values (`#3DBE8B` mark/accent, `#F0EFEA` wordmark ink). Swap in when `data-theme="dark"` is active.
+- **Production note:** these SVGs use live `<text>` with a Plus Jakarta Sans / system-sans-serif fallback stack, which is fine for in-app rendering (the font is already loaded site-wide) but is not reliable for contexts that rasterize without loading webfonts (favicon.ico generation, app-store icon export, email client rendering). Before generating those specific assets, convert the text to outlined vector paths in a design tool (Figma "Outline stroke" / Illustrator "Create outlines") so the glyph doesn't depend on font availability. Don't skip this for the actual favicon.ico / apple-touch-icon, a missing-font fallback there would silently render the wrong letterform.
+- **Never:** stretch, recolor outside the documented mark-mono/dark variants, add a drop shadow or gradient to the mark, or pair the wordmark with any icon other than the N mark.
+
 ## Typography
 
 - **Display/Hero:** Plus Jakarta Sans, weight 800. Already shipped in this codebase, no new font dependency. Do not introduce a second display typeface (Fraunces and Cabinet Grotesk were both tried and rejected during design review, one family reads as more coherent than three).
@@ -132,6 +144,7 @@ Modeled on Math Academy (direct, benefit-first) and Cred (short cascading lines 
 7. **Data model implication:** the expertise-tags pattern (see Component Patterns) needs a backing field on `TeacherProfile`, e.g. `expertiseTags: string[]`, editable by the teacher in their profile/onboarding flow. Not yet in the Prisma schema as of this writing, flag it for whoever scopes the teacher-profile work, don't let it get silently dropped between design and implementation.
 8. **Mobile is not optional.** This audience books sessions on a phone between study blocks (see Product Context). Every component in this document has an explicit mobile behavior specified (Typography scale, Layout). Build and test mobile-first, not desktop-first-then-shrink, the full-bleed dark bands and the giant hero type are the parts most likely to break first at narrow widths.
 9. **Full-bleed sections need real QA**, not just a visual glance. Confirm in the browser inspector that `.proof-band` and `.manifesto-band` span full viewport width (100vw effectively, via being a direct child of `<body>`/outside the max-width container) at both mobile and desktop widths, this exact bug (nested inside the wrapper, silently clipped) happened once during design review.
+10. **Wire up the favicon and app icon.** Use `design/logo/mark.svg` (after the outline-conversion step noted in Brand Mark) for `app/favicon.ico` and any `apple-touch-icon` / `manifest.json` icon entries. Next.js App Router picks up `app/icon.svg` automatically if present, that's the simplest path, an SVG favicon needs no separate generation step for browser tabs (though still convert to outlines per the Brand Mark note, some browsers rasterize the tab icon without loading webfonts even for inline SVG).
 
 ## Decisions Log
 
@@ -152,3 +165,4 @@ Modeled on Math Academy (direct, benefit-first) and Cred (short cascading lines 
 | 2026-07-16 | Researched cred.club and linear.app specifically for how premium products create richness | User explicitly asked for more research before the next iteration. Finding: both concentrate richness into a few deliberate high-contrast moments rather than distributing decoration evenly |
 | 2026-07-16 | Added a second full-bleed dark "manifesto" editorial passage and a two-card testimonial section with a one-time gold color splash (`#F0B429`, used nowhere else in the system) | Direct application of the Cred/Linear research: two dark "beats" instead of one for page rhythm, one deliberate bold color moment instead of reopening the whole palette |
 | 2026-07-16 | **Design approved. Status set to FINAL, ready for implementation** | User: "this is it. make it happen." |
+| 2026-07-16 | Added the Brand Mark: an "N" lettermark in a rounded square (emerald bg, white text) plus a full nav lockup, in `design/logo/`. No illustrated icon, kept consistent with the system's no-custom-illustration rule | User asked for a logo. Reused the existing type/color tokens rather than opening a new design decision |

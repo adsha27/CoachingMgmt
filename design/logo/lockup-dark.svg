@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 48" width="220" height="48">
+  <rect width="48" height="48" rx="11" fill="#3DBE8B"/>
+  <text x="24" y="33" text-anchor="middle" font-family="'Plus Jakarta Sans', Arial, Helvetica, sans-serif" font-weight="800" font-size="24" letter-spacing="-0.5" fill="#101113">N</text>
+  <text x="62" y="31" font-family="'Plus Jakarta Sans', Arial, Helvetica, sans-serif" font-weight="800" font-size="21" letter-spacing="-0.4" fill="#F0EFEA">Novus <tspan fill="#3DBE8B">Classes</tspan></text>
+</svg>

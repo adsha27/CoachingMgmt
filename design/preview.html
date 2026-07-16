@@ -60,7 +60,8 @@
   .theme-toggle { position: fixed; bottom: 20px; right: 20px; z-index: 50; background: var(--surface); border: 1px solid var(--line); color: var(--ink); font-family: var(--font-mono); font-size: 12px; padding: 8px 14px; border-radius: 999px; cursor: pointer; box-shadow: 0 8px 20px -10px rgba(16,17,19,0.25); }
 
   nav { display: flex; align-items: center; justify-content: space-between; padding: 20px 0; border-bottom: 1px solid var(--line); }
-  .logo { font-weight: 800; font-size: 19px; letter-spacing: -0.01em; }
+  .logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 19px; letter-spacing: -0.01em; }
+  .logo-mark { width: 28px; height: 28px; border-radius: 7px; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
   .logo span { color: var(--accent); }
   .nav-links { display: flex; gap: 26px; align-items: center; font-size: 14px; }
   .nav-links a { color: var(--ink-soft); text-decoration: none; }
@@ -205,7 +206,7 @@
 
 <div class="wrap">
   <nav>
-    <div class="logo">Novus <span>Classes</span></div>
+    <div class="logo"><span class="logo-mark">N</span>Novus <span>Classes</span></div>
     <div class="nav-links">
       <a href="#">Browse</a>
       <a href="#">Sign in</a>
