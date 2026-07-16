@@ -6,7 +6,7 @@ dotenv.config({ path: ".env.test" });
 dotenv.config({ path: ".env.local", override: false });
 
 process.env.EMAIL_DELIVERY_MODE ??= "console";
-process.env.RESEND_API_KEY ??= "re_test_placeholder";
+process.env.SMTP_PASS ??= "test-placeholder";
 process.env.EMAIL_FROM ??= "noreply@example.test";
 process.env.CRON_SECRET ??= "test-cron-secret";
 // Use email OTP in tests — MSG91 is a production-only integration
