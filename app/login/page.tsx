@@ -233,6 +233,8 @@ function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [resentMsg, setResentMsg] = useState(false);
+  const [deliveryChannel, setDeliveryChannel] = useState<"email" | "phone">("phone");
+  const [deliveryEmail, setDeliveryEmail] = useState("");
 
   const maskedPhone = phone.length >= 6
     ? `+91 ${phone.slice(0, 2)}××××${phone.slice(-4)}`
@@ -240,7 +242,9 @@ function LoginForm() {
 
   const stepSubtitle: Record<Step, React.ReactNode> = {
     phone: "Enter your mobile number to receive a one-time code.",
-    code: <>{`Code sent to `}<span className="font-medium text-gray-700">{maskedPhone}</span><br />Valid for 10 minutes.</>,
+    code: deliveryChannel === "email"
+      ? <>{`Code sent to `}<span className="font-medium text-gray-700">{deliveryEmail}</span><br />Check your inbox — valid for 10 minutes.</>
+      : <>{`Code sent to `}<span className="font-medium text-gray-700">{maskedPhone}</span><br />Valid for 10 minutes.</>,
     register: "Your number is verified. Just a few more details.",
   };
 
@@ -256,7 +260,11 @@ function LoginForm() {
     if (data.needs_email) { setNeedsEmail(true); return; }
     if (res.status === 429) setError("Too many requests. Wait an hour before trying again.");
     else if (!res.ok) setError(data.error ?? "Could not send OTP. Please try again.");
-    else setStep("code");
+    else {
+      if (data.channel === "email") { setDeliveryChannel("email"); setDeliveryEmail(data.email ?? ""); }
+      else setDeliveryChannel("phone");
+      setStep("code");
+    }
   }
 
   const submitOtp = useCallback(async () => {

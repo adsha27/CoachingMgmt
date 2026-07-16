@@ -50,5 +50,6 @@ export async function POST(req: NextRequest) {
     console.error("OTP send failed:", err);
   }
 
-  return NextResponse.json({ ok: true });
+  const channel = !isDevFixed && (process.env.AUTH_MODE ?? "phone") === "email" ? "email" : "phone";
+  return NextResponse.json({ ok: true, channel, ...(channel === "email" ? { email: deliveryEmail } : {}) });
 }
