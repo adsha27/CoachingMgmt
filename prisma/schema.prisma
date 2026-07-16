@@ -16,6 +16,8 @@ model User {
   password             String?
   loginAttempts        Int                   @default(0)
   lockedUntil          DateTime?
+  targetExam           String?
+  currentClass         String?
   role                 Role
   status               UserStatus            @default(ACTIVE)
   createdAt            DateTime              @default(now())
@@ -119,6 +121,7 @@ model GroupCourse {
   description            String?
   maxStudents            Int                   @default(30)
   priceINR               Int
+  originalPriceINR       Int?
   status                 CourseStatus          @default(DRAFT)
   createdAt              DateTime              @default(now())
   enrolledCount          Int                   @default(0)
@@ -142,6 +145,7 @@ model OneOnOnePackage {
   title                  String
   subject                String
   priceINR               Int
+  originalPriceINR       Int?
   status                 CourseStatus          @default(DRAFT)
   createdAt              DateTime              @default(now())
   description            String?
@@ -345,6 +349,7 @@ enum CourseType {
 }
 
 enum BookingStatus {
+  PENDING
   ACTIVE
   COMPLETED
   CANCELLED

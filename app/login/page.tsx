@@ -1,347 +1,181 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, Suspense } from "react";
+import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-type Step = "phone" | "code" | "register";
-const STEPS: Step[] = ["phone", "code", "register"];
+const EXAMS = ["JEE Main", "JEE Advanced", "NEET", "CUET"];
+const CLASSES = ["Class 11", "Class 12", "Dropper"];
 
-// ── OTP box input ─────────────────────────────────────────────────────────────
-function OtpBoxes({ value, onChange, onComplete }: {
-  value: string;
-  onChange: (v: string) => void;
-  onComplete: () => void;
-}) {
-  const refs = useRef<(HTMLInputElement | null)[]>([]);
+const inputCls =
+  "w-full rounded-xl border border-gray-300 px-3 py-3 text-sm shadow-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500 transition-all";
 
-  function focus(i: number) {
-    refs.current[i]?.focus();
-    refs.current[i]?.select();
-  }
-
-  function handleKey(i: number, e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === "Backspace") {
-      const next = value.split("");
-      if (value[i]) { next[i] = ""; onChange(next.join("")); }
-      else if (i > 0) { focus(i - 1); next[i - 1] = ""; onChange(next.join("")); }
-      e.preventDefault();
-    } else if (e.key === "ArrowLeft" && i > 0) focus(i - 1);
-    else if (e.key === "ArrowRight" && i < 5) focus(i + 1);
-  }
-
-  function handleInput(i: number, e: React.ChangeEvent<HTMLInputElement>) {
-    const raw = e.target.value.replace(/\D/g, "");
-    if (!raw) return;
-    if (raw.length >= 6) {
-      const digits = raw.slice(0, 6);
-      onChange(digits); focus(5);
-      if (digits.length === 6) setTimeout(onComplete, 80);
-      return;
-    }
-    const next = value.split("").concat(Array(6).fill("")).slice(0, 6);
-    next[i] = raw[raw.length - 1];
-    const joined = next.join("");
-    onChange(joined);
-    if (i < 5) focus(i + 1);
-    if (joined.replace(/\s/g, "").length === 6 && !joined.includes(" ")) setTimeout(onComplete, 80);
-  }
-
-  function handlePaste(e: React.ClipboardEvent) {
-    const text = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
-    if (text.length > 0) {
-      onChange(text.padEnd(6, " ").slice(0, 6).replace(/ /g, ""));
-      focus(Math.min(text.length - 1, 5));
-      if (text.length === 6) setTimeout(onComplete, 80);
-    }
-    e.preventDefault();
-  }
-
-  return (
-    <div className="flex gap-2 justify-center" onPaste={handlePaste}>
-      {Array.from({ length: 6 }).map((_, i) => (
-        <input key={i}
-          ref={(el) => { refs.current[i] = el; }}
-          type="text" inputMode="numeric" maxLength={1}
-          value={value[i] ?? ""}
-          onChange={(e) => handleInput(i, e)}
-          onKeyDown={(e) => handleKey(i, e)}
-          onFocus={() => refs.current[i]?.select()}
-          autoComplete={i === 0 ? "one-time-code" : "off"}
-          autoFocus={i === 0}
-          className={`w-11 h-14 text-center text-xl font-bold rounded-xl border-2 outline-none transition-colors
-            ${value[i] ? "border-orange-500 bg-orange-50 text-orange-900" : "border-gray-200 bg-white text-gray-900"}
-            focus:border-orange-500 focus:ring-0`}
-        />
-      ))}
-    </div>
-  );
-}
-
-// ── Resend timer ──────────────────────────────────────────────────────────────
-function ResendButton({ phone, email, onResent }: { phone: string; email: string; onResent: () => void }) {
-  const [seconds, setSeconds] = useState(30);
-  useEffect(() => {
-    if (seconds <= 0) return;
-    const t = setTimeout(() => setSeconds((s) => s - 1), 1000);
-    return () => clearTimeout(t);
-  }, [seconds]);
-
-  async function resend() {
-    setSeconds(30);
-    await fetch("/api/auth/otp/request", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ phone, email: email || undefined }) });
-    onResent();
-  }
-
-  return seconds > 0
-    ? <p className="text-center text-sm text-gray-400">Resend OTP in <span className="font-medium text-gray-600">{seconds}s</span></p>
-    : <button type="button" onClick={resend} className="w-full text-sm text-orange-600 hover:text-orange-800 font-medium">Resend OTP</button>;
-}
-
-// ── Step components ───────────────────────────────────────────────────────────
-function PhoneStep({ phone, setPhone, needsEmail, email, setEmail, loading, onSubmit }: {
-  phone: string;
-  setPhone: (v: string) => void;
-  needsEmail: boolean;
-  email: string;
-  setEmail: (v: string) => void;
-  loading: boolean;
-  onSubmit: (e: React.FormEvent) => void;
-}) {
-  return (
-    <form onSubmit={onSubmit} className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1.5">Mobile number</label>
-        <div className="flex rounded-xl border border-gray-300 overflow-hidden focus-within:border-orange-500 focus-within:ring-1 focus-within:ring-orange-500 transition-all shadow-sm">
-          <span className="flex items-center pl-3 pr-2 text-sm text-gray-500 bg-gray-50 border-r border-gray-300 select-none shrink-0">+91</span>
-          <input type="tel" inputMode="numeric"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
-            required autoFocus placeholder="98765 43210"
-            className="flex-1 px-3 py-3 text-sm bg-white outline-none"
-          />
-        </div>
-      </div>
-      {needsEmail && (
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">Email address</label>
-          <input type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required autoFocus placeholder="you@example.com"
-            className="w-full rounded-xl border border-gray-300 px-3 py-3 text-sm shadow-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500 transition-all"
-          />
-          <p className="mt-1.5 text-xs text-gray-400">We&apos;ll send your login code here.</p>
-        </div>
-      )}
-      <button type="submit" disabled={loading || phone.length < 10 || (needsEmail && !email.includes("@"))}
-        className="w-full py-3 bg-orange-600 text-white text-sm font-semibold rounded-xl hover:bg-orange-700 disabled:opacity-50 transition-colors shadow-sm">
-        {loading ? "Sending…" : "Send OTP"}
-      </button>
-      <p className="text-xs text-center text-gray-400">By continuing you agree to our terms of service.</p>
-    </form>
-  );
-}
-
-function OtpStep({ phone, email, otp, setOtp, loading, onComplete, onBack, onResent }: {
-  phone: string;
-  email: string;
-  otp: string;
-  setOtp: (v: string) => void;
-  loading: boolean;
-  onComplete: () => void;
-  onBack: () => void;
-  onResent: () => void;
-}) {
-  return (
-    <div className="space-y-6">
-      <OtpBoxes value={otp} onChange={(v) => setOtp(v)} onComplete={onComplete} />
-      {loading && <p className="text-center text-sm text-orange-600 animate-pulse">Verifying…</p>}
-      <ResendButton phone={phone} email={email} onResent={onResent} />
-      <button type="button" onClick={onBack} className="w-full text-sm text-gray-400 hover:text-gray-600 transition-colors">
-        ← Change number
-      </button>
-    </div>
-  );
-}
-
-function RegisterStep({ name, setName, email, setEmail, role, setRole, loading, onSubmit }: {
-  name: string; setName: (v: string) => void;
-  email: string; setEmail: (v: string) => void;
-  role: "STUDENT" | "TEACHER"; setRole: (v: "STUDENT" | "TEACHER") => void;
-  loading: boolean;
-  onSubmit: (e: React.FormEvent) => void;
-}) {
-  return (
-    <form onSubmit={onSubmit} className="space-y-4">
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1.5">Full name</label>
-        <input type="text" value={name} onChange={(e) => setName(e.target.value)}
-          required autoFocus placeholder="Arjun Mehta"
-          className="w-full rounded-xl border border-gray-300 px-3 py-3 text-sm shadow-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500 transition-all" />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1.5">Email address</label>
-        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
-          required placeholder="arjun@example.com"
-          className="w-full rounded-xl border border-gray-300 px-3 py-3 text-sm shadow-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500 transition-all" />
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">I am a…</label>
-        <div className="grid grid-cols-2 gap-3">
-          {(["STUDENT", "TEACHER"] as const).map((r) => (
-            <label key={r} className="cursor-pointer">
-              <input type="radio" name="role" value={r} checked={role === r} onChange={() => setRole(r)} className="sr-only" />
-              <div className={`rounded-xl border-2 px-4 py-3 text-sm font-semibold text-center transition-all ${
-                role === r ? "border-orange-600 bg-orange-50 text-orange-700" : "border-gray-200 text-gray-600 hover:border-gray-300"
-              }`}>
-                {r === "STUDENT" ? "🎓 Student" : "👨‍🏫 Teacher"}
-              </div>
-            </label>
-          ))}
-        </div>
-      </div>
-      <button type="submit" disabled={loading}
-        className="w-full py-3 bg-orange-600 text-white text-sm font-semibold rounded-xl hover:bg-orange-700 disabled:opacity-50 transition-colors shadow-sm">
-        {loading ? "Creating account…" : "Create account"}
-      </button>
-    </form>
-  );
-}
-
-// ── Step metadata ─────────────────────────────────────────────────────────────
-const STEP_TITLE: Record<Step, string> = {
-  phone: "Sign in or register",
-  code: "Enter OTP",
-  register: "Create your account",
-};
-
-// ── Main login form ───────────────────────────────────────────────────────────
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+
   const rawNext = searchParams.get("next") ?? "";
   const next = rawNext.startsWith("/") && !rawNext.startsWith("//") ? rawNext : "";
+  const isTeacherPortal = searchParams.get("portal") === "teacher";
+  const applyCourseId = searchParams.get("applyCourseId");
+  const applyPackageId = searchParams.get("applyPackageId");
+  const applying = Boolean(applyCourseId || applyPackageId);
 
-  const [step, setStep] = useState<Step>("phone");
-  const [phone, setPhone] = useState("");
-  const [needsEmail, setNeedsEmail] = useState(false);
-  const [otp, setOtp] = useState("");
-  const [regToken, setRegToken] = useState("");
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [role, setRole] = useState<"STUDENT" | "TEACHER">("STUDENT");
+  // Arriving from an "Apply" link → start on register, as a student.
+  const [mode, setMode] = useState<"signin" | "register">(applying ? "register" : "signin");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [resentMsg, setResentMsg] = useState(false);
-  const [deliveryChannel, setDeliveryChannel] = useState<"email" | "phone">("phone");
-  const [deliveryEmail, setDeliveryEmail] = useState("");
 
-  const maskedPhone = phone.length >= 6
-    ? `+91 ${phone.slice(0, 2)}××××${phone.slice(-4)}`
-    : `+91 ${phone}`;
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [role, setRole] = useState<"STUDENT" | "TEACHER">(isTeacherPortal ? "TEACHER" : "STUDENT");
+  const [targetExam, setTargetExam] = useState("");
+  const [currentClass, setCurrentClass] = useState("");
 
-  const stepSubtitle: Record<Step, React.ReactNode> = {
-    phone: "Enter your mobile number to receive a one-time code.",
-    code: deliveryChannel === "email"
-      ? <>{`Code sent to `}<span className="font-medium text-gray-700">{deliveryEmail}</span><br />Check your inbox — valid for 10 minutes.</>
-      : <>{`Code sent to `}<span className="font-medium text-gray-700">{maskedPhone}</span><br />Valid for 10 minutes.</>,
-    register: "Your number is verified. Just a few more details.",
-  };
-
-  async function requestOtp(e: React.FormEvent) {
+  async function signin(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true); setError(null);
-    const res = await fetch("/api/auth/otp/request", {
+    const res = await fetch("/api/auth/login", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phone, email: needsEmail ? email : undefined }),
+      body: JSON.stringify({ email, password }),
     });
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
     setLoading(false);
-    if (data.needs_email) { setNeedsEmail(true); return; }
-    if (res.status === 429) setError("Too many requests. Wait an hour before trying again.");
-    else if (!res.ok) setError(data.error ?? "Could not send OTP. Please try again.");
-    else {
-      if (data.channel === "email") { setDeliveryChannel("email"); setDeliveryEmail(data.email ?? ""); }
-      else setDeliveryChannel("phone");
-      setStep("code");
-    }
-  }
-
-  const submitOtp = useCallback(async () => {
-    if (otp.replace(/\s/g, "").length < 6) return;
-    setLoading(true); setError(null);
-    const res = await fetch("/api/auth/otp/verify", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ phone, code: otp.trim() }),
-    });
-    const data = await res.json();
-    setLoading(false);
-    if (!res.ok) { setError(data.error ?? "Incorrect OTP. Please try again."); setOtp(""); return; }
-    if (data.needs_registration) { setRegToken(data.registration_token); setStep("register"); return; }
+    if (!res.ok) { setError(data.error ?? "Could not sign in. Please try again."); return; }
     router.replace(next || data.redirect || "/");
-  }, [otp, phone, next, router]);
-
-  useEffect(() => {
-    if (step === "code" && otp.replace(/\s/g, "").length === 6 && !loading) submitOtp();
-  }, [otp, step, loading, submitOtp]);
+  }
 
   async function register(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true); setError(null);
     const res = await fetch("/api/auth/register", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ registration_token: regToken, name, email, role }),
+      body: JSON.stringify({
+        name, email, phone, password, role,
+        ...(role === "STUDENT" ? { targetExam, currentClass } : {}),
+        ...(applyCourseId ? { applyCourseId: Number(applyCourseId) } : {}),
+        ...(applyPackageId ? { applyPackageId: Number(applyPackageId) } : {}),
+      }),
     });
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
     setLoading(false);
-    if (!res.ok) { setError(data.error ?? "Registration failed. Please try again."); return; }
+    if (!res.ok) { setError(data.error ?? "Could not create your account. Please try again."); return; }
     router.replace(next || data.redirect || "/");
   }
+
+  const title = mode === "signin"
+    ? (isTeacherPortal ? "Teacher sign in" : "Sign in")
+    : (applying ? "Create your profile to apply" : "Create your account");
+  const subtitle = mode === "signin"
+    ? "Enter your email and password."
+    : "Set an email and password — you'll use them to sign in.";
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-white px-4 py-12">
       <a href="/" className="mb-10 text-xl font-bold text-slate-900 tracking-tight">EduConnect</a>
 
       <div className="w-full max-w-sm">
-        <div className="flex justify-center gap-1.5 mb-8">
-          {(step === "register" ? STEPS : (["phone", "code"] as Step[])).map((s, i) => (
-            <div key={s} className={`h-1.5 rounded-full transition-all duration-300 ${
-              step === s ? "w-6 bg-orange-600" : i < (step === "register" ? STEPS : ["phone", "code"]).indexOf(step) ? "w-1.5 bg-orange-300" : "w-1.5 bg-gray-200"
-            }`} />
-          ))}
-        </div>
-
-        <h1 className="text-2xl font-bold text-gray-900 mb-1.5 text-center">{STEP_TITLE[step]}</h1>
-        <p className="text-sm text-gray-500 text-center mb-8 leading-relaxed">{stepSubtitle[step]}</p>
+        <h1 className="text-2xl font-bold text-gray-900 mb-1.5 text-center">{title}</h1>
+        <p className="text-sm text-gray-500 text-center mb-8 leading-relaxed">{subtitle}</p>
 
         {error && (
           <div className="mb-5 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">{error}</div>
         )}
-        {resentMsg && (
-          <div className="mb-5 px-4 py-3 bg-green-50 border border-green-200 rounded-xl text-sm text-green-700">OTP resent successfully.</div>
-        )}
 
-        {step === "phone" && (
-          <PhoneStep
-            phone={phone} setPhone={setPhone}
-            needsEmail={needsEmail} email={email} setEmail={setEmail}
-            loading={loading} onSubmit={requestOtp}
-          />
-        )}
-        {step === "code" && (
-          <OtpStep
-            phone={phone} email={email} otp={otp}
-            setOtp={(v) => { setOtp(v); setError(null); setResentMsg(false); }}
-            loading={loading} onComplete={submitOtp}
-            onBack={() => { setStep("phone"); setOtp(""); setError(null); }}
-            onResent={() => { setOtp(""); setError(null); setResentMsg(true); setTimeout(() => setResentMsg(false), 3000); }}
-          />
-        )}
-        {step === "register" && (
-          <RegisterStep
-            name={name} setName={setName} email={email} setEmail={setEmail}
-            role={role} setRole={setRole} loading={loading} onSubmit={register}
-          />
+        {mode === "signin" ? (
+          <form onSubmit={signin} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoFocus placeholder="you@example.com" className={inputCls} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="••••••••" className={inputCls} />
+            </div>
+            <button type="submit" disabled={loading || !email.includes("@") || !password}
+              className="w-full py-3 bg-orange-600 text-white text-sm font-semibold rounded-xl hover:bg-orange-700 disabled:opacity-50 transition-colors shadow-sm">
+              {loading ? "Signing in…" : "Sign in"}
+            </button>
+            <p className="text-center text-sm text-gray-500">
+              New here?{" "}
+              <button type="button" onClick={() => { setMode("register"); setError(null); }} className="text-orange-600 hover:text-orange-800 font-medium">
+                Create an account
+              </button>
+            </p>
+          </form>
+        ) : (
+          <form onSubmit={register} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Full name</label>
+              <input type="text" value={name} onChange={(e) => setName(e.target.value)} required autoFocus placeholder="Arjun Mehta" className={inputCls} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="you@example.com" className={inputCls} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Mobile number</label>
+              <div className="flex rounded-xl border border-gray-300 overflow-hidden focus-within:border-orange-500 focus-within:ring-1 focus-within:ring-orange-500 transition-all shadow-sm">
+                <span className="flex items-center pl-3 pr-2 text-sm text-gray-500 bg-gray-50 border-r border-gray-300 select-none shrink-0">+91</span>
+                <input type="tel" inputMode="numeric" value={phone}
+                  onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                  required placeholder="98765 43210" className="flex-1 px-3 py-3 text-sm bg-white outline-none" />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} placeholder="At least 8 characters" className={inputCls} />
+            </div>
+
+            {!isTeacherPortal && !applying && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">I am a…</label>
+                <div className="grid grid-cols-2 gap-3">
+                  {(["STUDENT", "TEACHER"] as const).map((r) => (
+                    <label key={r} className="cursor-pointer">
+                      <input type="radio" name="role" value={r} checked={role === r} onChange={() => setRole(r)} className="sr-only" />
+                      <div className={`rounded-xl border-2 px-4 py-3 text-sm font-semibold text-center transition-all ${
+                        role === r ? "border-orange-600 bg-orange-50 text-orange-700" : "border-gray-200 text-gray-600 hover:border-gray-300"
+                      }`}>
+                        {r === "STUDENT" ? "🎓 Student" : "👨‍🏫 Teacher"}
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {role === "STUDENT" && (
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Target exam</label>
+                  <select value={targetExam} onChange={(e) => setTargetExam(e.target.value)} className={inputCls}>
+                    <option value="">— Select —</option>
+                    {EXAMS.map((x) => <option key={x}>{x}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Current class</label>
+                  <select value={currentClass} onChange={(e) => setCurrentClass(e.target.value)} className={inputCls}>
+                    <option value="">— Select —</option>
+                    {CLASSES.map((c) => <option key={c}>{c}</option>)}
+                  </select>
+                </div>
+              </div>
+            )}
+
+            <button type="submit" disabled={loading || !email.includes("@") || password.length < 8 || phone.length < 10 || !name}
+              className="w-full py-3 bg-orange-600 text-white text-sm font-semibold rounded-xl hover:bg-orange-700 disabled:opacity-50 transition-colors shadow-sm">
+              {loading ? "Creating account…" : applying ? "Create profile & apply" : "Create account"}
+            </button>
+            <p className="text-center text-sm text-gray-500">
+              Already have an account?{" "}
+              <button type="button" onClick={() => { setMode("signin"); setError(null); }} className="text-orange-600 hover:text-orange-800 font-medium">
+                Sign in
+              </button>
+            </p>
+          </form>
         )}
       </div>
     </main>

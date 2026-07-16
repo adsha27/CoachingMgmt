@@ -32,7 +32,7 @@ export default async function StudentDashboard() {
 
   const now = new Date();
 
-  const [upcoming, past, bookings, parents] = await Promise.all([
+  const [upcoming, past, bookings, pendingApps, parents] = await Promise.all([
     prisma.session.findMany({
       where: {
         status: "SCHEDULED",
@@ -79,6 +79,14 @@ export default async function StudentDashboard() {
         slotProposals: { where: { status: "PENDING" }, take: 1 },
       },
     }),
+    prisma.booking.findMany({
+      where: { studentId: user.id, status: "PENDING" },
+      include: {
+        groupCourse: { select: { title: true, subject: true } },
+        oneOnOnePackage: { select: { title: true, subject: true } },
+      },
+      orderBy: { bookedAt: "desc" },
+    }),
     prisma.parentAccess.findMany({
       where: { studentId: user.id },
       select: { id: true, parentName: true, parentPhone: true, parentEmail: true, verified: true },
@@ -93,7 +101,7 @@ export default async function StudentDashboard() {
     return s.groupCourse?.teacher.name ?? s.booking?.oneOnOnePackage?.teacher.name ?? "—";
   }
 
-  const hasAnything = bookings.length > 0 || upcoming.length > 0 || past.length > 0;
+  const hasAnything = bookings.length > 0 || upcoming.length > 0 || past.length > 0 || pendingApps.length > 0;
 
   return (
     <main className="min-h-screen bg-gray-50">
@@ -209,6 +217,34 @@ export default async function StudentDashboard() {
                 })}
               </div>
             )}
+          </section>
+        )}
+
+        {/* ── Pending applications (awaiting teacher approval) ───────────── */}
+        {pendingApps.length > 0 && (
+          <section>
+            <h2 className="text-base font-bold text-gray-900 mb-3">Applications</h2>
+            <div className="space-y-3">
+              {pendingApps.map((b) => (
+                <div key={b.id} className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
+                  <div className="flex justify-between items-start gap-3">
+                    <div>
+                      <p className="font-semibold text-sm text-gray-900">
+                        {b.groupCourse?.title ?? b.oneOnOnePackage?.title}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        {b.groupCourse?.subject ?? b.oneOnOnePackage?.subject}
+                        {b.courseType === "ONE_ON_ONE" && " · 1-on-1"}
+                      </p>
+                    </div>
+                    <span className="text-xs font-medium text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full shrink-0">
+                      Awaiting approval
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">Your teacher will review this and get in touch.</p>
+                </div>
+              ))}
+            </div>
           </section>
         )}
 

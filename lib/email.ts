@@ -1,12 +1,20 @@
-import { Resend } from "resend";
+import nodemailer, { type Transporter } from "nodemailer";
 
-let resend: Resend | null = null;
+const WORKSPACE_EMAIL = "liveclass@coursesdssirchemisty.com";
 
-function getResend() {
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) throw new Error("RESEND_API_KEY is not set");
-  resend ??= new Resend(apiKey);
-  return resend;
+let transporter: Transporter | null = null;
+
+function getTransporter() {
+  const user = process.env.SMTP_USER ?? WORKSPACE_EMAIL;
+  const pass = process.env.SMTP_PASS;
+  if (!pass) throw new Error("SMTP_PASS not configured");
+  transporter ??= nodemailer.createTransport({
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true,
+    auth: { user, pass },
+  });
+  return transporter;
 }
 
 export async function sendEmail(params: {
@@ -24,17 +32,13 @@ export async function sendEmail(params: {
     return { id: `console-${Date.now()}` };
   }
 
-  const { data, error } = await getResend().emails.send({
-    from: process.env.EMAIL_FROM ?? "noreply@yourdomain.com",
+  const info = await getTransporter().sendMail({
+    from: process.env.EMAIL_FROM ?? WORKSPACE_EMAIL,
     to: params.to,
     subject: params.subject,
     html: params.html,
     text: params.text,
   });
 
-  if (error || !data) {
-    throw new Error(error?.message ?? "Resend returned no data");
-  }
-
-  return { id: data.id };
+  return { id: info.messageId };
 }

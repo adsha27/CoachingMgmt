@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { NextRequest } from "next/server";
-import { POST as bookGroup } from "@/app/api/bookings/group/route";
-import { POST as bookOneOnOne } from "@/app/api/bookings/one-on-one/route";
+import { POST as apply } from "@/app/api/applications/route";
+import { PATCH as decideApplication } from "@/app/api/teacher/applications/[id]/route";
 import { POST as createProposal } from "@/app/api/bookings/[id]/proposals/route";
 import { PATCH as handleProposal } from "@/app/api/proposals/[id]/route";
 import { POST as submitFeedback } from "@/app/api/sessions/[id]/feedback/route";
@@ -118,50 +118,33 @@ afterEach(async () => {
   await prisma.user.deleteMany({ where: { name: { startsWith: P } } });
 });
 
-// ─── Group Booking ────────────────────────────────────────────────────────────
+// ─── Applications (apply for a class) ──────────────────────────────────────────
 
-describe("POST /api/bookings/group", () => {
-  it("books a listed course and increments enrolledCount", async () => {
+describe("POST /api/applications", () => {
+  it("creates a PENDING application without taking a seat", async () => {
     const teacher = await makeTeacher();
     const student = await makeUser("STUDENT");
     const course = await makeCourse(teacher.id);
     const sid = await createSession(student.id);
 
-    const res = await bookGroup(req("POST", "/api/bookings/group", { courseId: course.id }, sid));
+    const res = await apply(req("POST", "/api/applications", { courseId: course.id }, sid));
     expect(res.status).toBe(201);
 
+    const booking = await prisma.booking.findFirst({ where: { studentId: student.id, groupCourseId: course.id } });
+    expect(booking!.status).toBe("PENDING");
+    // No seat is taken until the teacher approves.
     const updated = await prisma.groupCourse.findUnique({ where: { id: course.id } });
-    expect(updated!.enrolledCount).toBe(1);
+    expect(updated!.enrolledCount).toBe(0);
   });
 
-  it("returns 409 when course is full (atomic — no double booking)", async () => {
-    const teacher = await makeTeacher();
-    const s1 = await makeUser("STUDENT");
-    const s2 = await makeUser("STUDENT");
-    const course = await makeCourse(teacher.id, { maxStudents: 1 });
-    const sid1 = await createSession(s1.id);
-    const sid2 = await createSession(s2.id);
-
-    const [r1, r2] = await Promise.all([
-      bookGroup(req("POST", "/api/bookings/group", { courseId: course.id }, sid1)),
-      bookGroup(req("POST", "/api/bookings/group", { courseId: course.id }, sid2)),
-    ]);
-
-    const statuses = [r1.status, r2.status].sort();
-    expect(statuses).toEqual([201, 409]);
-
-    const updated = await prisma.groupCourse.findUnique({ where: { id: course.id } });
-    expect(updated!.enrolledCount).toBe(1);
-  });
-
-  it("returns 409 if student already enrolled", async () => {
+  it("returns 409 if the student already applied", async () => {
     const teacher = await makeTeacher();
     const student = await makeUser("STUDENT");
     const course = await makeCourse(teacher.id);
     const sid = await createSession(student.id);
 
-    await bookGroup(req("POST", "/api/bookings/group", { courseId: course.id }, sid));
-    const res = await bookGroup(req("POST", "/api/bookings/group", { courseId: course.id }, sid));
+    await apply(req("POST", "/api/applications", { courseId: course.id }, sid));
+    const res = await apply(req("POST", "/api/applications", { courseId: course.id }, sid));
     expect(res.status).toBe(409);
   });
 
@@ -171,73 +154,87 @@ describe("POST /api/bookings/group", () => {
     const course = await makeCourse(teacher.id, { status: "DRAFT" });
     const sid = await createSession(student.id);
 
-    const res = await bookGroup(req("POST", "/api/bookings/group", { courseId: course.id }, sid));
+    const res = await apply(req("POST", "/api/applications", { courseId: course.id }, sid));
     expect(res.status).toBe(404);
   });
 
   it("returns 401 for unauthenticated requests", async () => {
     const teacher = await makeTeacher();
     const course = await makeCourse(teacher.id);
-    const res = await bookGroup(req("POST", "/api/bookings/group", { courseId: course.id }));
+    const res = await apply(req("POST", "/api/applications", { courseId: course.id }));
     expect(res.status).toBe(401);
   });
 });
 
-// ─── 1-on-1 Booking ───────────────────────────────────────────────────────────
+// ─── Application approve / reject ───────────────────────────────────────────────
 
-describe("POST /api/bookings/one-on-one", () => {
-  it("creates booking and first session", async () => {
+describe("PATCH /api/teacher/applications/[id]", () => {
+  async function pendingFor(studentId: number, courseId: number) {
+    return prisma.booking.create({
+      data: { studentId, courseType: "GROUP", groupCourseId: courseId, totalSessions: 10, sessionsRemaining: 10, status: "PENDING" },
+    });
+  }
+
+  it("teacher approves — booking goes ACTIVE and the seat is taken", async () => {
     const teacher = await makeTeacher();
     const student = await makeUser("STUDENT");
-    const pkg = await makePackage(teacher.id);
-    const sid = await createSession(student.id);
-    const scheduledAt = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
+    const course = await makeCourse(teacher.id);
+    const booking = await pendingFor(student.id, course.id);
+    const sid = await createSession(teacher.id);
 
-    const res = await bookOneOnOne(req("POST", "/api/bookings/one-on-one", { packageId: pkg.id, scheduledAt }, sid));
-    expect(res.status).toBe(201);
-    const data = await res.json();
-    expect(data.booking.id).toBeDefined();
-    expect(data.session.id).toBeDefined();
-    expect(data.booking.sessionsRemaining).toBe(pkg.totalSessions - 1);
+    const res = await decideApplication(
+      paramReq("PATCH", `/api/teacher/applications/${booking.id}`, { action: "approve" }, sid),
+      { params: Promise.resolve({ id: String(booking.id) }) },
+    );
+    expect(res.status).toBe(200);
+    expect((await prisma.booking.findUnique({ where: { id: booking.id } }))!.status).toBe("ACTIVE");
+    expect((await prisma.groupCourse.findUnique({ where: { id: course.id } }))!.enrolledCount).toBe(1);
   });
 
-  it("returns 409 if already booked", async () => {
+  it("rejecting sets the booking CANCELLED and takes no seat", async () => {
     const teacher = await makeTeacher();
     const student = await makeUser("STUDENT");
-    const pkg = await makePackage(teacher.id);
-    const sid = await createSession(student.id);
-    const scheduledAt = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
+    const course = await makeCourse(teacher.id);
+    const booking = await pendingFor(student.id, course.id);
+    const sid = await createSession(teacher.id);
 
-    await bookOneOnOne(req("POST", "/api/bookings/one-on-one", { packageId: pkg.id, scheduledAt }, sid));
-    const res = await bookOneOnOne(req("POST", "/api/bookings/one-on-one", { packageId: pkg.id, scheduledAt }, sid));
+    const res = await decideApplication(
+      paramReq("PATCH", `/api/teacher/applications/${booking.id}`, { action: "reject" }, sid),
+      { params: Promise.resolve({ id: String(booking.id) }) },
+    );
+    expect(res.status).toBe(200);
+    expect((await prisma.booking.findUnique({ where: { id: booking.id } }))!.status).toBe("CANCELLED");
+    expect((await prisma.groupCourse.findUnique({ where: { id: course.id } }))!.enrolledCount).toBe(0);
+  });
+
+  it("returns 403 when another teacher tries to decide it", async () => {
+    const teacher = await makeTeacher();
+    const other = await makeTeacher();
+    const student = await makeUser("STUDENT");
+    const course = await makeCourse(teacher.id);
+    const booking = await pendingFor(student.id, course.id);
+    const sid = await createSession(other.id);
+
+    const res = await decideApplication(
+      paramReq("PATCH", `/api/teacher/applications/${booking.id}`, { action: "approve" }, sid),
+      { params: Promise.resolve({ id: String(booking.id) }) },
+    );
+    expect(res.status).toBe(403);
+  });
+
+  it("returns 409 when approving into a course that is already full", async () => {
+    const teacher = await makeTeacher();
+    const student = await makeUser("STUDENT");
+    const course = await makeCourse(teacher.id, { maxStudents: 1 });
+    await prisma.groupCourse.update({ where: { id: course.id }, data: { enrolledCount: 1 } });
+    const booking = await pendingFor(student.id, course.id);
+    const sid = await createSession(teacher.id);
+
+    const res = await decideApplication(
+      paramReq("PATCH", `/api/teacher/applications/${booking.id}`, { action: "approve" }, sid),
+      { params: Promise.resolve({ id: String(booking.id) }) },
+    );
     expect(res.status).toBe(409);
-  });
-
-  it("returns 400 for a past scheduledAt", async () => {
-    const teacher = await makeTeacher();
-    const student = await makeUser("STUDENT");
-    const pkg = await makePackage(teacher.id);
-    const sid = await createSession(student.id);
-    const past = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-
-    const res = await bookOneOnOne(req("POST", "/api/bookings/one-on-one", { packageId: pkg.id, scheduledAt: past }, sid));
-    expect(res.status).toBe(400);
-  });
-
-  it("returns 404 for a DRAFT package", async () => {
-    const teacher = await makeTeacher();
-    const student = await makeUser("STUDENT");
-    const pkg = await makePackage(teacher.id, { status: "DRAFT" });
-    const sid = await createSession(student.id);
-    const scheduledAt = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
-
-    const res = await bookOneOnOne(req("POST", "/api/bookings/one-on-one", { packageId: pkg.id, scheduledAt }, sid));
-    expect(res.status).toBe(404);
-  });
-
-  it("returns 401 for unauthenticated requests", async () => {
-    const res = await bookOneOnOne(req("POST", "/api/bookings/one-on-one", { packageId: 1, scheduledAt: new Date().toISOString() }));
-    expect(res.status).toBe(401);
   });
 });
 

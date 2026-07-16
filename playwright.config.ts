@@ -39,7 +39,7 @@ export default defineConfig({
     env: {
       DATABASE_URL: DB_URL,
       EMAIL_DELIVERY_MODE: process.env.EMAIL_DELIVERY_MODE ?? "console",
-      RESEND_API_KEY: process.env.RESEND_API_KEY ?? "re_test_placeholder",
+      SMTP_PASS: process.env.SMTP_PASS ?? "test-placeholder",
       EMAIL_FROM: process.env.EMAIL_FROM ?? "noreply@example.test",
       NEXT_PUBLIC_BASE_URL: E2E_BASE,
       CRON_SECRET: process.env.CRON_SECRET ?? "test-cron-secret",
