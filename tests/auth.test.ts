@@ -169,7 +169,7 @@ describe("POST /api/auth/logout", () => {
     const user = await makeUser("STUDENT", { password: "supersecret" });
     const sid = await createSession(user.id);
     const res = await logout(jsonReq("POST", "/api/auth/logout", undefined, sid));
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(303); // logout redirects to /login
     const session = await prisma.userSession.findUnique({ where: { sessionId: sid } });
     expect(session).toBeNull();
   });
