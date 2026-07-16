@@ -55,9 +55,10 @@ afterEach(async () => {
 describe("POST /api/auth/otp/request", () => {
   it("stores an OTP hash for any submitted phone+email (including unregistered)", async () => {
     const p = phone();
-    const res = await requestOtp(jsonReq("POST", "/api/auth/otp/request", { phone: p, email: `${uid()}@example.test` }));
+    const testEmail = `${uid()}@example.test`;
+    const res = await requestOtp(jsonReq("POST", "/api/auth/otp/request", { phone: p, email: testEmail }));
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ ok: true });
+    expect(await res.json()).toEqual({ ok: true, channel: "email", email: testEmail });
     const code = await prisma.otpCode.findFirst({ where: { phone: p } });
     expect(code).not.toBeNull();
     expect(code!.codeHash).not.toHaveLength(0);
