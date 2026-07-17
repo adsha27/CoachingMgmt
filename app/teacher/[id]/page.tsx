@@ -97,6 +97,7 @@ export default async function TeacherProfilePage({
           qualifications: true,
           subjects: true,
           targetExams: true,
+          expertiseTags: true,
           teachingExperienceYears: true,
           rating: true,
           profilePhotoUrl: true,
@@ -177,39 +178,39 @@ export default async function TeacherProfilePage({
   };
 
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-paper">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Back link */}
-        <Link href="/browse" className="text-sm text-orange-600 hover:underline mb-6 inline-block">
+        <Link href="/browse" className="text-sm font-semibold text-accent hover:text-accent-dark mb-6 inline-block">
           ← Browse teachers
         </Link>
 
         {/* Profile header */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+        <div className="bg-surface rounded-2xl border border-line p-6 mb-6">
           <div className="flex items-start gap-5">
             {p?.profilePhotoUrl ? (
               <img
                 src={p.profilePhotoUrl}
                 alt={teacher.name}
-                className="w-20 h-20 rounded-full object-cover bg-gray-100 shrink-0"
+                className="w-20 h-20 rounded-full object-cover bg-surface-sunken shrink-0"
               />
             ) : (
-              <div className="w-20 h-20 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold text-2xl shrink-0">
+              <div className="w-20 h-20 rounded-full bg-accent-tint flex items-center justify-center text-accent font-extrabold text-2xl shrink-0">
                 {teacher.name[0]}
               </div>
             )}
             <div className="flex-1 min-w-0">
-              <h1 className="text-2xl font-bold text-gray-900">{teacher.name}</h1>
+              <h1 className="text-2xl font-bold text-ink">{teacher.name}</h1>
               {(p?.subjects?.length ?? 0) > 0 && (
-                <p className="text-gray-500 mt-1">{p!.subjects.join(" · ")}</p>
+                <p className="text-ink-soft mt-1">{p!.subjects.join(" · ")}</p>
               )}
-              <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
+              <div className="flex items-center gap-4 mt-2 font-mono text-sm text-ink-soft">
                 {p?.rating && (
-                  <span className="font-medium text-amber-600">★ {p.rating.toFixed(1)}</span>
+                  <span className="font-medium text-ink">{p.rating.toFixed(1)} ★</span>
                 )}
                 {p?.teachingExperienceYears && (
                   <span>{p.teachingExperienceYears} years experience</span>
@@ -218,24 +219,34 @@ export default async function TeacherProfilePage({
                   <span>{p!.targetExams.join(", ")}</span>
                 )}
               </div>
+              {(p?.expertiseTags?.length ?? 0) > 0 && (
+                <div className="flex flex-wrap gap-1.5 mt-3">
+                  {p!.expertiseTags.map((tag) => (
+                    <span key={tag}
+                      className="text-xs font-semibold px-2.5 py-1 rounded-full bg-surface-sunken border border-line text-ink-soft">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              )}
               {/* Social links */}
               {Object.keys(social).length > 0 && (
                 <div className="flex gap-3 mt-3">
                   {social.youtube && (
                     <a href={social.youtube} target="_blank" rel="noopener noreferrer"
-                      className="text-xs text-gray-400 hover:text-red-500">YouTube</a>
+                      className="text-xs text-ink-soft hover:text-danger">YouTube</a>
                   )}
                   {social.instagram && (
                     <a href={social.instagram} target="_blank" rel="noopener noreferrer"
-                      className="text-xs text-gray-400 hover:text-pink-500">Instagram</a>
+                      className="text-xs text-ink-soft hover:text-accent">Instagram</a>
                   )}
                   {social.twitter && (
                     <a href={social.twitter} target="_blank" rel="noopener noreferrer"
-                      className="text-xs text-gray-400 hover:text-blue-400">Twitter</a>
+                      className="text-xs text-ink-soft hover:text-accent">Twitter</a>
                   )}
                   {social.linkedin && (
                     <a href={social.linkedin} target="_blank" rel="noopener noreferrer"
-                      className="text-xs text-gray-400 hover:text-blue-600">LinkedIn</a>
+                      className="text-xs text-ink-soft hover:text-accent">LinkedIn</a>
                   )}
                 </div>
               )}
@@ -243,23 +254,23 @@ export default async function TeacherProfilePage({
           </div>
 
           {p?.bio && (
-            <p className="mt-5 text-gray-700 text-sm leading-relaxed">{p.bio}</p>
+            <p className="mt-5 text-ink text-sm leading-relaxed">{p.bio}</p>
           )}
 
           {p?.qualifications && (
-            <div className="mt-4 border-t border-gray-100 pt-4">
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">
+            <div className="mt-4 border-t border-line pt-4">
+              <h3 className="text-xs font-semibold text-ink-soft uppercase tracking-wide mb-1">
                 Qualifications
               </h3>
-              <p className="text-sm text-gray-700 whitespace-pre-line">{p.qualifications}</p>
+              <p className="text-sm text-ink whitespace-pre-line">{p.qualifications}</p>
             </div>
           )}
         </div>
 
         {/* Demo video */}
         {embedId && (
-          <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
-            <h2 className="font-semibold text-gray-900 mb-4">Introduction video</h2>
+          <div className="bg-surface rounded-2xl border border-line p-6 mb-6">
+            <h2 className="font-semibold text-ink mb-4">Introduction video</h2>
             <div className="aspect-video rounded-lg overflow-hidden">
               <iframe
                 src={`https://www.youtube.com/embed/${embedId}`}
@@ -275,22 +286,22 @@ export default async function TeacherProfilePage({
         {/* Group courses */}
         {teacher.groupCourses.length > 0 && (
           <div className="mb-6">
-            <h2 className="font-semibold text-gray-900 mb-3">Group Courses</h2>
+            <h2 className="font-semibold text-ink mb-3">Group Courses</h2>
             <div className="space-y-3">
               {teacher.groupCourses.map((c) => (
-                <div key={c.id} className="bg-white rounded-xl border border-gray-200 p-5">
+                <div key={c.id} className="bg-surface rounded-2xl border border-line p-5">
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <h3 className="font-semibold text-gray-900">{c.title}</h3>
-                      <p className="text-xs text-gray-500 mt-0.5">
+                      <h3 className="font-semibold text-ink">{c.title}</h3>
+                      <p className="text-xs text-ink-soft mt-0.5">
                         {c.subject}{c.targetExam ? ` · ${c.targetExam}` : ""}
                         {" · "}{c.totalSessions} sessions × {c.sessionDurationMinutes} min
                         {" · "}Starts {new Date(c.startDate).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}
                       </p>
                       {c.description && (
-                        <p className="text-sm text-gray-600 mt-2">{c.description}</p>
+                        <p className="text-sm text-ink mt-2">{c.description}</p>
                       )}
-                      <p className="text-xs text-gray-400 mt-1">
+                      <p className="text-xs text-ink-soft mt-1">
                         {c.enrolledCount} / {c.maxStudents} seats filled
                       </p>
                     </div>
@@ -298,18 +309,18 @@ export default async function TeacherProfilePage({
                       {(() => {
                         const off = discountPct(c.originalPriceINR, c.priceINR);
                         return off !== null ? (
-                          <div className="text-xs">
-                            <span className="text-gray-400 line-through">₹{c.originalPriceINR!.toLocaleString("en-IN")}</span>{" "}
-                            <span className="font-semibold text-emerald-600">{off}% off</span>
+                          <div className="text-xs font-mono">
+                            <span className="text-ink-soft line-through">₹{c.originalPriceINR!.toLocaleString("en-IN")}</span>{" "}
+                            <span className="font-semibold text-accent">{off}% off</span>
                           </div>
                         ) : null;
                       })()}
-                      <div className="text-lg font-bold text-gray-900">
+                      <div className="text-lg font-bold text-ink font-mono">
                         ₹{c.priceINR.toLocaleString("en-IN")}
                       </div>
                       <Link
                         href={`/courses/${c.id}/book`}
-                        className="mt-2 inline-block text-sm px-5 py-2.5 bg-orange-600 text-white rounded-xl font-semibold hover:bg-orange-700"
+                        className="mt-2 inline-block text-sm px-5 py-2.5 bg-accent text-white rounded-lg font-semibold hover:bg-accent-dark transition-colors"
                       >
                         Apply
                       </Link>
@@ -324,37 +335,37 @@ export default async function TeacherProfilePage({
         {/* 1-on-1 packages */}
         {teacher.oneOnOnePackages.length > 0 && (
           <div>
-            <h2 className="font-semibold text-gray-900 mb-3">1-on-1 Packages</h2>
+            <h2 className="font-semibold text-ink mb-3">1-on-1 Packages</h2>
             <div className="space-y-3">
               {teacher.oneOnOnePackages.map((p) => (
-                <div key={p.id} className="bg-white rounded-xl border border-gray-200 p-5">
+                <div key={p.id} className="bg-surface rounded-2xl border border-line p-5">
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <h3 className="font-semibold text-gray-900">{p.title}</h3>
-                      <p className="text-xs text-gray-500 mt-0.5">
+                      <h3 className="font-semibold text-ink">{p.title}</h3>
+                      <p className="text-xs text-ink-soft mt-0.5">
                         {p.subject}{p.targetExam ? ` · ${p.targetExam}` : ""}
                         {" · "}{p.totalSessions} sessions × {p.sessionDurationMinutes} min
                       </p>
                       {p.description && (
-                        <p className="text-sm text-gray-600 mt-2">{p.description}</p>
+                        <p className="text-sm text-ink mt-2">{p.description}</p>
                       )}
                     </div>
                     <div className="text-right shrink-0">
                       {(() => {
                         const off = discountPct(p.originalPriceINR, p.priceINR);
                         return off !== null ? (
-                          <div className="text-xs">
-                            <span className="text-gray-400 line-through">₹{p.originalPriceINR!.toLocaleString("en-IN")}</span>{" "}
-                            <span className="font-semibold text-emerald-600">{off}% off</span>
+                          <div className="text-xs font-mono">
+                            <span className="text-ink-soft line-through">₹{p.originalPriceINR!.toLocaleString("en-IN")}</span>{" "}
+                            <span className="font-semibold text-accent">{off}% off</span>
                           </div>
                         ) : null;
                       })()}
-                      <div className="text-lg font-bold text-gray-900">
+                      <div className="text-lg font-bold text-ink font-mono">
                         ₹{p.priceINR.toLocaleString("en-IN")}
                       </div>
                       <Link
                         href={`/packages/${p.id}/book`}
-                        className="mt-2 inline-block text-sm px-5 py-2.5 bg-emerald-600 text-white rounded-xl font-semibold hover:bg-emerald-700"
+                        className="mt-2 inline-block text-sm px-5 py-2.5 bg-ink text-paper rounded-lg font-semibold hover:opacity-90 transition-opacity"
                       >
                         Apply
                       </Link>

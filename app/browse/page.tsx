@@ -39,6 +39,7 @@ export default async function BrowsePage() {
           qualifications: true,
           subjects: true,
           targetExams: true,
+          expertiseTags: true,
           teachingExperienceYears: true,
           rating: true,
           profilePhotoUrl: true,
