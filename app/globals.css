@@ -2,11 +2,180 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ──────────────────────────────────────────────────────────────
+   Novus Classes design tokens — DESIGN.md is the source of truth.
+   Light is the hard default; dark is opt-in via [data-theme="dark"].
+   Font vars (--font-body / --font-mono) are supplied by next/font.
+   ────────────────────────────────────────────────────────────── */
+:root {
+  --ink: #101113;
+  --ink-soft: #55585E;
+  --bg: #FAF9F5;
+  --surface: #FFFFFF;
+  --surface-sunken: #F2F1EA;
+  --line: #E4E2D8;
+  --accent: #0F7A52;
+  --accent-dark: #0B5E3F;
+  --accent-tint: #E3F1EA;
+  --amber: #8F5F08;
+  --amber-tint: #FBF0DC;
+  --red: #C23B2B;
+  --red-tint: #FBEAE6;
+  --proof-bg: #101113;
+  --proof-fg: #FAF9F5;
+  --proof-fg-soft: rgba(250, 249, 245, 0.62);
+  --proof-accent: #3DBE8B;
+  --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+:root[data-theme="dark"] {
+  --ink: #F0EFEA;
+  --ink-soft: #B7B5AC;
+  --bg: #121214;
+  --surface: #1A1A1D;
+  --surface-sunken: #201F22;
+  --line: #2E2E31;
+  --accent: #3DBE8B;
+  --accent-dark: #59D3A2;
+  --accent-tint: #123526;
+  --amber: #E0A94D;
+  --amber-tint: #332812;
+  --red: #E28873;
+  --red-tint: #331A14;
+  --proof-bg: #F0EFEA;
+  --proof-fg: #101113;
+  --proof-fg-soft: rgba(16, 17, 19, 0.6);
+  --proof-accent: #0B5E3F;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
 @keyframes slide-up {
   from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+.animate-slide-up { animation: slide-up 0.2s ease-out; }
 
-.animate-slide-up {
-  animation: slide-up 0.2s ease-out;
+/* Theme toggle — fixed, usable site-wide */
+.theme-toggle {
+  position: fixed; bottom: 20px; right: 20px; z-index: 50;
+  background: var(--surface); border: 1px solid var(--line); color: var(--ink);
+  font-family: var(--font-mono), monospace; font-size: 12px;
+  padding: 8px 14px; border-radius: 999px; cursor: pointer;
+  box-shadow: 0 8px 20px -10px rgba(16, 17, 19, 0.25);
+}
+
+/* ──────────────────────────────────────────────────────────────
+   Marketing homepage — scoped under .marketing so the design-system
+   styles never leak into the dashboards/auth pages (still Tailwind).
+   Ported from design/preview.html (the visual source of truth).
+   ────────────────────────────────────────────────────────────── */
+.marketing { line-height: 1.5; }
+.marketing .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+.marketing section { padding: 68px 0; border-bottom: 1px solid var(--line); }
+.marketing section:last-child { border-bottom: none; }
+.marketing .section-label { font-family: var(--font-mono), monospace; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin: 0 0 10px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+.marketing .section-label::before { content: ""; width: 14px; height: 3px; background: var(--accent); display: inline-block; }
+.marketing .section-title { font-size: 32px; font-weight: 800; margin: 0 0 30px; letter-spacing: -0.02em; }
+
+.marketing nav { display: flex; align-items: center; justify-content: space-between; padding: 20px 0; border-bottom: 1px solid var(--line); }
+.marketing .logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 19px; letter-spacing: -0.01em; text-decoration: none; color: var(--ink); }
+.marketing .logo-mark { width: 28px; height: 28px; border-radius: 7px; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+.marketing .logo-accent { color: var(--accent); }
+.marketing .nav-links { display: flex; gap: 26px; align-items: center; font-size: 14px; }
+.marketing .nav-links a { color: var(--ink-soft); text-decoration: none; }
+.marketing .nav-links a:hover { color: var(--ink); }
+
+.marketing .hero { padding: 88px 0 0; border-bottom: none; position: relative; overflow: hidden; }
+.marketing .hero-glow { position: absolute; top: -140px; right: -120px; width: 560px; height: 560px; background: radial-gradient(circle, var(--accent-tint) 0%, transparent 70%); opacity: 0.9; pointer-events: none; z-index: 0; }
+.marketing .hero-grid { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 48px; align-items: center; position: relative; z-index: 1; }
+.marketing .badge { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono), monospace; font-size: 12px; font-weight: 500; background: var(--accent-tint); color: var(--accent); padding: 6px 12px; border-radius: 999px; margin-bottom: 24px; }
+.marketing .badge::before { content: "\25CF"; font-size: 8px; }
+.marketing .hero-title { font-size: 68px; font-weight: 800; line-height: 1; letter-spacing: -0.035em; margin: 0 0 22px; }
+.marketing .hero-sub { font-size: 18px; color: var(--ink-soft); max-width: 460px; margin: 0 0 32px; }
+.marketing .hero-actions { display: flex; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+.marketing .hero-note { font-family: var(--font-mono), monospace; font-size: 12px; color: var(--ink-soft); }
+
+.marketing .btn { font-weight: 700; font-size: 14px; padding: 13px 24px; border-radius: 8px; border: 1px solid transparent; cursor: pointer; text-decoration: none; display: inline-block; transition: transform 0.15s ease-out, box-shadow 0.15s ease-out, background 0.15s ease-out; }
+.marketing .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 10px 24px -10px rgba(15, 122, 82, 0.55); }
+.marketing .btn-primary:hover { background: var(--accent-dark); transform: translateY(-1px); box-shadow: 0 14px 28px -10px rgba(15, 122, 82, 0.6); }
+.marketing .btn-secondary { background: var(--surface); color: var(--ink); border-color: var(--line); }
+.marketing .btn-secondary:hover { border-color: var(--ink-soft); }
+.marketing .btn-ghost { background: transparent; color: var(--ink-soft); }
+
+/* hero device mockup */
+.marketing .device-stack { position: relative; padding: 20px 0 40px 30px; }
+.marketing .device { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: 0 32px 60px -24px rgba(16, 17, 19, 0.32); overflow: hidden; position: relative; z-index: 2; }
+.marketing .device-ghost { position: absolute; inset: 0 -30px -20px 0; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; transform: rotate(3deg); z-index: 1; opacity: 0.55; }
+.marketing .device-bar { display: flex; align-items: center; gap: 6px; padding: 13px 16px; border-bottom: 1px solid var(--line); }
+.marketing .device-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--line); }
+.marketing .device-body { padding: 18px; display: grid; gap: 10px; }
+.marketing .device-row { display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface-sunken); }
+.marketing .device-avatar { width: 38px; height: 38px; border-radius: 10px; background: var(--accent-tint); color: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; flex-shrink: 0; }
+.marketing .device-info { flex: 1; min-width: 0; }
+.marketing .device-name { font-weight: 700; font-size: 13px; }
+.marketing .device-sub { font-size: 12px; color: var(--ink-soft); }
+.marketing .device-price { font-family: var(--font-mono), monospace; font-size: 12px; font-weight: 700; white-space: nowrap; }
+.marketing .device-verified { font-family: var(--font-mono), monospace; font-size: 9px; color: var(--accent); background: var(--accent-tint); padding: 2px 7px; border-radius: 999px; font-weight: 700; }
+
+/* proof band — full-bleed dark contrast beat */
+.marketing .proof-band { background: var(--proof-bg); color: var(--proof-fg); padding: 76px 0; position: relative; overflow: hidden; border-bottom: 1px solid var(--line); margin-top: 88px; }
+.marketing .proof-band::after { content: ""; position: absolute; inset: 0; background-image: var(--noise); opacity: 0.35; mix-blend-mode: overlay; pointer-events: none; }
+.marketing .proof-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; position: relative; }
+.marketing .proof-num { font-family: var(--font-mono), monospace; font-weight: 700; font-size: 72px; letter-spacing: -0.03em; color: var(--proof-accent); line-height: 1; margin-bottom: 16px; }
+.marketing .proof-label { font-size: 15px; color: var(--proof-fg-soft); max-width: 220px; line-height: 1.4; }
+
+/* manifesto band — second dark beat */
+.marketing .manifesto-band { background: var(--proof-bg); color: var(--proof-fg); padding: 100px 0; position: relative; overflow: hidden; }
+.marketing .manifesto-band::after { content: ""; position: absolute; inset: 0; background-image: var(--noise); opacity: 0.3; mix-blend-mode: overlay; pointer-events: none; }
+.marketing .manifesto-text { max-width: 660px; margin: 0 auto; font-size: 30px; font-weight: 500; line-height: 1.5; text-align: center; letter-spacing: -0.01em; position: relative; }
+.marketing .manifesto-text strong { color: var(--proof-accent); font-weight: 700; }
+
+/* testimonials — one-time gold splash, used nowhere else in the system */
+.marketing .testimonial-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.marketing .testimonial-card { border-radius: 18px; padding: 34px; box-shadow: 0 24px 48px -26px rgba(16, 17, 19, 0.3); }
+.marketing .testimonial-card.c-emerald { background: var(--accent); color: #fff; }
+.marketing .testimonial-card.c-gold { background: #F0B429; color: #101113; }
+.marketing .testimonial-quote { font-size: 19px; font-weight: 600; line-height: 1.45; margin: 0 0 22px; letter-spacing: -0.01em; }
+.marketing .testimonial-author { font-family: var(--font-mono), monospace; font-size: 12px; opacity: 0.75; text-transform: uppercase; letter-spacing: 0.06em; }
+
+/* comparison block */
+.marketing .compare-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; max-width: 620px; }
+.marketing .compare-list li { font-size: 17px; padding-left: 30px; position: relative; color: var(--ink-soft); }
+.marketing .compare-list li::before { content: "\2715"; position: absolute; left: 0; color: var(--red); font-family: var(--font-mono), monospace; font-weight: 700; }
+.marketing .compare-list li strong { color: var(--ink); font-weight: 700; }
+
+/* FAQ grid */
+.marketing .faq-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; box-shadow: 0 20px 40px -30px rgba(16, 17, 19, 0.2); }
+.marketing .faq-item { background: var(--surface); padding: 24px; }
+.marketing .faq-q { font-weight: 700; font-size: 16px; margin: 0 0 8px; }
+.marketing .faq-a { font-size: 14px; color: var(--ink-soft); margin: 0; }
+
+/* audience segments */
+.marketing .segment-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.marketing .segment-card { border: 1px solid var(--line); border-radius: 14px; padding: 22px; background: var(--surface); border-top: 3px solid var(--accent); box-shadow: 0 16px 32px -24px rgba(16, 17, 19, 0.18); }
+.marketing .segment-tag { font-family: var(--font-mono), monospace; font-size: 11px; color: var(--accent); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 10px; display: block; }
+.marketing .segment-title { font-weight: 700; font-size: 18px; margin: 0 0 8px; }
+.marketing .segment-body { font-size: 14px; color: var(--ink-soft); margin: 0; }
+
+.marketing footer { text-align: center; padding: 44px 0; font-family: var(--font-mono), monospace; font-size: 12px; color: var(--ink-soft); display: grid; gap: 8px; }
+.marketing footer a { color: var(--ink-soft); text-decoration: underline; }
+.marketing footer a:hover { color: var(--ink); }
+
+@media (max-width: 720px) {
+  .marketing .hero { padding-top: 56px; }
+  .marketing .hero-grid { grid-template-columns: 1fr; }
+  .marketing .hero-title { font-size: 40px; }
+  .marketing .device-stack { padding-left: 16px; }
+  .marketing .proof-grid { grid-template-columns: 1fr; gap: 32px; }
+  .marketing .proof-num { font-size: 56px; }
+  .marketing .faq-grid,
+  .marketing .segment-grid,
+  .marketing .testimonial-grid { grid-template-columns: 1fr; }
+  .marketing .manifesto-text { font-size: 22px; }
 }

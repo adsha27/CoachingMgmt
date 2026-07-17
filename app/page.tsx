@@ -1,175 +1,247 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { prisma } from "@/lib/prisma";
+import { ThemeToggle } from "./_components/ThemeToggle";
 
-export const dynamic = "force-dynamic";
-
-const BASE = process.env.NEXT_PUBLIC_APP_URL ?? "https://educonnect.in";
+const BASE = process.env.NEXT_PUBLIC_APP_URL ?? "https://novusclasses.in";
 
 export const metadata: Metadata = {
-  title: "EduConnect — Find Verified JEE & NEET Teachers",
-  description: "Browse verified JEE and NEET coaching teachers. Book affordable group courses or private 1-on-1 sessions from your phone.",
+  title: "Novus Classes — Book a Verified JEE & NEET Teacher",
+  description:
+    "Novus Classes lists real teachers with real results. Compare rank, price and reviews, then book your first session in under two minutes.",
   openGraph: {
-    title: "EduConnect — Find Verified JEE & NEET Teachers",
-    description: "Verified teachers, group courses from ₹299/session, instant Google Meet links.",
+    title: "Novus Classes — Book a Verified JEE & NEET Teacher",
+    description: "Verified teachers only. Group sessions from ₹299. Book your first session in under two minutes.",
     url: BASE,
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "EduConnect — JEE & NEET Coaching",
-    description: "Verified teachers, affordable group courses, 1-on-1 sessions.",
+    title: "Novus Classes — JEE & NEET Coaching",
+    description: "Verified teachers only. Group sessions from ₹299. Cancel anytime.",
   },
   alternates: { canonical: BASE },
 };
 
-export default async function HomePage() {
-  const [teacherCount, courseCount, subjectCount] = await Promise.all([
-    prisma.teacherProfile.count({ where: { verifyStatus: "VERIFIED" } }).catch(() => 0),
-    prisma.groupCourse.count({ where: { status: "LISTED" } }).catch(() => 0),
-    prisma.groupCourse.groupBy({ by: ["subject"], where: { status: "LISTED" } }).then((r) => r.length).catch(() => 0),
-  ]);
+const TEACHERS = [
+  { initials: "RK", name: "Rajesh Kumar", sub: "Physics · JEE Advanced", price: "₹499/session" },
+  { initials: "SP", name: "Sunita Patil", sub: "Biology · NEET", price: "₹349/session" },
+  { initials: "AM", name: "Arun Mehta", sub: "Chemistry · JEE Mains", price: "₹299/session" },
+];
 
+const FAQS = [
+  {
+    q: "Is the teacher actually verified?",
+    a: "Yes. Every teacher completes an identity and credential check before they can list a session. Look for the verified badge on their profile.",
+  },
+  {
+    q: "What if the teacher isn't a good fit?",
+    a: "Book one session first. There is no package to cancel and no refund process to fight.",
+  },
+  {
+    q: "Can I switch teachers mid-course?",
+    a: "Any time. Your subject and syllabus stay the same, your teacher does not have to.",
+  },
+  {
+    q: "How fast can I book?",
+    a: "Most students book their first session in under two minutes, right after signing up.",
+  },
+  {
+    q: "Is pricing hidden until I sign up?",
+    a: "No. Every listing shows the exact price per session before you book.",
+  },
+  {
+    q: "Do sessions happen on this app?",
+    a: "Sessions run on Google Meet. You get the link the moment you book.",
+  },
+];
+
+const SEGMENTS = [
+  {
+    tag: "Repeaters",
+    title: "Second or third attempt",
+    body: "You need a teacher who has coached repeaters before and knows where students actually lose marks.",
+  },
+  {
+    tag: "School + coaching",
+    title: "Balancing both",
+    body: "You need flexible timing that does not clash with school hours or homework load.",
+  },
+  {
+    tag: "Parents",
+    title: "Managing the search",
+    body: "You are comparing teachers on your child's behalf and want verified credentials before you pay.",
+  },
+];
+
+export default function HomePage() {
   return (
-    <main className="min-h-screen bg-white">
-      {/* Nav */}
-      <nav className="flex justify-between items-center px-5 py-4 border-b border-gray-100 sticky top-0 bg-white z-10">
-        <span className="font-bold text-slate-900 text-lg tracking-tight">EduConnect</span>
-        <div className="flex items-center gap-2">
-          <Link href="/browse" className="text-sm text-gray-600 hover:text-gray-900 px-3 py-1.5 hidden sm:block">
-            Browse
+    <main className="marketing">
+      <div className="wrap">
+        <nav>
+          <Link href="/" className="logo">
+            <span className="logo-mark">N</span>
+            Novus&nbsp;<span className="logo-accent">Classes</span>
           </Link>
-          <Link href="/login" className="text-sm text-gray-600 hover:text-gray-900 px-3 py-1.5 hidden sm:block">
-            Sign in
-          </Link>
-          <Link href="/login?next=/student/dashboard"
-            className="text-sm bg-orange-600 text-white px-4 py-2 rounded-xl hover:bg-orange-700 font-semibold transition-colors">
-            Get started
-          </Link>
-        </div>
-      </nav>
-
-      {/* Hero */}
-      <section className="max-w-2xl mx-auto px-5 pt-14 pb-12 text-center">
-        <div className="inline-flex items-center gap-2 bg-orange-50 text-orange-700 text-xs font-semibold px-3 py-1.5 rounded-full mb-6">
-          <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
-          Verified teachers only
-        </div>
-        <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4 leading-tight tracking-tight">
-          Crack JEE &amp; NEET<br />with the right teacher
-        </h1>
-        <p className="text-base sm:text-lg text-gray-500 mb-8 max-w-lg mx-auto leading-relaxed">
-          Browse verified teachers, join affordable group courses, or book private 1-on-1 sessions — from your phone.
-        </p>
-
-        {/* CTAs — stacked on mobile, side by side on sm+ */}
-        <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Link href="/browse"
-            className="px-6 py-3.5 bg-orange-600 text-white text-sm font-bold rounded-xl hover:bg-orange-700 transition-colors shadow-md shadow-orange-200">
-            Browse teachers
-          </Link>
-          <Link href="/login"
-            className="px-6 py-3.5 bg-white border-2 border-gray-200 text-gray-700 text-sm font-bold rounded-xl hover:border-gray-300 hover:bg-gray-50 transition-colors">
-            Sign in
-          </Link>
-        </div>
-      </section>
-
-      {/* Stats bar */}
-      <section className="bg-slate-900 text-white py-8 px-5">
-        <div className="max-w-2xl mx-auto grid grid-cols-3 gap-4 text-center">
-          <div>
-            <div className="text-3xl font-bold">{teacherCount > 0 ? `${teacherCount}+` : "—"}</div>
-            <div className="text-xs text-slate-400 mt-1">Verified teachers</div>
+          <div className="nav-links">
+            <Link href="/browse">Browse</Link>
+            <Link href="/login">Sign in</Link>
+            <Link
+              href="/login?next=/student/dashboard"
+              className="btn btn-primary"
+              style={{ fontSize: 13, padding: "9px 18px" }}
+            >
+              Get started
+            </Link>
           </div>
-          <div>
-            <div className="text-3xl font-bold">{courseCount > 0 ? `${courseCount}+` : "—"}</div>
-            <div className="text-xs text-slate-400 mt-1">Active courses</div>
-          </div>
-          <div>
-            <div className="text-3xl font-bold">{subjectCount > 0 ? `${subjectCount}+` : "—"}</div>
-            <div className="text-xs text-slate-400 mt-1">Subjects covered</div>
-          </div>
-        </div>
-      </section>
+        </nav>
 
-      {/* Feature cards */}
-      <section className="max-w-2xl mx-auto px-5 py-14">
-        <h2 className="text-xl font-bold text-gray-900 text-center mb-8">Who is EduConnect for?</h2>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {[
-            {
-              title: "Students",
-              bullets: ["Browse verified JEE/NEET teachers", "Join group courses from ₹299/session", "Book private 1-on-1 sessions", "Get Google Meet links instantly"],
-              cta: "Find a teacher",
-              href: "/browse",
-            },
-            {
-              title: "Parents",
-              bullets: ["Track your child's sessions", "View session feedback and ratings", "Read-only access — no extra app", "Stay informed automatically"],
-              cta: "Learn more",
-              href: "/login",
-            },
-          ].map((card) => (
-            <div key={card.title} className="rounded-2xl border border-gray-100 bg-gray-50 p-5 flex flex-col">
-              <h3 className="font-bold text-gray-900 mb-3">{card.title}</h3>
-              <ul className="space-y-1.5 flex-1 mb-4">
-                {card.bullets.map((b) => (
-                  <li key={b} className="flex items-start gap-1.5 text-sm text-gray-600">
-                    <svg className="w-3.5 h-3.5 text-orange-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                    {b}
-                  </li>
-                ))}
-              </ul>
-              <Link href={card.href}
-                className="text-center text-sm font-semibold py-2.5 rounded-xl transition-colors bg-orange-600 text-white hover:bg-orange-700">
-                {card.cta}
-              </Link>
+        <section className="hero">
+          <div className="hero-glow" aria-hidden="true" />
+          <div className="hero-grid">
+            <div>
+              <div className="badge">Verified teachers only</div>
+              <h1 className="hero-title">Book a verified JEE or NEET teacher today.</h1>
+              <p className="hero-sub">
+                Novus Classes lists real teachers with real results. Compare rank, price and reviews,
+                then book your first session in under two minutes.
+              </p>
+              <div className="hero-actions">
+                <Link href="/browse" className="btn btn-primary">Browse verified teachers</Link>
+                <a href="#how" className="btn btn-secondary">See how it works</a>
+              </div>
+              <div className="hero-note">Group sessions from ₹299 per session · Cancel anytime</div>
             </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Trust signals */}
-      <section className="border-t border-gray-100 py-8 px-5">
-        <div className="max-w-2xl mx-auto flex flex-wrap justify-center gap-x-8 gap-y-3">
-          {[
-            "Admin-verified teachers",
-            "Auto Google Meet links",
-            "Real student reviews",
-            "Works on any phone",
-          ].map((item) => (
-            <div key={item} className="flex items-center gap-2 text-sm text-gray-500">
-              <svg className="w-4 h-4 text-orange-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
-              {item}
+            <div className="device-stack" aria-hidden="true">
+              <div className="device-ghost" />
+              <div className="device">
+                <div className="device-bar">
+                  <span className="device-dot" />
+                  <span className="device-dot" />
+                  <span className="device-dot" />
+                </div>
+                <div className="device-body">
+                  {TEACHERS.map((t) => (
+                    <div key={t.initials} className="device-row">
+                      <div className="device-avatar">{t.initials}</div>
+                      <div className="device-info">
+                        <div className="device-name">{t.name}</div>
+                        <div className="device-sub">{t.sub}</div>
+                      </div>
+                      <div style={{ textAlign: "right" }}>
+                        <span className="device-verified">VERIFIED</span>
+                        <div className="device-price">{t.price}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
-          ))}
+          </div>
+        </section>
+      </div>
+
+      <div className="proof-band">
+        <div className="wrap">
+          <div className="proof-grid">
+            <div>
+              <div className="proof-num">2 MIN</div>
+              <div className="proof-label">average time from sign-up to a booked first session</div>
+            </div>
+            <div>
+              <div className="proof-num">₹299</div>
+              <div className="proof-label">cheapest verified group session in the category</div>
+            </div>
+            <div>
+              <div className="proof-num">100%</div>
+              <div className="proof-label">of teachers identity and credential-verified before they can list</div>
+            </div>
+          </div>
         </div>
-      </section>
+      </div>
 
-      {/* Footer CTA */}
-      <section className="py-14 px-5 text-center">
-        <h2 className="text-2xl font-bold text-gray-900 mb-3">Ready to start preparing?</h2>
-        <p className="text-sm text-gray-500 mb-6">Join thousands of students cracking JEE and NEET with verified teachers.</p>
-        <Link href="/browse"
-          className="inline-block px-8 py-3.5 bg-orange-600 text-white font-bold rounded-xl hover:bg-orange-700 transition-colors shadow-md shadow-orange-200">
-          Browse teachers now
-        </Link>
-      </section>
+      <div className="wrap">
+        <section id="how">
+          <p className="section-label">Why not the usual way</p>
+          <h2 className="section-title">Better than the usual way</h2>
+          <ul className="compare-list">
+            <li>Better than a <strong>WhatsApp forward</strong> from a neighbour, with no way to check if the teacher is any good.</li>
+            <li>Better than an <strong>agent who takes a cut</strong> and disappears after the first payment clears.</li>
+            <li>Better than a <strong>coaching centre package</strong> that locks you in for six months before you&apos;ve sat in a single class.</li>
+          </ul>
+        </section>
+      </div>
 
-      <footer className="border-t border-gray-100 py-6 px-5 text-center space-y-2">
-        <p className="text-xs text-gray-400">© 2025 EduConnect · Helping students crack JEE &amp; NEET</p>
-        <p className="text-xs text-gray-400">
-          Are you a teacher?{" "}
-          <Link href="/login?portal=teacher&next=/teacher/dashboard" className="text-gray-500 underline hover:text-gray-700">
-            Teacher login
-          </Link>
-        </p>
-      </footer>
+      <div className="manifesto-band">
+        <div className="wrap">
+          <p className="manifesto-text">
+            Every teacher here earned their spot.<br />
+            We check who they are.<br />
+            What they&apos;ve taught.<br />
+            Whether students actually learn from them.<br />
+            <strong>Before a single rupee changes hands.</strong>
+          </p>
+        </div>
+      </div>
+
+      <div className="wrap">
+        <section>
+          <p className="section-label">Real results</p>
+          <h2 className="section-title">What families are saying</h2>
+          <div className="testimonial-grid">
+            <div className="testimonial-card c-emerald">
+              <p className="testimonial-quote">
+                &ldquo;My daughter switched to a verified NEET biology teacher after two tutors we found on
+                WhatsApp didn&apos;t work out. Her mock scores went from 62 to 91 in four months.&rdquo;
+              </p>
+              <div className="testimonial-author">Meena R. · Parent, Pune</div>
+            </div>
+            <div className="testimonial-card c-gold">
+              <p className="testimonial-quote">
+                &ldquo;I book my physics sessions between school and dinner. Two minutes, no phone calls,
+                no forms to fill.&rdquo;
+              </p>
+              <div className="testimonial-author">Aarav S. · Class 12, Lucknow</div>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <p className="section-label">Questions</p>
+          <h2 className="section-title">What students and parents actually ask</h2>
+          <div className="faq-grid">
+            {FAQS.map((f) => (
+              <div key={f.q} className="faq-item">
+                <p className="faq-q">{f.q}</p>
+                <p className="faq-a">{f.a}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section>
+          <p className="section-label">Who this is for</p>
+          <h2 className="section-title">Who Novus Classes is for</h2>
+          <div className="segment-grid">
+            {SEGMENTS.map((s) => (
+              <div key={s.tag} className="segment-card">
+                <span className="segment-tag">{s.tag}</span>
+                <p className="segment-title">{s.title}</p>
+                <p className="segment-body">{s.body}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <footer>
+          <p>© 2026 Novus Classes · Verified JEE &amp; NEET teachers</p>
+          <p>
+            Are you a teacher?{" "}
+            <Link href="/login?portal=teacher&next=/teacher/dashboard">Teacher login</Link>
+          </p>
+        </footer>
+      </div>
+
+      <ThemeToggle />
     </main>
   );
 }

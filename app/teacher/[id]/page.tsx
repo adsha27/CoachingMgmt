@@ -6,7 +6,7 @@ import { discountPct } from "@/lib/pricing";
 
 export const dynamic = "force-dynamic";
 
-const BASE = process.env.NEXT_PUBLIC_APP_URL ?? "https://educonnect.in";
+const BASE = process.env.NEXT_PUBLIC_APP_URL ?? "https://novusclasses.in";
 
 export async function generateStaticParams() {
   try {
@@ -43,10 +43,10 @@ export async function generateMetadata({
   const p = teacher.teacherProfile;
   const subjects = p?.subjects?.join(", ") ?? "";
   const exams = p?.targetExams?.join(", ") ?? "";
-  const title = `${teacher.name} — ${subjects} Teacher${exams ? ` for ${exams}` : ""} | EduConnect`;
+  const title = `${teacher.name} — ${subjects} Teacher${exams ? ` for ${exams}` : ""} | Novus Classes`;
   const description =
     p?.bio?.slice(0, 155) ??
-    `Book ${teacher.name} for ${subjects} coaching on EduConnect. Verified JEE & NEET teacher.`;
+    `Book ${teacher.name} for ${subjects} coaching on Novus Classes. Verified JEE & NEET teacher.`;
 
   return {
     title,

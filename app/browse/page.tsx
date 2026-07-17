@@ -4,18 +4,18 @@ import BrowseClient from "./BrowseClient";
 
 export const dynamic = "force-dynamic";
 
-const BASE = process.env.NEXT_PUBLIC_APP_URL ?? "https://educonnect.in";
+const BASE = process.env.NEXT_PUBLIC_APP_URL ?? "https://novusclasses.in";
 
 export const metadata: Metadata = {
-  title: "Browse JEE & NEET Teachers | EduConnect",
+  title: "Browse JEE & NEET Teachers | Novus Classes",
   description: "Find verified JEE and NEET coaching teachers. Filter by subject, exam, and type. Group courses and 1-on-1 packages available.",
   openGraph: {
-    title: "Browse Verified JEE & NEET Teachers | EduConnect",
+    title: "Browse Verified JEE & NEET Teachers | Novus Classes",
     description: "Filter by Physics, Chemistry, Maths, Biology. Verified teachers, real reviews.",
     url: `${BASE}/browse`,
     type: "website",
   },
-  twitter: { card: "summary", title: "Browse JEE & NEET Teachers | EduConnect" },
+  twitter: { card: "summary", title: "Browse JEE & NEET Teachers | Novus Classes" },
   alternates: { canonical: `${BASE}/browse` },
 };
 

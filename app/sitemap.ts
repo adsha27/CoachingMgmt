@@ -1,7 +1,7 @@
 import { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
 
-const BASE = process.env.NEXT_PUBLIC_APP_URL ?? "https://educonnect.in";
+const BASE = process.env.NEXT_PUBLIC_APP_URL ?? "https://novusclasses.in";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [teacherProfiles, courses] = await Promise.all([
