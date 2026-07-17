@@ -24,6 +24,7 @@ export async function PUT(req: NextRequest) {
     qualifications?: string;
     subjects?: string[];
     targetExams?: string[];
+    expertiseTags?: string[];
     teachingExperienceYears?: number;
     demoVideoLink?: string;
     socialMediaLinks?: Record<string, string>;
@@ -38,6 +39,7 @@ export async function PUT(req: NextRequest) {
       qualifications: body.qualifications,
       subjects: body.subjects ?? [],
       targetExams: body.targetExams ?? [],
+      expertiseTags: body.expertiseTags ?? [],
       teachingExperienceYears: body.teachingExperienceYears ?? null,
       demoVideoLink: body.demoVideoLink,
       socialMediaLinks: body.socialMediaLinks ?? undefined,
@@ -48,6 +50,7 @@ export async function PUT(req: NextRequest) {
       ...(body.qualifications !== undefined && { qualifications: body.qualifications }),
       ...(body.subjects !== undefined && { subjects: body.subjects }),
       ...(body.targetExams !== undefined && { targetExams: body.targetExams }),
+      ...(body.expertiseTags !== undefined && { expertiseTags: body.expertiseTags }),
       ...(body.teachingExperienceYears !== undefined && { teachingExperienceYears: body.teachingExperienceYears }),
       ...(body.demoVideoLink !== undefined && { demoVideoLink: body.demoVideoLink }),
       ...(body.socialMediaLinks !== undefined && { socialMediaLinks: body.socialMediaLinks }),

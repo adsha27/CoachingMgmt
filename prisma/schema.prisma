@@ -92,6 +92,7 @@ model TeacherProfile {
   rejectionReason         String?
   socialMediaLinks        Json?
   targetExams             String[]            @default([])
+  expertiseTags           String[]            @default([])
   teachingExperienceYears Int?
   teacher                 User                @relation(fields: [teacherId], references: [id], onDelete: Cascade)
 
