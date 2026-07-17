@@ -75,7 +75,7 @@ function LoginForm() {
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-white px-4 py-12">
-      <a href="/" className="mb-10 text-xl font-bold text-slate-900 tracking-tight">EduConnect</a>
+      <a href="/" className="mb-10 text-xl font-bold text-slate-900 tracking-tight">Novus Classes</a>
 
       <div className="w-full max-w-sm">
         {pendingApproval ? (

@@ -131,7 +131,7 @@ export default async function TeacherDashboard() {
   const checklist = [
     { done: hasProfile, label: "Complete your profile", href: "/teacher/wizard" },
     { done: hasCourses, label: "Create a course or 1-on-1 package", href: "/teacher/courses/new" },
-    { done: isVerified, label: "Get verified by the EduConnect team", href: null },
+    { done: isVerified, label: "Get verified by the Novus Classes team", href: null },
     { done: slots.length > 0, label: "Set your weekly availability", href: null },
   ];
   const allDone = checklist.every((c) => c.done);

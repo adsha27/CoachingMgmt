@@ -34,7 +34,7 @@ export default function DemoClient() {
     <main className="min-h-screen bg-gray-50 flex flex-col">
       <header className="bg-white border-b border-gray-100 px-5 py-4">
         <div className="max-w-3xl mx-auto flex justify-between items-center">
-          <Link href="/" className="text-slate-900 font-bold text-lg tracking-tight">EduConnect</Link>
+          <Link href="/" className="text-slate-900 font-bold text-lg tracking-tight">Novus Classes</Link>
           <span className="text-xs bg-amber-100 text-amber-700 font-semibold px-2.5 py-1 rounded-full">Demo mode</span>
         </div>
       </header>
