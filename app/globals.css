@@ -127,7 +127,7 @@ body {
 .marketing .proof-band { background: var(--proof-bg); color: var(--proof-fg); padding: 76px 0; position: relative; overflow: hidden; border-bottom: 1px solid var(--line); margin-top: 88px; }
 .marketing .proof-band::after { content: ""; position: absolute; inset: 0; background-image: var(--noise); opacity: 0.35; mix-blend-mode: overlay; pointer-events: none; }
 .marketing .proof-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; position: relative; }
-.marketing .proof-num { font-family: var(--font-mono), monospace; font-weight: 700; font-size: 72px; letter-spacing: -0.03em; color: var(--proof-accent); line-height: 1; margin-bottom: 16px; }
+.marketing .proof-num { font-family: var(--font-mono), monospace; font-weight: 700; font-size: clamp(36px, 6vw, 72px); letter-spacing: -0.03em; color: var(--proof-accent); line-height: 1; margin-bottom: 16px; white-space: nowrap; }
 .marketing .proof-label { font-size: 15px; color: var(--proof-fg-soft); max-width: 220px; line-height: 1.4; }
 
 /* manifesto band — second dark beat */
