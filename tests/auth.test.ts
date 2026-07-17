@@ -4,6 +4,7 @@ import bcryptjs from "bcryptjs";
 import { POST as login } from "@/app/api/auth/login/route";
 import { POST as register } from "@/app/api/auth/register/route";
 import { POST as logout } from "@/app/api/auth/logout/route";
+import { POST as approveTeacher } from "@/app/api/admin/teacher/[id]/approve/route";
 import { prisma } from "@/lib/prisma";
 import { createSession, SESSION_COOKIE } from "@/lib/auth";
 
@@ -32,7 +33,7 @@ function jsonReq(method: string, url: string, body?: unknown, sid?: string) {
 
 async function makeUser(
   role: "ADMIN" | "TEACHER" | "STUDENT" = "STUDENT",
-  opts: { password?: string; status?: "ACTIVE" | "SUSPENDED" } = {},
+  opts: { password?: string; status?: "PENDING" | "ACTIVE" | "SUSPENDED" } = {},
 ) {
   const id = uid();
   return prisma.user.create({
@@ -125,6 +126,53 @@ describe("POST /api/auth/register", () => {
     // The seat is NOT taken until a teacher approves.
     const fresh = await prisma.groupCourse.findUnique({ where: { id: course.id } });
     expect(fresh?.enrolledCount).toBe(0);
+  });
+});
+
+// ─── Teacher approval ──────────────────────────────────────────────────────────
+describe("teacher accounts require admin approval", () => {
+  it("registers a teacher as PENDING with no session", async () => {
+    const email = `${uid()}@example.test`;
+    const res = await register(jsonReq("POST", "/api/auth/register", {
+      name: "Prof", email, phone: phone(), password: "supersecret", role: "TEACHER",
+    }));
+    expect(res.status).toBe(201);
+    expect(await res.json()).toEqual({ pending: true });
+    expect(res.cookies.get(SESSION_COOKIE)?.value).toBeFalsy(); // no auto-login
+    expect((await prisma.user.findUnique({ where: { email } }))!.status).toBe("PENDING");
+  });
+
+  it("blocks a PENDING teacher from signing in even with the right password", async () => {
+    const teacher = await makeUser("TEACHER", { password: "supersecret", status: "PENDING" });
+    const res = await login(jsonReq("POST", "/api/auth/login", { email: teacher.email, password: "supersecret" }));
+    expect(res.status).toBe(403);
+    expect(res.cookies.get(SESSION_COOKIE)?.value).toBeFalsy();
+  });
+
+  it("lets an admin approve, after which the teacher can sign in", async () => {
+    const admin = await makeUser("ADMIN");
+    const teacher = await makeUser("TEACHER", { password: "supersecret", status: "PENDING" });
+    const sid = await createSession(admin.id);
+
+    const approve = await approveTeacher(
+      jsonReq("POST", `/api/admin/teacher/${teacher.id}/approve`, { action: "approve" }, sid),
+      { params: Promise.resolve({ id: String(teacher.id) }) },
+    );
+    expect(approve.status).toBe(200);
+    expect((await prisma.user.findUnique({ where: { id: teacher.id } }))!.status).toBe("ACTIVE");
+
+    const res = await login(jsonReq("POST", "/api/auth/login", { email: teacher.email, password: "supersecret" }));
+    expect(res.status).toBe(200);
+  });
+
+  it("only an admin can approve", async () => {
+    const teacher = await makeUser("TEACHER", { password: "supersecret", status: "PENDING" });
+    const sid = await createSession(teacher.id); // a teacher, not an admin
+    const res = await approveTeacher(
+      jsonReq("POST", `/api/admin/teacher/${teacher.id}/approve`, { action: "approve" }, sid),
+      { params: Promise.resolve({ id: String(teacher.id) }) },
+    );
+    expect(res.status).toBe(403);
   });
 });
 

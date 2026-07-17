@@ -302,6 +302,7 @@ enum Role {
 }
 
 enum UserStatus {
+  PENDING
   ACTIVE
   INACTIVE
   SUSPENDED

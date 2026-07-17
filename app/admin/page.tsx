@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import LogoutButton from "@/app/_components/LogoutButton";
+import PendingTeachersSection from "./PendingTeachersSection";
 
 export const dynamic = "force-dynamic";
 
@@ -10,8 +11,13 @@ export default async function AdminPage() {
   const user = await getCurrentUser();
   if (!user || user.role !== "ADMIN") redirect("/login");
 
-  const [pendingVerifications, cancellationRequests, teacherCount, studentCount, openTopicRequests, recentFeedback] =
+  const [pendingTeachers, pendingVerifications, cancellationRequests, teacherCount, studentCount, openTopicRequests, recentFeedback] =
     await Promise.all([
+      prisma.user.findMany({
+        where: { role: "TEACHER", status: "PENDING" },
+        select: { id: true, name: true, email: true, phone: true, createdAt: true },
+        orderBy: { createdAt: "asc" },
+      }),
       prisma.teacherProfile.count({ where: { verifyStatus: "PENDING" } }),
       prisma.cancellationRequest.count({ where: { status: "PENDING" } }),
       prisma.user.count({ where: { role: "TEACHER", status: "ACTIVE" } }),
@@ -33,6 +39,7 @@ export default async function AdminPage() {
     ]);
 
   const stats = [
+    { label: "Pending approvals", value: pendingTeachers.length, alert: pendingTeachers.length > 0 },
     { label: "Active teachers", value: teacherCount },
     { label: "Active students", value: studentCount },
     { label: "Pending verifications", value: pendingVerifications, alert: pendingVerifications > 0 },
@@ -90,6 +97,9 @@ export default async function AdminPage() {
           </Link>
         ))}
       </div>
+
+      {/* Pending teacher approvals */}
+      <PendingTeachersSection teachers={pendingTeachers.map((t) => ({ ...t, createdAt: t.createdAt.toISOString() }))} />
 
       {/* Recent feedback */}
       {recentFeedback.length > 0 && (
