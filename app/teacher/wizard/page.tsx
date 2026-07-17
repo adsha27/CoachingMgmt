@@ -10,6 +10,7 @@ interface Profile {
   qualifications?: string;
   subjects?: string[];
   targetExams?: string[];
+  expertiseTags?: string[];
   teachingExperienceYears?: number;
   demoVideoLink?: string;
   socialMediaLinks?: SocialLinks;
@@ -55,6 +56,52 @@ function Toggle({ items, selected, onChange }: {
   );
 }
 
+// Free-text expertise tags — teachers author their own (e.g. "Rotational
+// Mechanics"), unlike the fixed-list subject/exam toggles above.
+function TagInput({ tags, onChange, max = 5, placeholder }: {
+  tags: string[];
+  onChange: (v: string[]) => void;
+  max?: number;
+  placeholder?: string;
+}) {
+  const [draft, setDraft] = useState("");
+
+  function add() {
+    const v = draft.trim();
+    setDraft("");
+    if (!v || tags.length >= max) return;
+    if (tags.some((t) => t.toLowerCase() === v.toLowerCase())) return;
+    onChange([...tags, v]);
+  }
+
+  return (
+    <div>
+      {tags.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-2">
+          {tags.map((t) => (
+            <span key={t} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-sm bg-gray-100 text-gray-700 border border-gray-200">
+              {t}
+              <button type="button" onClick={() => onChange(tags.filter((x) => x !== t))}
+                className="text-gray-400 hover:text-gray-600 leading-none" aria-label={`Remove ${t}`}>×</button>
+            </span>
+          ))}
+        </div>
+      )}
+      {tags.length < max && (
+        <input
+          type="text"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter" || e.key === ",") { e.preventDefault(); add(); } }}
+          onBlur={add}
+          placeholder={placeholder}
+          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none"
+        />
+      )}
+    </div>
+  );
+}
+
 export default function TeacherWizardPage() {
   const router = useRouter();
   const [step, setStep] = useState(1);
@@ -69,6 +116,7 @@ export default function TeacherWizardPage() {
   const [qualifications, setQualifications] = useState("");
   const [subjects, setSubjects] = useState<string[]>([]);
   const [targetExams, setTargetExams] = useState<string[]>([]);
+  const [expertiseTags, setExpertiseTags] = useState<string[]>([]);
   const [experienceYears, setExperienceYears] = useState<string>("");
   const [demoVideoLink, setDemoVideoLink] = useState("");
   const [social, setSocial] = useState<SocialLinks>({});
@@ -81,6 +129,7 @@ export default function TeacherWizardPage() {
         if (p.qualifications) setQualifications(p.qualifications);
         if (p.subjects?.length) setSubjects(p.subjects);
         if (p.targetExams?.length) setTargetExams(p.targetExams);
+        if (p.expertiseTags?.length) setExpertiseTags(p.expertiseTags);
         if (p.teachingExperienceYears) setExperienceYears(String(p.teachingExperienceYears));
         if (p.demoVideoLink) setDemoVideoLink(p.demoVideoLink);
         if (p.socialMediaLinks) setSocial(p.socialMediaLinks as SocialLinks);
@@ -123,6 +172,7 @@ export default function TeacherWizardPage() {
         bio,
         subjects,
         targetExams,
+        expertiseTags,
         teachingExperienceYears: experienceYears ? Number(experienceYears) : undefined,
       };
     } else if (step === 2) {
@@ -231,6 +281,14 @@ export default function TeacherWizardPage() {
                 <Toggle items={EXAMS} selected={targetExams} onChange={setTargetExams} />
               </div>
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Areas of expertise</label>
+                <p className="text-xs text-gray-500 mb-2">
+                  Add 2-3 specific topics you are strongest in (e.g. Rotational Mechanics, Organic Chemistry).
+                  These show as tags on your teacher card.
+                </p>
+                <TagInput tags={expertiseTags} onChange={setExpertiseTags} max={5} placeholder="Type a topic and press Enter" />
+              </div>
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Years of teaching experience
                 </label>
@@ -324,6 +382,10 @@ export default function TeacherWizardPage() {
                 <div className="flex gap-3">
                   <span className="text-gray-500 w-32 shrink-0">Exams</span>
                   <span className="text-gray-900">{targetExams.join(", ") || "—"}</span>
+                </div>
+                <div className="flex gap-3">
+                  <span className="text-gray-500 w-32 shrink-0">Expertise</span>
+                  <span className="text-gray-900">{expertiseTags.join(", ") || "—"}</span>
                 </div>
                 <div className="flex gap-3">
                   <span className="text-gray-500 w-32 shrink-0">Experience</span>
