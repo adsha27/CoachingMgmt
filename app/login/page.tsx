@@ -7,7 +7,7 @@ const EXAMS = ["JEE Main", "JEE Advanced", "NEET", "CUET"];
 const CLASSES = ["Class 11", "Class 12", "Dropper"];
 
 const inputCls =
-  "w-full rounded-xl border border-gray-300 px-3 py-3 text-sm shadow-sm focus:border-orange-500 focus:outline-none focus:ring-1 focus:ring-orange-500 transition-all";
+  "w-full rounded-lg border border-line bg-surface px-3 py-3 text-sm text-ink placeholder:text-ink-soft shadow-sm focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent transition-all";
 
 function LoginForm() {
   const router = useRouter();
@@ -71,48 +71,51 @@ function LoginForm() {
     : (applying ? "Create your profile to apply" : "Create your account");
   const subtitle = mode === "signin"
     ? "Enter your email and password."
-    : "Set an email and password — you'll use them to sign in.";
+    : "Set an email and password. You'll use them to sign in.";
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center bg-white px-4 py-12">
-      <a href="/" className="mb-10 text-xl font-bold text-slate-900 tracking-tight">Novus Classes</a>
+    <main className="min-h-screen flex flex-col items-center justify-center bg-paper px-4 py-12">
+      <a href="/" className="mb-10 flex items-center gap-2.5 text-xl font-extrabold tracking-tight text-ink">
+        <span className="inline-flex h-8 w-8 items-center justify-center rounded-[7px] bg-accent text-base font-extrabold text-white">N</span>
+        <span>Novus <span className="text-accent">Classes</span></span>
+      </a>
 
       <div className="w-full max-w-sm">
         {pendingApproval ? (
           <div className="text-center">
-            <div className="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center mx-auto mb-5 text-2xl">⏳</div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Account created</h1>
-            <p className="text-sm text-gray-500 leading-relaxed mb-6">
-              Your teacher account is <span className="font-medium text-gray-700">awaiting admin approval</span>. You&apos;ll be able to sign in once our team approves it.
+            <div className="w-14 h-14 rounded-xl bg-warn-tint flex items-center justify-center mx-auto mb-5 text-2xl">⏳</div>
+            <h1 className="text-2xl font-bold text-ink mb-2">Account created</h1>
+            <p className="text-sm text-ink-soft leading-relaxed mb-6">
+              Your teacher account is <span className="font-medium text-ink">awaiting admin approval</span>. You&apos;ll be able to sign in once our team approves it.
             </p>
-            <a href="/" className="inline-block text-sm font-semibold text-orange-600 hover:text-orange-800">← Back to home</a>
+            <a href="/" className="inline-block text-sm font-semibold text-accent hover:text-accent-dark">← Back to home</a>
           </div>
         ) : (
         <>
-        <h1 className="text-2xl font-bold text-gray-900 mb-1.5 text-center">{title}</h1>
-        <p className="text-sm text-gray-500 text-center mb-8 leading-relaxed">{subtitle}</p>
+        <h1 className="text-2xl font-bold text-ink mb-1.5 text-center">{title}</h1>
+        <p className="text-sm text-ink-soft text-center mb-8 leading-relaxed">{subtitle}</p>
 
         {error && (
-          <div className="mb-5 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">{error}</div>
+          <div role="alert" aria-live="polite" className="mb-5 px-4 py-3 bg-danger-tint rounded-lg text-sm font-medium text-danger">{error}</div>
         )}
 
         {mode === "signin" ? (
           <form onSubmit={signin} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+              <label className="block text-sm font-medium text-ink mb-1.5">Email</label>
               <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoFocus placeholder="you@example.com" className={inputCls} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
+              <label className="block text-sm font-medium text-ink mb-1.5">Password</label>
               <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="••••••••" className={inputCls} />
             </div>
             <button type="submit" disabled={loading || !email.includes("@") || !password}
-              className="w-full py-3 bg-orange-600 text-white text-sm font-semibold rounded-xl hover:bg-orange-700 disabled:opacity-50 transition-colors shadow-sm">
+              className="w-full py-3 bg-accent text-white text-sm font-semibold rounded-lg hover:bg-accent-dark disabled:opacity-50 transition-colors shadow-sm">
               {loading ? "Signing in…" : "Sign in"}
             </button>
-            <p className="text-center text-sm text-gray-500">
+            <p className="text-center text-sm text-ink-soft">
               New here?{" "}
-              <button type="button" onClick={() => { setMode("register"); setError(null); }} className="text-orange-600 hover:text-orange-800 font-medium">
+              <button type="button" onClick={() => { setMode("register"); setError(null); }} className="text-accent hover:text-accent-dark font-medium">
                 Create an account
               </button>
             </p>
@@ -120,36 +123,36 @@ function LoginForm() {
         ) : (
           <form onSubmit={register} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Full name</label>
+              <label className="block text-sm font-medium text-ink mb-1.5">Full name</label>
               <input type="text" value={name} onChange={(e) => setName(e.target.value)} required autoFocus placeholder="Arjun Mehta" className={inputCls} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+              <label className="block text-sm font-medium text-ink mb-1.5">Email</label>
               <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required placeholder="you@example.com" className={inputCls} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Mobile number</label>
-              <div className="flex rounded-xl border border-gray-300 overflow-hidden focus-within:border-orange-500 focus-within:ring-1 focus-within:ring-orange-500 transition-all shadow-sm">
-                <span className="flex items-center pl-3 pr-2 text-sm text-gray-500 bg-gray-50 border-r border-gray-300 select-none shrink-0">+91</span>
+              <label className="block text-sm font-medium text-ink mb-1.5">Mobile number</label>
+              <div className="flex rounded-lg border border-line overflow-hidden focus-within:border-accent focus-within:ring-1 focus-within:ring-accent transition-all shadow-sm">
+                <span className="flex items-center pl-3 pr-2 text-sm text-ink-soft bg-surface-sunken border-r border-line select-none shrink-0">+91</span>
                 <input type="tel" inputMode="numeric" value={phone}
                   onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
-                  required placeholder="98765 43210" className="flex-1 px-3 py-3 text-sm bg-white outline-none" />
+                  required placeholder="98765 43210" className="flex-1 px-3 py-3 text-sm bg-surface text-ink placeholder:text-ink-soft outline-none" />
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Password</label>
+              <label className="block text-sm font-medium text-ink mb-1.5">Password</label>
               <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={8} placeholder="At least 8 characters" className={inputCls} />
             </div>
 
             {!isTeacherPortal && !applying && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">I am a…</label>
+                <label className="block text-sm font-medium text-ink mb-2">I am a…</label>
                 <div className="grid grid-cols-2 gap-3">
                   {(["STUDENT", "TEACHER"] as const).map((r) => (
                     <label key={r} className="cursor-pointer">
                       <input type="radio" name="role" value={r} checked={role === r} onChange={() => setRole(r)} className="sr-only" />
-                      <div className={`rounded-xl border-2 px-4 py-3 text-sm font-semibold text-center transition-all ${
-                        role === r ? "border-orange-600 bg-orange-50 text-orange-700" : "border-gray-200 text-gray-600 hover:border-gray-300"
+                      <div className={`rounded-lg border-2 px-4 py-3 text-sm font-semibold text-center transition-all ${
+                        role === r ? "border-accent bg-accent-tint text-accent" : "border-line text-ink-soft hover:border-ink-soft"
                       }`}>
                         {r === "STUDENT" ? "🎓 Student" : "👨‍🏫 Teacher"}
                       </div>
@@ -162,16 +165,16 @@ function LoginForm() {
             {role === "STUDENT" && (
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Target exam</label>
+                  <label className="block text-sm font-medium text-ink mb-1.5">Target exam</label>
                   <select value={targetExam} onChange={(e) => setTargetExam(e.target.value)} className={inputCls}>
-                    <option value="">— Select —</option>
+                    <option value="">Select…</option>
                     {EXAMS.map((x) => <option key={x}>{x}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Current class</label>
+                  <label className="block text-sm font-medium text-ink mb-1.5">Current class</label>
                   <select value={currentClass} onChange={(e) => setCurrentClass(e.target.value)} className={inputCls}>
-                    <option value="">— Select —</option>
+                    <option value="">Select…</option>
                     {CLASSES.map((c) => <option key={c}>{c}</option>)}
                   </select>
                 </div>
@@ -179,12 +182,12 @@ function LoginForm() {
             )}
 
             <button type="submit" disabled={loading || !email.includes("@") || password.length < 8 || phone.length < 10 || !name}
-              className="w-full py-3 bg-orange-600 text-white text-sm font-semibold rounded-xl hover:bg-orange-700 disabled:opacity-50 transition-colors shadow-sm">
+              className="w-full py-3 bg-accent text-white text-sm font-semibold rounded-lg hover:bg-accent-dark disabled:opacity-50 transition-colors shadow-sm">
               {loading ? "Creating account…" : applying ? "Create profile & apply" : "Create account"}
             </button>
-            <p className="text-center text-sm text-gray-500">
+            <p className="text-center text-sm text-ink-soft">
               Already have an account?{" "}
-              <button type="button" onClick={() => { setMode("signin"); setError(null); }} className="text-orange-600 hover:text-orange-800 font-medium">
+              <button type="button" onClick={() => { setMode("signin"); setError(null); }} className="text-accent hover:text-accent-dark font-medium">
                 Sign in
               </button>
             </p>
