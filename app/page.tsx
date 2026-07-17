@@ -148,8 +148,8 @@ export default function HomePage() {
               <div className="proof-label">average time from sign-up to a booked first session</div>
             </div>
             <div>
-              <div className="proof-num">1 SESSION</div>
-              <div className="proof-label">is all you commit to before deciding to continue, no package required</div>
+              <div className="proof-num">1</div>
+              <div className="proof-label">session is all you commit to before deciding to continue, no package required</div>
             </div>
             <div>
               <div className="proof-num">100%</div>
