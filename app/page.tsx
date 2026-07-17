@@ -10,22 +10,22 @@ export const metadata: Metadata = {
     "Novus Classes lists real teachers with real results. Compare rank, price and reviews, then book your first session in under two minutes.",
   openGraph: {
     title: "Novus Classes — Book a Verified JEE & NEET Teacher",
-    description: "Verified teachers only. Group sessions from ₹299. Book your first session in under two minutes.",
+    description: "Verified teachers only. Book one session first, no package lock-in.",
     url: BASE,
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
     title: "Novus Classes — JEE & NEET Coaching",
-    description: "Verified teachers only. Group sessions from ₹299. Cancel anytime.",
+    description: "Verified teachers only. Book one session first, no package lock-in.",
   },
   alternates: { canonical: BASE },
 };
 
 const TEACHERS = [
-  { initials: "RK", name: "Rajesh Kumar", sub: "Physics · JEE Advanced", price: "₹499/session" },
-  { initials: "SP", name: "Sunita Patil", sub: "Biology · NEET", price: "₹349/session" },
-  { initials: "AM", name: "Arun Mehta", sub: "Chemistry · JEE Mains", price: "₹299/session" },
+  { initials: "RK", name: "Rajesh Kumar", sub: "Physics · JEE Advanced", rating: "4.9 ★" },
+  { initials: "SP", name: "Sunita Patil", sub: "Biology · NEET", rating: "4.8 ★" },
+  { initials: "AM", name: "Arun Mehta", sub: "Chemistry · JEE Mains", rating: "4.9 ★" },
 ];
 
 const FAQS = [
@@ -109,7 +109,7 @@ export default function HomePage() {
                 <Link href="/browse" className="btn btn-primary">Browse verified teachers</Link>
                 <a href="#how" className="btn btn-secondary">See how it works</a>
               </div>
-              <div className="hero-note">Group sessions from ₹299 per session · Cancel anytime</div>
+              <div className="hero-note">Book one session first · No package lock-in</div>
             </div>
             <div className="device-stack" aria-hidden="true">
               <div className="device-ghost" />
@@ -129,7 +129,7 @@ export default function HomePage() {
                       </div>
                       <div style={{ textAlign: "right" }}>
                         <span className="device-verified">VERIFIED</span>
-                        <div className="device-price">{t.price}</div>
+                        <div className="device-price">{t.rating}</div>
                       </div>
                     </div>
                   ))}
@@ -148,8 +148,8 @@ export default function HomePage() {
               <div className="proof-label">average time from sign-up to a booked first session</div>
             </div>
             <div>
-              <div className="proof-num">₹299</div>
-              <div className="proof-label">cheapest verified group session in the category</div>
+              <div className="proof-num">1 SESSION</div>
+              <div className="proof-label">is all you commit to before deciding to continue, no package required</div>
             </div>
             <div>
               <div className="proof-num">100%</div>
