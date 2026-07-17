@@ -43,6 +43,8 @@ export async function POST(req: NextRequest) {
 
   const passwordHash = await bcryptjs.hash(password, 10);
 
+  // Teachers must be approved by an admin before their login works — they're
+  // created PENDING and get no session. Students are active immediately.
   const user = await prisma.user.create({
     data: {
       name,
@@ -50,13 +52,18 @@ export async function POST(req: NextRequest) {
       phone,
       password: passwordHash,
       role,
+      status: role === "TEACHER" ? "PENDING" : "ACTIVE",
       targetExam: role === "STUDENT" ? body.targetExam?.trim() || null : null,
       currentClass: role === "STUDENT" ? body.currentClass?.trim() || null : null,
     },
   });
 
+  if (role === "TEACHER") {
+    return NextResponse.json({ pending: true }, { status: 201 });
+  }
+
   // Optional: apply to a class as part of signing up.
-  if (role === "STUDENT" && (body.applyCourseId || body.applyPackageId)) {
+  if (body.applyCourseId || body.applyPackageId) {
     const target = body.applyCourseId
       ? { groupCourseId: body.applyCourseId }
       : { oneOnOnePackageId: body.applyPackageId! };

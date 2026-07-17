@@ -382,7 +382,7 @@ export default async function TeacherDashboard() {
                       s.status === "CANCELLED" ? "bg-gray-100 text-gray-500" :
                       "bg-blue-100 text-blue-700"
                     }`}>
-                      {s.status === "COMPLETED" ? "Done" : s.status}
+                      {s.status === "COMPLETED" ? "Done" : s.status === "CANCELLED" ? "Cancelled" : s.status === "NO_SHOW" ? "Missed" : "Ended"}
                     </span>
                   </div>
                   {s.feedback.length > 0 && (

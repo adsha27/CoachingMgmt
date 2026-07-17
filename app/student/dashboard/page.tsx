@@ -338,7 +338,7 @@ export default async function StudentDashboard() {
                         s.status === "NO_SHOW" ? "bg-red-100 text-red-600" :
                         "bg-blue-100 text-blue-700"
                       }`}>
-                        {s.status === "COMPLETED" ? "Done" : s.status === "CANCELLED" ? "Cancelled" : s.status === "NO_SHOW" ? "Missed" : s.status}
+                        {s.status === "COMPLETED" ? "Done" : s.status === "CANCELLED" ? "Cancelled" : s.status === "NO_SHOW" ? "Missed" : "Ended"}
                       </span>
                     </div>
                   </div>

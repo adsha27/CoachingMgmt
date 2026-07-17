@@ -42,6 +42,11 @@ export async function POST(req: NextRequest) {
     return fail();
   }
 
+  // Only reachable after a correct password, so this doesn't leak account
+  // existence to an attacker — it's shown only to the credential holder.
+  if (user.status === "PENDING") {
+    return NextResponse.json({ error: "Your teacher account is awaiting admin approval. You'll be able to sign in once it's approved." }, { status: 403 });
+  }
   if (user.status !== "ACTIVE") return fail();
 
   await prisma.user.update({ where: { id: user.id }, data: { loginAttempts: 0, lockedUntil: null } });

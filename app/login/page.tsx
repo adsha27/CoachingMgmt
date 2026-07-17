@@ -24,6 +24,7 @@ function LoginForm() {
   const [mode, setMode] = useState<"signin" | "register">(applying ? "register" : "signin");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pendingApproval, setPendingApproval] = useState(false);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -61,6 +62,7 @@ function LoginForm() {
     const data = await res.json().catch(() => ({}));
     setLoading(false);
     if (!res.ok) { setError(data.error ?? "Could not create your account. Please try again."); return; }
+    if (data.pending) { setPendingApproval(true); return; } // teacher — awaiting admin approval
     router.replace(next || data.redirect || "/");
   }
 
@@ -76,6 +78,17 @@ function LoginForm() {
       <a href="/" className="mb-10 text-xl font-bold text-slate-900 tracking-tight">EduConnect</a>
 
       <div className="w-full max-w-sm">
+        {pendingApproval ? (
+          <div className="text-center">
+            <div className="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center mx-auto mb-5 text-2xl">⏳</div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Account created</h1>
+            <p className="text-sm text-gray-500 leading-relaxed mb-6">
+              Your teacher account is <span className="font-medium text-gray-700">awaiting admin approval</span>. You&apos;ll be able to sign in once our team approves it.
+            </p>
+            <a href="/" className="inline-block text-sm font-semibold text-orange-600 hover:text-orange-800">← Back to home</a>
+          </div>
+        ) : (
+        <>
         <h1 className="text-2xl font-bold text-gray-900 mb-1.5 text-center">{title}</h1>
         <p className="text-sm text-gray-500 text-center mb-8 leading-relaxed">{subtitle}</p>
 
@@ -176,6 +189,8 @@ function LoginForm() {
               </button>
             </p>
           </form>
+        )}
+        </>
         )}
       </div>
     </main>
