@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
+import { getCurrentUser } from "@/lib/auth";
 import { discountPct } from "@/lib/pricing";
 
 export const dynamic = "force-dynamic";
@@ -81,18 +82,23 @@ export default async function TeacherProfilePage({
   const teacherId = Number(id);
   if (isNaN(teacherId)) notFound();
 
+  // The owner (previewing their own page) and admins can view before the
+  // profile is verified; everyone else only sees verified, active teachers.
+  const viewer = await getCurrentUser();
+  const isPrivileged = !!viewer && (viewer.id === teacherId || viewer.role === "ADMIN");
+
   const teacher = await prisma.user.findFirst({
     where: {
       id: teacherId,
       role: "TEACHER",
-      status: "ACTIVE",
-      teacherProfile: { verifyStatus: "VERIFIED" },
+      ...(isPrivileged ? {} : { status: "ACTIVE", teacherProfile: { verifyStatus: "VERIFIED" } }),
     },
     select: {
       id: true,
       name: true,
       teacherProfile: {
         select: {
+          verifyStatus: true,
           bio: true,
           qualifications: true,
           subjects: true,
@@ -184,9 +190,28 @@ export default async function TeacherProfilePage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <div className="max-w-4xl mx-auto px-4 py-8">
+        {/* Owner/admin preview notice — this page isn't public until verified */}
+        {isPrivileged && p?.verifyStatus !== "VERIFIED" && (
+          <div className="mb-6 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3 flex items-start gap-3">
+            <span className="text-lg shrink-0">👁️</span>
+            <div className="text-sm text-amber-800">
+              <p className="font-semibold">Preview — not visible to students yet</p>
+              <p className="text-amber-700 mt-0.5">
+                This is how your page will look once the Novus Classes team verifies your profile.
+                {viewer?.id === teacherId && (
+                  <> <Link href="/teacher/wizard" className="underline font-medium">Edit profile</Link></>
+                )}
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Back link */}
-        <Link href="/browse" className="text-sm font-semibold text-accent hover:text-accent-dark mb-6 inline-block">
-          ← Browse teachers
+        <Link
+          href={viewer?.id === teacherId ? "/teacher/dashboard" : "/browse"}
+          className="text-sm font-semibold text-accent hover:text-accent-dark mb-6 inline-block"
+        >
+          {viewer?.id === teacherId ? "← Dashboard" : "← Browse teachers"}
         </Link>
 
         {/* Profile header */}
