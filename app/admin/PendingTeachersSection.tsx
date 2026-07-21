@@ -37,10 +37,13 @@ export default function PendingTeachersSection({ teachers: initial }: { teachers
 
   return (
     <section className="mb-10">
-      <h2 className="text-lg font-semibold text-gray-800 mb-4">
-        Teacher account approvals
+      <h2 className="text-lg font-semibold text-gray-800 mb-1">
+        Teacher approvals
         <span className="ml-2 text-xs font-semibold text-white bg-amber-600 px-2 py-0.5 rounded-full align-middle">{teachers.length}</span>
       </h2>
+      <p className="text-xs text-gray-500 mb-4">
+        Approving activates the account and lists the teacher on the marketplace — no separate verification step.
+      </p>
       {error && <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">{error}</div>}
       <div className="space-y-3">
         {teachers.map((t) => (
@@ -60,7 +63,7 @@ export default function PendingTeachersSection({ teachers: initial }: { teachers
                   disabled={loading === t.id}
                   className="px-3 py-1.5 bg-green-600 text-white text-xs rounded-md hover:bg-green-700 disabled:opacity-50"
                 >
-                  {loading === t.id ? "…" : "Approve"}
+                  {loading === t.id ? "…" : "Approve & list"}
                 </button>
                 <button
                   onClick={() => decide(t.id, "reject")}

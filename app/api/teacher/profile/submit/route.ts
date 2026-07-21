@@ -24,9 +24,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Profile already verified" }, { status: 409 });
   }
 
+  // Approval is the single vetting decision (see approve route). A teacher whose
+  // account is already ACTIVE (admin-approved) completing their initial profile
+  // is auto-verified — no separate review step. But if the admin explicitly sent
+  // them back (REJECTED / MORE_INFO_REQUESTED), resubmitting returns to the queue
+  // as PENDING; a teacher must not self-clear that state.
+  const account = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { status: true },
+  });
+  const autoVerify = account?.status === "ACTIVE" && profile.verifyStatus === "PENDING";
+
   const updated = await prisma.teacherProfile.update({
     where: { teacherId: user.id },
-    data: { verifyStatus: "PENDING" },
+    data: { verifyStatus: autoVerify ? "VERIFIED" : "PENDING" },
   });
 
   return NextResponse.json({ ok: true, verifyStatus: updated.verifyStatus });
