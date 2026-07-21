@@ -50,6 +50,7 @@ export default async function AdminPage() {
     { href: "/admin/users/new", label: "Add teacher/student" },
     { href: "/admin/verification", label: "Verification queue", badge: pendingVerifications },
     { href: "/admin/teachers", label: "Teachers" },
+    { href: "/admin/students", label: "Students" },
     { href: "/admin/courses", label: "All courses" },
     { href: "/admin/cancellations", label: "Cancellations", badge: cancellationRequests },
     { href: "/admin/topic-requests", label: "Topic requests", badge: openTopicRequests },
