@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession, SESSION_COOKIE } from "@/lib/auth";
-import { createMeetSession } from "@/lib/calendar";
 import { sendEmail } from "@/lib/email";
 import { render } from "@react-email/render";
 import { SlotConfirmedEmail, slotConfirmedText } from "@/lib/emails/slot-confirmed";
@@ -53,32 +52,15 @@ export async function PATCH(
     return NextResponse.json(updated);
   }
 
-  // Confirm: create session + Meet link
+  // Confirm: create the session, carrying the teacher's own meeting link.
   const pkg = proposal.booking.oneOnOnePackage!;
   const scheduledAt = new Date(proposal.proposedDate);
   const [h, m] = proposal.proposedStartTime.split(":").map(Number);
   scheduledAt.setHours(h, m, 0, 0);
 
-  let meetLink: string | null = null;
-  let calendarEventId: string | null = null;
-
-  if (process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
-    try {
-      const meet = await createMeetSession({
-        summary: `${pkg.title} — Session`,
-        startTime: scheduledAt,
-        durationMinutes: pkg.sessionDurationMinutes,
-        attendeeEmails: [
-          proposal.booking.oneOnOnePackage!.teacher.email,
-          proposal.booking.student.email,
-        ].filter(Boolean),
-      });
-      meetLink = meet.meetLink;
-      calendarEventId = meet.calendarEventId;
-    } catch {
-      // Calendar not configured — proceed without Meet link
-    }
-  }
+  // The teacher supplies the link on the package; no calendar integration.
+  const meetLink: string | null = pkg.meetingLink ?? null;
+  const calendarEventId: string | null = null;
 
   const booking = proposal.booking;
   const nextSessionNumber = booking.sessionsCompleted + booking.sessionsScheduled + 1;

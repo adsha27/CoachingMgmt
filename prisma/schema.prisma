@@ -167,6 +167,7 @@ model OneOnOnePackage {
   sessionDurationMinutes Int
   targetExam             String?
   totalSessions          Int
+  meetingLink            String?
   bookings               Booking[]
   cancellationRequests   CancellationRequest[]
   inviteLinks            InviteLink[]
