@@ -23,10 +23,16 @@ export async function sendEmail(params: {
   html: string;
   text: string;
 }): Promise<{ id: string }> {
+  // Non-production environments prefix the subject, so a message that reaches a
+  // real inbox is unmistakably a test. Only set outside production.
+  const subject = process.env.EMAIL_SUBJECT_PREFIX
+    ? `${process.env.EMAIL_SUBJECT_PREFIX} ${params.subject}`
+    : params.subject;
+
   if (process.env.EMAIL_DELIVERY_MODE === "console") {
     console.log("[email:console]", {
       to: params.to,
-      subject: params.subject,
+      subject,
       text: params.text,
     });
     return { id: `console-${Date.now()}` };
@@ -35,7 +41,7 @@ export async function sendEmail(params: {
   const info = await getTransporter().sendMail({
     from: process.env.EMAIL_FROM ?? WORKSPACE_EMAIL,
     to: params.to,
-    subject: params.subject,
+    subject,
     html: params.html,
     text: params.text,
   });
