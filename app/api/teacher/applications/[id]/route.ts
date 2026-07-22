@@ -1,6 +1,41 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession, SESSION_COOKIE } from "@/lib/auth";
+import { sendEmail } from "@/lib/email";
+import { render } from "@react-email/render";
+import { EnrolmentConfirmedEmail, enrolmentConfirmedText } from "@/lib/emails/enrolment-confirmed";
+
+// Sends the "you're enrolled" email carrying the teacher's meeting link.
+// Best-effort: a delivery failure must never roll back a confirmed enrolment.
+async function sendEnrolmentEmail(bookingId: number, teacherName: string) {
+  const b = await prisma.booking.findUnique({
+    where: { id: bookingId },
+    include: {
+      student: { select: { name: true, email: true } },
+      groupCourse: { select: { title: true, sessions: { orderBy: { scheduledAt: "asc" }, take: 1, select: { meetLink: true, scheduledAt: true } } } },
+      oneOnOnePackage: { select: { title: true } },
+    },
+  });
+  if (!b?.student.email) return;
+
+  const first = b.groupCourse?.sessions[0];
+  const props = {
+    studentName: b.student.name ?? "there",
+    className: b.groupCourse?.title ?? b.oneOnOnePackage?.title ?? "your class",
+    teacherName,
+    meetingLink: first?.meetLink ?? null,
+    firstSessionAt: first
+      ? new Date(first.scheduledAt).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })
+      : null,
+  };
+
+  await sendEmail({
+    to: b.student.email,
+    subject: `You're enrolled in ${props.className}`,
+    html: await render(EnrolmentConfirmedEmail(props) as React.ReactElement),
+    text: enrolmentConfirmedText(props),
+  });
+}
 
 // Teacher approves or rejects a PENDING application (Booking) for one of their
 // own classes. Approving a group course is where the seat is actually taken.
@@ -35,10 +70,6 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({ ok: true });
   }
 
-  // ponytail: approval only flips status + takes the seat for now. Meet-link
-  // creation + confirmation email (see the deleted app/api/bookings/* routes in
-  // git history) belong here once Google Calendar + SMTP are confirmed live.
-
   // Approve a group course: take a seat atomically, only if room remains.
   if (booking.groupCourse) {
     const course = booking.groupCourse;
@@ -55,10 +86,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       return true;
     });
     if (!approved) return NextResponse.json({ error: "Course is now full" }, { status: 409 });
+    await sendEnrolmentEmail(booking.id, user.name ?? "your teacher").catch(() => {});
     return NextResponse.json({ ok: true });
   }
 
   // 1-on-1: approving just activates; slot scheduling happens afterward.
   await prisma.booking.update({ where: { id: booking.id }, data: { status: "ACTIVE" } });
+  await sendEnrolmentEmail(booking.id, user.name ?? "your teacher").catch(() => {});
   return NextResponse.json({ ok: true });
 }

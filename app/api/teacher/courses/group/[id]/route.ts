@@ -19,7 +19,28 @@ export async function PATCH(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const body = await req.json() as { action?: string };
+  const body = await req.json() as { action?: string; meetingLink?: string };
+
+  // Teacher pastes their own meeting link (Meet/Zoom/whatever) for the class.
+  // It's stored on every session of the course; students only see it once their
+  // booking is ACTIVE (approved/paid).
+  if (body.action === "set-meeting-link") {
+    const raw = body.meetingLink?.trim() ?? "";
+    if (raw) {
+      let parsed: URL;
+      try { parsed = new URL(raw); } catch {
+        return NextResponse.json({ error: "Enter a valid link starting with https://" }, { status: 400 });
+      }
+      if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
+        return NextResponse.json({ error: "Link must be an http(s) URL" }, { status: 400 });
+      }
+    }
+    const { count } = await prisma.session.updateMany({
+      where: { groupCourseId: courseId },
+      data: { meetLink: raw || null },
+    });
+    return NextResponse.json({ ok: true, meetingLink: raw || null, sessionsUpdated: count });
+  }
 
   if (body.action === "publish") {
     if (course.status !== "DRAFT") {

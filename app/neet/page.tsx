@@ -7,7 +7,7 @@ const BASE = process.env.NEXT_PUBLIC_APP_URL ?? "https://novusclasses.in";
 
 export const metadata: Metadata = {
   title: "NEET Coaching Teachers Online | Novus Classes",
-  description: "Find verified NEET UG coaching teachers. Biology, Chemistry, Physics. Group courses from ₹299/session. Book online from your phone.",
+  description: "Find verified NEET UG coaching teachers. Biology, Chemistry, Physics. Book one session first, no package lock-in.",
   openGraph: {
     title: "NEET Coaching Teachers Online | Novus Classes",
     description: "Verified NEET teachers. Group courses and 1-on-1 sessions. Book from your phone.",
@@ -25,7 +25,7 @@ const NEET: ExamConfig = {
   jsonLdDesc: "Verified NEET UG coaching teachers on Novus Classes",
   badge: "NEET UG · Medical entrance",
   h1: "NEET Coaching Teachers Online",
-  heroDesc: "Verified Biology, Chemistry, and Physics teachers for NEET UG. Group courses from ₹299/session. Book from your phone.",
+  heroDesc: "Verified Biology, Chemistry, and Physics teachers for NEET UG. Book one session first, no package lock-in.",
   browseHref: "/browse?exam=NEET",
   browseCta: "Browse all NEET teachers",
   emptyMsg: "No NEET teachers listed yet.",
