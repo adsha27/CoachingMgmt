@@ -30,5 +30,6 @@ export const config = {
     "/admin",
     "/admin/:path*",
     "/parent/:path*",
+    "/account",
   ],
 };
