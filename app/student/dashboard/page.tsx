@@ -38,8 +38,10 @@ export default async function StudentDashboard() {
       where: {
         status: "SCHEDULED",
         scheduledAt: { gte: now },
+        // This list renders the meeting link, so both branches must require an
+        // ACTIVE (approved) booking — a PENDING application must never surface it.
         OR: [
-          { booking: { studentId: user.id } },
+          { booking: { studentId: user.id, status: "ACTIVE" } },
           { groupCourse: { bookings: { some: { studentId: user.id, status: "ACTIVE" } } } },
         ],
       },
