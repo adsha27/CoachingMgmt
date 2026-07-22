@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 type SocialLinks = { youtube?: string; instagram?: string; twitter?: string; linkedin?: string };
 
@@ -110,6 +111,7 @@ export default function TeacherWizardPage() {
   const [error, setError] = useState<string | null>(null);
   const [verifyStatus, setVerifyStatus] = useState<string | null>(null);
   const [rejectionReason, setRejectionReason] = useState<string | null>(null);
+  const [existing, setExisting] = useState(false);
 
   // Profile fields
   const [bio, setBio] = useState("");
@@ -125,6 +127,7 @@ export default function TeacherWizardPage() {
     fetch("/api/teacher/profile")
       .then((r) => r.json())
       .then((p: Profile) => {
+        if (p.subjects?.length || p.bio || p.qualifications || p.verifyStatus) setExisting(true);
         if (p.bio) setBio(p.bio);
         if (p.qualifications) setQualifications(p.qualifications);
         if (p.subjects?.length) setSubjects(p.subjects);
@@ -204,9 +207,16 @@ export default function TeacherWizardPage() {
   return (
     <main className="min-h-screen bg-gray-50">
       <div className="max-w-2xl mx-auto px-4 py-10">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Set up your teacher profile</h1>
+        <div className="flex items-center justify-between mb-2">
+          <h1 className="text-2xl font-bold text-gray-900">
+            {existing ? "Edit your teacher profile" : "Set up your teacher profile"}
+          </h1>
+          <Link href="/teacher/dashboard" className="text-sm text-orange-600 hover:underline shrink-0">← Dashboard</Link>
+        </div>
         <p className="text-sm text-gray-500 mb-8">
-          Complete your profile so we can verify and list you for students to find.
+          {existing
+            ? "Update your details and resubmit for review. Changes are saved as you go."
+            : "Complete your profile so we can verify and list you for students to find."}
         </p>
 
         {verifyStatus === "REJECTED" && (

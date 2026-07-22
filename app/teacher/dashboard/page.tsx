@@ -146,9 +146,13 @@ export default async function TeacherDashboard() {
             <p className="text-xs text-gray-400">{user.email ?? user.phone}</p>
           </div>
           <div className="flex items-center gap-3">
+            <Link href="/teacher/wizard"
+              className="text-xs font-medium text-gray-700 bg-gray-100 px-3 py-1.5 rounded-lg hover:bg-gray-200 transition-colors">
+              Edit profile
+            </Link>
             <Link href={`/teacher/${user.id}`}
               className="text-xs font-medium text-orange-600 bg-orange-50 px-3 py-1.5 rounded-lg hover:bg-orange-100 transition-colors">
-              My page
+              View public page
             </Link>
             <LogoutButton />
           </div>
