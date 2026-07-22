@@ -2,6 +2,7 @@
 
 import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 
 const EXAMS = ["JEE Main", "JEE Advanced", "NEET", "CUET"];
 const CLASSES = ["Class 11", "Class 12", "Dropper"];
@@ -25,6 +26,7 @@ function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pendingApproval, setPendingApproval] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -106,8 +108,17 @@ function LoginForm() {
               <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoFocus placeholder="you@example.com" className={inputCls} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-ink mb-1.5">Password</label>
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="••••••••" className={inputCls} />
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-sm font-medium text-ink">Password</label>
+                <Link href="/forgot-password" className="text-xs font-medium text-accent hover:text-accent-dark">Forgot password?</Link>
+              </div>
+              <div className="relative">
+                <input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} required placeholder="••••••••" className={`${inputCls} pr-16`} />
+                <button type="button" onClick={() => setShowPassword((s) => !s)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-accent hover:text-accent-dark">
+                  {showPassword ? "Hide" : "Show"}
+                </button>
+              </div>
             </div>
             <button type="submit" disabled={loading || !email.includes("@") || !password}
               className="w-full py-3 bg-accent text-white text-sm font-semibold rounded-lg hover:bg-accent-dark disabled:opacity-50 transition-colors shadow-sm">
