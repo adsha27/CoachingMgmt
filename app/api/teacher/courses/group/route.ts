@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession, SESSION_COOKIE } from "@/lib/auth";
-import { createMeetSession } from "@/lib/calendar";
 
 const DAY_MAP: Record<string, number> = {
   MON: 1, TUE: 2, WED: 3, THU: 4, FRI: 5, SAT: 6, SUN: 0,
@@ -92,39 +91,20 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    const sessionRows = await Promise.all(
-      sessionDates.map(async (scheduledAt, i) => {
-        let meetLink: string | null = null;
-        let calendarEventId: string | null = null;
-
-        if (process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
-          try {
-            const meet = await createMeetSession({
-              summary: `${title} — Session ${i + 1}`,
-              startTime: scheduledAt,
-              durationMinutes: sessionDurationMinutes,
-              attendeeEmails: [],
-            });
-            meetLink = meet.meetLink;
-            calendarEventId = meet.calendarEventId;
-          } catch {
-            // Calendar not configured — skip Meet link
-          }
-        }
-
-        return tx.session.create({
-          data: {
-            groupCourseId: created.id,
-            sessionNumber: i + 1,
-            scheduledAt,
-            durationMinutes: sessionDurationMinutes,
-            meetLink,
-            calendarEventId,
-            status: "SCHEDULED",
-          },
-        });
-      }),
-    );
+    // One INSERT for all sessions instead of N sequential creates — N creates
+    // blew past the 5s interactive-transaction timeout for larger courses.
+    // Meet links are generated at approval/confirmation time (see class-delivery
+    // work), never here: calling the Calendar API per session inside a DB
+    // transaction is what made this slow and fragile in the first place.
+    const sessionRows = await tx.session.createManyAndReturn({
+      data: sessionDates.map((scheduledAt, i) => ({
+        groupCourseId: created.id,
+        sessionNumber: i + 1,
+        scheduledAt,
+        durationMinutes: sessionDurationMinutes,
+        status: "SCHEDULED" as const,
+      })),
+    });
 
     return { ...created, sessions: sessionRows };
   });
