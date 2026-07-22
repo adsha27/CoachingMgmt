@@ -2,6 +2,8 @@ import { afterEach, describe, expect, it } from "vitest";
 import { NextRequest } from "next/server";
 import { POST as verifyTeacher } from "@/app/api/admin/teacher/[id]/verify/route";
 import { POST as suspendTeacher } from "@/app/api/admin/teacher/[id]/suspend/route";
+import { POST as approveTeacher } from "@/app/api/admin/teacher/[id]/approve/route";
+import { POST as submitProfile } from "@/app/api/teacher/profile/submit/route";
 import { prisma } from "@/lib/prisma";
 import { createSession, SESSION_COOKIE } from "@/lib/auth";
 
@@ -196,5 +198,84 @@ describe("POST /api/admin/teacher/[id]/suspend", () => {
     const { getSession } = await import("@/lib/auth");
     const session = await getSession(sid);
     expect(session).toBeNull();
+  });
+});
+
+// ─── Approve = single vetting decision (account + profile verified) ───────────
+
+describe("POST /api/admin/teacher/[id]/approve (collapsed approve+verify)", () => {
+  async function pendingTeacher(withProfile: boolean) {
+    const teacher = await prisma.user.create({
+      data: { name: `${P} TEACHER`, phone: phone(), email: `${uid()}@test.invalid`, role: "TEACHER", status: "PENDING" },
+    });
+    if (withProfile) {
+      await prisma.teacherProfile.create({
+        data: { teacherId: teacher.id, subjects: ["Physics"], targetExams: ["JEE Main"], verifyStatus: "PENDING" },
+      });
+    }
+    return teacher;
+  }
+  const call = (id: number, action: string, sid: string) =>
+    approveTeacher(req("POST", `/api/admin/teacher/${id}/approve`, { action }, sid), { params: Promise.resolve({ id: String(id) }) });
+
+  it("approve activates the account AND verifies the profile in one step", async () => {
+    const admin = await makeUser("ADMIN");
+    const sid = await createSession(admin.id);
+    const teacher = await pendingTeacher(true);
+
+    const res = await call(teacher.id, "approve", sid);
+    expect(res.status).toBe(200);
+
+    const u = await prisma.user.findUnique({ where: { id: teacher.id } });
+    const p = await prisma.teacherProfile.findUnique({ where: { teacherId: teacher.id } });
+    expect(u!.status).toBe("ACTIVE");
+    expect(p!.verifyStatus).toBe("VERIFIED");
+  });
+
+  it("approve with no profile yet only activates (no error); later submit auto-verifies", async () => {
+    const admin = await makeUser("ADMIN");
+    const adminSid = await createSession(admin.id);
+    const teacher = await pendingTeacher(false);
+
+    const res = await call(teacher.id, "approve", adminSid);
+    expect(res.status).toBe(200);
+    expect((await prisma.user.findUnique({ where: { id: teacher.id } }))!.status).toBe("ACTIVE");
+
+    // Teacher now builds a profile and submits → auto-verified since approved.
+    await prisma.teacherProfile.create({
+      data: { teacherId: teacher.id, subjects: ["Chemistry"], targetExams: ["NEET"], verifyStatus: "PENDING" },
+    });
+    const teacherSid = await createSession(teacher.id);
+    const sres = await submitProfile(req("POST", "/api/teacher/profile/submit", undefined, teacherSid));
+    expect(sres.status).toBe(200);
+    expect((await sres.json()).verifyStatus).toBe("VERIFIED");
+  });
+
+  it("reject suspends the account and marks the profile REJECTED", async () => {
+    const admin = await makeUser("ADMIN");
+    const sid = await createSession(admin.id);
+    const teacher = await pendingTeacher(true);
+
+    const res = await call(teacher.id, "reject", sid);
+    expect(res.status).toBe(200);
+    expect((await prisma.user.findUnique({ where: { id: teacher.id } }))!.status).toBe("SUSPENDED");
+    expect((await prisma.teacherProfile.findUnique({ where: { teacherId: teacher.id } }))!.verifyStatus).toBe("REJECTED");
+  });
+
+  // Note: a PENDING teacher can't hold a session (getSession rejects non-ACTIVE),
+  // so profile/submit is only ever reached by an approved (ACTIVE) teacher —
+  // there's no "submit while account PENDING" path to guard.
+
+  it("submit does NOT let an ACTIVE teacher self-clear a MORE_INFO_REQUESTED state", async () => {
+    const teacher = await prisma.user.create({
+      data: { name: `${P} TEACHER`, phone: phone(), email: `${uid()}@test.invalid`, role: "TEACHER", status: "ACTIVE" },
+    });
+    await prisma.teacherProfile.create({
+      data: { teacherId: teacher.id, subjects: ["Physics"], verifyStatus: "MORE_INFO_REQUESTED" },
+    });
+    const sid = await createSession(teacher.id);
+    const res = await submitProfile(req("POST", "/api/teacher/profile/submit", undefined, sid));
+    expect(res.status).toBe(200);
+    expect((await res.json()).verifyStatus).toBe("PENDING"); // back to queue, not verified
   });
 });
