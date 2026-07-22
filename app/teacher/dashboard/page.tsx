@@ -8,6 +8,7 @@ import PublishCourseButton from "./PublishCourseButton";
 import ProposalsSection from "./ProposalsSection";
 import ApplicationsSection from "./ApplicationsSection";
 import InviteLinkButton from "./InviteLinkButton";
+import MeetingLinkButton from "./MeetingLinkButton";
 
 export const dynamic = "force-dynamic";
 
@@ -62,6 +63,7 @@ export default async function TeacherDashboard() {
     prisma.groupCourse.findMany({
       where: { teacherId: myId },
       orderBy: { createdAt: "desc" },
+      include: { sessions: { take: 1, orderBy: { sessionNumber: "asc" }, select: { meetLink: true } } },
     }),
     prisma.oneOnOnePackage.findMany({
       where: { teacherId: myId },
@@ -326,6 +328,7 @@ export default async function TeacherDashboard() {
                       }`}>{c.status}</span>
                       {c.status === "DRAFT" && <PublishCourseButton id={c.id} type="group" />}
                       {c.status === "LISTED" && <InviteLinkButton groupCourseId={c.id} />}
+                      <MeetingLinkButton courseId={c.id} current={c.sessions[0]?.meetLink ?? null} />
                     </div>
                   </div>
                 </div>

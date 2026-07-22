@@ -21,7 +21,9 @@ export default async function StudentSessionDetail({
       groupCourse: {
         include: {
           teacher: { select: { name: true } },
-          bookings: { where: { studentId: user.id }, take: 1 },
+          // Only an ACTIVE booking counts — a PENDING application (not yet
+          // approved/paid) must not unlock the session or its meeting link.
+          bookings: { where: { studentId: user.id, status: "ACTIVE" }, take: 1 },
         },
       },
       booking: {
@@ -37,8 +39,10 @@ export default async function StudentSessionDetail({
   });
 
   // Verify this student has access to this session
-  const isGroupEnrolled = session?.groupCourse?.bookings?.some((b) => b.studentId === user.id);
-  const is1on1 = session?.booking?.studentId === user.id;
+  const isGroupEnrolled = session?.groupCourse?.bookings?.some(
+    (b) => b.studentId === user.id && b.status === "ACTIVE",
+  );
+  const is1on1 = session?.booking?.studentId === user.id && session?.booking?.status === "ACTIVE";
   if (!session || (!isGroupEnrolled && !is1on1)) notFound();
 
   const date = new Date(session.scheduledAt);

@@ -7,7 +7,7 @@ const BASE = process.env.NEXT_PUBLIC_APP_URL ?? "https://novusclasses.in";
 
 export const metadata: Metadata = {
   title: "JEE Coaching Teachers Online | Novus Classes",
-  description: "Find verified JEE Main and JEE Advanced coaching teachers. Physics, Chemistry, Mathematics. Group courses from ₹299/session. Book online.",
+  description: "Find verified JEE Main and JEE Advanced coaching teachers. Physics, Chemistry, Mathematics. Book one session first, no package lock-in.",
   openGraph: {
     title: "JEE Coaching Teachers Online | Novus Classes",
     description: "Verified JEE teachers. Group courses and 1-on-1 sessions. Book from your phone.",
@@ -25,7 +25,7 @@ const JEE: ExamConfig = {
   jsonLdDesc: "Verified JEE Main and JEE Advanced coaching teachers on Novus Classes",
   badge: "JEE Main · JEE Advanced",
   h1: "JEE Coaching Teachers Online",
-  heroDesc: "Verified Physics, Chemistry, and Maths teachers for JEE Main and Advanced. Group courses from ₹299/session. Book from your phone.",
+  heroDesc: "Verified Physics, Chemistry, and Maths teachers for JEE Main and Advanced. Book one session first, no package lock-in.",
   browseHref: "/browse?exam=JEE+Advanced",
   browseCta: "Browse all JEE teachers",
   emptyMsg: "No JEE teachers listed yet.",

@@ -141,7 +141,7 @@ export default async function StudentDashboard() {
               Find a teacher
             </Link>
             <div className="mt-8 grid grid-cols-3 gap-3 text-center">
-              {[["Verified", "All teachers reviewed"], ["Affordable", "₹299/session up"], ["Recorded", "Miss nothing"]].map(([title, sub]) => (
+              {[["Verified", "All teachers reviewed"], ["Flexible", "Book one session first"], ["Recorded", "Miss nothing"]].map(([title, sub]) => (
                 <div key={title} className="bg-white rounded-xl p-3 border border-gray-100">
                   <p className="text-xs font-bold text-gray-800">{title}</p>
                   <p className="text-xs text-gray-400 mt-0.5">{sub}</p>
