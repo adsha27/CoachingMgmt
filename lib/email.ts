@@ -1,6 +1,6 @@
 import nodemailer, { type Transporter } from "nodemailer";
 
-const WORKSPACE_EMAIL = "liveclass@coursesdssirchemisty.com";
+const WORKSPACE_EMAIL = "liveclass@coursesdssirchemistry.com";
 
 let transporter: Transporter | null = null;
 
