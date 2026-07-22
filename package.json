@@ -21,7 +21,8 @@
     "db:seed-marketplace": "node scripts/seed-marketplace-demo.mjs",
     "db:seed": "node scripts/seed-admin.mjs",
     "db:demo": "node scripts/seed-admin.mjs && node scripts/seed-demo.mjs",
-    "seed": "tsx --env-file=.env.local prisma/seed.ts"
+    "seed": "tsx --env-file=.env.local prisma/seed.ts",
+    "seed:staging": "node scripts/seed-staging.mjs"
   },
   "dependencies": {
     "@prisma/client": "^6.0.0",

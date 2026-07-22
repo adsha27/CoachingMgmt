@@ -26,7 +26,8 @@ export function normalisePhone(raw: string): string | null {
   return null;
 }
 
-// Send OTP via MSG91 (AUTH_MODE=phone) or Resend email (AUTH_MODE=email fallback).
+// Send OTP via MSG91 (AUTH_MODE=phone) or SMTP email (AUTH_MODE=email fallback).
+// Used by the parent-access flow only; the main login flow is email+password.
 export async function sendOtp(phone: string, code: string, email?: string): Promise<void> {
   const mode = process.env.AUTH_MODE ?? "phone";
 

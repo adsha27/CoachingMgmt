@@ -41,10 +41,16 @@ if (!url.includes(STAGING_HOST) && process.env.STAGING_SEED_CONFIRM !== "yes") {
 const prisma = new PrismaClient({ datasources: { db: { url } } });
 const hash = (s) => bcryptjs.hash(s, 10);
 
+// Set STAGING_INBOX to a real address you own to have the seeded student's mail
+// (enrolment confirmations, password resets) land somewhere you can actually
+// read. Left unset, the student gets an unroutable @staging address so nothing
+// escapes by accident.
+const studentEmail = process.env.STAGING_INBOX ?? "student@staging.novusclasses.in";
+
 const ACCOUNTS = {
   admin:   { email: "admin@staging.novusclasses.in",   password: "StagingAdmin#1",   name: "Staging Admin",   phone: "9000000001", role: "ADMIN" },
   teacher: { email: "teacher@staging.novusclasses.in", password: "StagingTeacher#1", name: "Staging Teacher", phone: "9000000002", role: "TEACHER" },
-  student: { email: "student@staging.novusclasses.in", password: "StagingStudent#1", name: "Staging Student", phone: "9000000003", role: "STUDENT" },
+  student: { email: studentEmail,                      password: "StagingStudent#1", name: "Staging Student", phone: "9000000003", role: "STUDENT" },
 };
 
 async function wipe() {
