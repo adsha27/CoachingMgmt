@@ -10,16 +10,19 @@ const LINKS: Record<string, { href: string; label: string }[]> = {
     { href: "/teacher/courses/new", label: "New course" },
     { href: "/teacher/wizard", label: "My profile" },
     { href: "/browse", label: "Browse" },
+    { href: "/account", label: "Account" },
   ],
   STUDENT: [
     { href: "/student/dashboard", label: "Dashboard" },
     { href: "/browse", label: "Find a teacher" },
+    { href: "/account", label: "Account" },
   ],
   ADMIN: [
     { href: "/admin", label: "Dashboard" },
     { href: "/admin/teachers", label: "Teachers" },
     { href: "/admin/students", label: "Students" },
     { href: "/admin/courses", label: "Courses" },
+    { href: "/account", label: "Account" },
   ],
 };
 
