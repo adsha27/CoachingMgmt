@@ -47,12 +47,11 @@ export default async function AdminPage() {
     { label: "Pending cancellations", value: cancellationRequests, alert: cancellationRequests > 0 },
   ];
 
+  // Teachers / Students / Courses live in the top nav — listing them here too
+  // just duplicated them. These tiles are the actions the nav does not cover.
   const navLinks = [
     { href: "/admin/users/new", label: "Add teacher/student" },
     { href: "/admin/verification", label: "Verification queue", badge: pendingVerifications },
-    { href: "/admin/teachers", label: "Teachers" },
-    { href: "/admin/students", label: "Students" },
-    { href: "/admin/courses", label: "All courses" },
     { href: "/admin/cancellations", label: "Cancellations", badge: cancellationRequests },
     { href: "/admin/topic-requests", label: "Topic requests", badge: openTopicRequests },
   ];
@@ -70,7 +69,7 @@ export default async function AdminPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
         {stats.map((s) => (
           <div
             key={s.label}
