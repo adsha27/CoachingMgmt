@@ -19,7 +19,33 @@ export async function PATCH(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const body = await req.json() as { action?: string };
+  const body = await req.json() as { action?: string; meetingLink?: string };
+
+  // Teacher's own meeting link for this package. Stored on the package because
+  // 1-on-1 sessions don't exist until a slot is agreed; the link is copied onto
+  // each session as it's created, and sent to the student on approval.
+  if (body.action === "set-meeting-link") {
+    const raw = body.meetingLink?.trim() ?? "";
+    if (raw) {
+      let parsed: URL;
+      try { parsed = new URL(raw); } catch {
+        return NextResponse.json({ error: "Enter a valid link starting with https://" }, { status: 400 });
+      }
+      if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
+        return NextResponse.json({ error: "Link must be an http(s) URL" }, { status: 400 });
+      }
+    }
+    const updated = await prisma.oneOnOnePackage.update({
+      where: { id: pkgId },
+      data: { meetingLink: raw || null },
+    });
+    // Keep any already-scheduled sessions for this package in sync.
+    await prisma.session.updateMany({
+      where: { booking: { oneOnOnePackageId: pkgId } },
+      data: { meetLink: raw || null },
+    });
+    return NextResponse.json({ ok: true, meetingLink: updated.meetingLink });
+  }
 
   if (body.action === "publish") {
     if (pkg.status !== "DRAFT") {

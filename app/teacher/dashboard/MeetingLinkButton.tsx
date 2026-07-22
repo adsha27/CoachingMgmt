@@ -3,7 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export default function MeetingLinkButton({ courseId, current }: { courseId: number; current: string | null }) {
+export default function MeetingLinkButton(
+  { courseId, current, kind = "course" }:
+  { courseId: number; current: string | null; kind?: "course" | "package" },
+) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [link, setLink] = useState(current ?? "");
@@ -12,7 +15,10 @@ export default function MeetingLinkButton({ courseId, current }: { courseId: num
 
   async function save() {
     setSaving(true); setError(null);
-    const res = await fetch(`/api/teacher/courses/group/${courseId}`, {
+    const endpoint = kind === "package"
+      ? `/api/teacher/packages/${courseId}`
+      : `/api/teacher/courses/group/${courseId}`;
+    const res = await fetch(endpoint, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ action: "set-meeting-link", meetingLink: link }),

@@ -13,7 +13,7 @@ async function sendEnrolmentEmail(bookingId: number, teacherName: string) {
     include: {
       student: { select: { name: true, email: true } },
       groupCourse: { select: { title: true, sessions: { orderBy: { scheduledAt: "asc" }, take: 1, select: { meetLink: true, scheduledAt: true } } } },
-      oneOnOnePackage: { select: { title: true } },
+      oneOnOnePackage: { select: { title: true, meetingLink: true } },
     },
   });
   if (!b?.student.email) return;
@@ -23,7 +23,9 @@ async function sendEnrolmentEmail(bookingId: number, teacherName: string) {
     studentName: b.student.name ?? "there",
     className: b.groupCourse?.title ?? b.oneOnOnePackage?.title ?? "your class",
     teacherName,
-    meetingLink: first?.meetLink ?? null,
+    // Group: the link written onto its sessions. 1-on-1: the package's link,
+    // since its sessions don't exist until a slot is agreed.
+    meetingLink: first?.meetLink ?? b.oneOnOnePackage?.meetingLink ?? null,
     firstSessionAt: first
       ? new Date(first.scheduledAt).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" })
       : null,

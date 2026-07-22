@@ -359,6 +359,7 @@ export default async function TeacherDashboard() {
                       }`}>{p.status}</span>
                       {p.status === "DRAFT" && <PublishCourseButton id={p.id} type="package" />}
                       {p.status === "LISTED" && <InviteLinkButton oneOnOnePackageId={p.id} />}
+                      <MeetingLinkButton courseId={p.id} current={p.meetingLink} kind="package" />
                     </div>
                   </div>
                 </div>
