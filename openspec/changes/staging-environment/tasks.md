@@ -26,7 +26,7 @@
 - [x] 5.4 Hand the operator a credentials card
 
 ## 6. Operator-only (cannot be done from here)
-- [ ] 6.1 Attach `staging.novusclasses.in` in Vercel + the matching Cloudflare DNS record
+- [x] 6.1 Attach `staging.novusclasses.in` in Vercel + the matching Cloudflare DNS record (grey cloud CNAME -> 8a9ee0de7a9ea18d.vercel-dns-017.com)
 
 ## Notes
 
@@ -35,8 +35,11 @@
   prompts and the add silently no-ops in a non-interactive shell.
 - Preview deployments sit behind Vercel SSO (`ssoProtection:
   all_except_custom_domains`). A protection-bypass secret was generated so the
-  operator and automated tests can reach staging today. **Attaching
-  `staging.novusclasses.in` removes the need for it entirely**, since custom
-  domains are excluded from SSO — that is task 6.1 and needs Cloudflare DNS.
+  operator and automated tests can reach staging today. **Correction:** attaching the custom domain did NOT remove the SSO wall.
+  `all_except_custom_domains` excludes *production* custom domains; a branch
+  domain is still a preview deployment and stays protected. Sharing therefore
+  uses the bypass link
+  (`?x-vercel-protection-bypass=<secret>&x-vercel-set-bypass-cookie=true`),
+  which sets a `_vercel_jwt` cookie so the rest of the site browses normally.
 - Staging has its own `CRON_SECRET` and `REGISTRATION_TOKEN_SECRET`; production
   secrets are deliberately not shared across environments.
