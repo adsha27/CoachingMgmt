@@ -3,12 +3,16 @@ import { getCurrentUser } from "@/lib/auth";
 import LogoutButton from "@/app/_components/LogoutButton";
 import AppNav from "@/app/_components/AppNav";
 import ChangePasswordButton from "./ChangePasswordButton";
+import VerifyEmailSection from "./VerifyEmailSection";
+import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
 
 export default async function AccountPage() {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
+
+  const fresh = await prisma.user.findUnique({ where: { id: user.id }, select: { emailVerifiedAt: true } });
 
   const rows: [string, string][] = [
     ["Name", user.name],
@@ -34,6 +38,14 @@ export default async function AccountPage() {
               </div>
             ))}
           </dl>
+        </section>
+
+        <section className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm mb-6">
+          <h2 className="text-sm font-semibold text-gray-900 mb-1">Email</h2>
+          <p className="text-sm text-gray-500 mb-4">Confirm your address so you can recover your account.</p>
+          {user.email
+            ? <VerifyEmailSection email={user.email} verified={!!fresh?.emailVerifiedAt} />
+            : <p className="text-sm text-gray-500">No email on this account.</p>}
         </section>
 
         <section className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm mb-6">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import SendResetButton from "../SendResetButton";
 
 interface Student {
   id: number;
@@ -77,6 +78,9 @@ export default function StudentsClient({ students }: { students: Student[] }) {
                     {s.enrolled} enrolled · {s.pending} awaiting approval · Joined{" "}
                     {new Date(s.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
                   </p>
+                </div>
+                <div className="shrink-0">
+                  <SendResetButton userId={s.id} />
                 </div>
               </div>
             </div>

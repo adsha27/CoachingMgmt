@@ -35,6 +35,8 @@ model User {
   parentSessions       UserSession[]         @relation("ParentStudentSessions")
   userSessions         UserSession[]         @relation("UserOwnSessions")
   passwordResetTokens  PasswordResetToken[]
+  emailVerifications   EmailVerification[]
+  emailVerifiedAt      DateTime?
 
   @@map("users")
 }
@@ -50,6 +52,20 @@ model PasswordResetToken {
 
   @@index([userId])
   @@map("password_reset_tokens")
+}
+
+model EmailVerification {
+  id        Int       @id @default(autoincrement())
+  userId    Int
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  codeHash  String
+  expiresAt DateTime
+  usedAt    DateTime?
+  attempts  Int       @default(0)
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@map("email_verifications")
 }
 
 model OtpCode {

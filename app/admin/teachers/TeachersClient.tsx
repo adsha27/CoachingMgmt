@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import SendResetButton from "../SendResetButton";
 
 interface Teacher {
   id: number;
@@ -93,6 +94,8 @@ export default function TeachersClient({ teachers: initial }: { teachers: Teache
                   Joined {new Date(t.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
                 </p>
               </div>
+              <div className="shrink-0 flex items-center gap-2">
+              <SendResetButton userId={t.id} />
               <button
                 onClick={() => toggleSuspend(t)}
                 disabled={loading === t.id}
@@ -104,6 +107,7 @@ export default function TeachersClient({ teachers: initial }: { teachers: Teache
               >
                 {loading === t.id ? "…" : isSuspended ? "Unsuspend" : "Suspend"}
               </button>
+              </div>
             </div>
           </div>
         );
