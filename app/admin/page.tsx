@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import LogoutButton from "@/app/_components/LogoutButton";
+import AppNav from "@/app/_components/AppNav";
 import PendingTeachersSection from "./PendingTeachersSection";
 
 export const dynamic = "force-dynamic";
@@ -56,6 +57,8 @@ export default async function AdminPage() {
   ];
 
   return (
+    <>
+    <AppNav role="ADMIN" current="/admin" />
     <main className="max-w-5xl mx-auto py-8 px-4">
       <div className="flex justify-between items-start mb-8">
         <div>
@@ -131,5 +134,6 @@ export default async function AdminPage() {
         </section>
       )}
     </main>
+    </>
   );
 }

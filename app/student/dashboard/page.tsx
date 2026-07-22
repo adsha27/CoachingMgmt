@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import LogoutButton from "@/app/_components/LogoutButton";
+import AppNav from "@/app/_components/AppNav";
 import ProposeSlotButton from "./ProposeSlotButton";
 import TopicRequestForm from "./TopicRequestForm";
 import ParentAccessSection from "./ParentAccessSection";
@@ -105,6 +106,7 @@ export default async function StudentDashboard() {
 
   return (
     <main className="min-h-screen bg-gray-50">
+      <AppNav role="STUDENT" current="/student/dashboard" />
       {/* Top bar */}
       <header className="bg-white border-b border-gray-100 px-4 py-4 sticky top-0 z-10 shadow-sm">
         <div className="max-w-2xl mx-auto flex justify-between items-center">
