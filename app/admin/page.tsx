@@ -12,7 +12,7 @@ export default async function AdminPage() {
   const user = await getCurrentUser();
   if (!user || user.role !== "ADMIN") redirect("/login");
 
-  const [pendingTeachers, pendingVerifications, cancellationRequests, teacherCount, studentCount, openTopicRequests, recentFeedback] =
+  const [pendingTeachers, pendingVerifications, cancellationRequests, teacherCount, studentCount, openTopicRequests, pendingApplications, recentFeedback] =
     await Promise.all([
       prisma.user.findMany({
         where: { role: "TEACHER", status: "PENDING" },
@@ -24,6 +24,16 @@ export default async function AdminPage() {
       prisma.user.count({ where: { role: "TEACHER", status: "ACTIVE" } }),
       prisma.user.count({ where: { role: "STUDENT", status: "ACTIVE" } }),
       prisma.topicRequest.count({ where: { status: "OPEN" } }),
+      // Pending applications — admin oversight of who applied to whom.
+      prisma.booking.findMany({
+        where: { status: "PENDING" },
+        include: {
+          student: { select: { name: true, email: true, phone: true, targetExam: true, currentClass: true } },
+          groupCourse: { select: { title: true, teacher: { select: { name: true } } } },
+          oneOnOnePackage: { select: { title: true, teacher: { select: { name: true } } } },
+        },
+        orderBy: { bookedAt: "asc" },
+      }),
       prisma.sessionFeedback.findMany({
         orderBy: { createdAt: "desc" },
         take: 10,
@@ -43,6 +53,7 @@ export default async function AdminPage() {
     { label: "Pending approvals", value: pendingTeachers.length, alert: pendingTeachers.length > 0 },
     { label: "Active teachers", value: teacherCount },
     { label: "Active students", value: studentCount },
+    { label: "Applications", value: pendingApplications.length, alert: pendingApplications.length > 0 },
     { label: "Pending verifications", value: pendingVerifications, alert: pendingVerifications > 0 },
     { label: "Pending cancellations", value: cancellationRequests, alert: cancellationRequests > 0 },
   ];
@@ -103,6 +114,46 @@ export default async function AdminPage() {
 
       {/* Pending teacher approvals */}
       <PendingTeachersSection teachers={pendingTeachers.map((t) => ({ ...t, createdAt: t.createdAt.toISOString() }))} />
+
+      {/* Class applications awaiting teacher approval — admin oversight */}
+      {pendingApplications.length > 0 && (
+        <section className="mb-10">
+          <h2 className="text-lg font-semibold text-gray-800 mb-1">
+            Class applications
+            <span className="ml-2 text-xs font-semibold text-white bg-amber-600 px-2 py-0.5 rounded-full align-middle">{pendingApplications.length}</span>
+          </h2>
+          <p className="text-xs text-gray-500 mb-4">Students awaiting approval. The teacher approves; this is for your visibility.</p>
+          <div className="space-y-3">
+            {pendingApplications.map((b) => {
+              const cls = b.groupCourse ?? b.oneOnOnePackage;
+              const kind = b.groupCourse ? "Group course" : "1-on-1 package";
+              return (
+                <div key={b.id} className="bg-white border border-gray-200 rounded-xl p-4">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-sm text-gray-900">
+                        <span className="font-semibold">{b.student.name}</span>
+                        <span className="text-gray-400"> applied to </span>
+                        <span className="font-medium">{cls?.title ?? "a class"}</span>
+                      </p>
+                      <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-600">
+                        <span>👨‍🏫 {cls?.teacher.name ?? "—"} · {kind}</span>
+                        <span>📧 <a href={`mailto:${b.student.email}`} className="hover:underline">{b.student.email}</a></span>
+                        <span>📱 <a href={`tel:${b.student.phone}`} className="hover:underline">{b.student.phone}</a></span>
+                        {(b.student.targetExam || b.student.currentClass) && (
+                          <span>{[b.student.targetExam, b.student.currentClass].filter(Boolean).join(" · ")}</span>
+                        )}
+                        <span>Applied {new Date(b.bookedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}</span>
+                      </div>
+                    </div>
+                    <span className="shrink-0 text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 font-medium">Awaiting approval</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       {/* Recent feedback */}
       {recentFeedback.length > 0 && (

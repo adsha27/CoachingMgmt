@@ -124,6 +124,9 @@ model TeacherProfile {
   targetExams             String[]            @default([])
   expertiseTags           String[]            @default([])
   teachingExperienceYears Int?
+  headline                String?
+  languages               String[]            @default([])
+  achievements            String?
   teacher                 User                @relation(fields: [teacherId], references: [id], onDelete: Cascade)
 
   @@map("teacher_profiles")
