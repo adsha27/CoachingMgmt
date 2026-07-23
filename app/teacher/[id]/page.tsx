@@ -105,6 +105,9 @@ export default async function TeacherProfilePage({
           targetExams: true,
           expertiseTags: true,
           teachingExperienceYears: true,
+          headline: true,
+          languages: true,
+          achievements: true,
           rating: true,
           profilePhotoUrl: true,
           demoVideoLink: true,
@@ -230,10 +233,13 @@ export default async function TeacherProfilePage({
             )}
             <div className="flex-1 min-w-0">
               <h1 className="text-2xl font-bold text-ink">{teacher.name}</h1>
+              {p?.headline && (
+                <p className="text-ink font-medium mt-1">{p.headline}</p>
+              )}
               {(p?.subjects?.length ?? 0) > 0 && (
                 <p className="text-ink-soft mt-1">{p!.subjects.join(" · ")}</p>
               )}
-              <div className="flex items-center gap-4 mt-2 font-mono text-sm text-ink-soft">
+              <div className="flex items-center gap-4 mt-2 font-mono text-sm text-ink-soft flex-wrap">
                 {p?.rating && (
                   <span className="font-medium text-ink">{p.rating.toFixed(1)} ★</span>
                 )}
@@ -242,6 +248,9 @@ export default async function TeacherProfilePage({
                 )}
                 {(p?.targetExams?.length ?? 0) > 0 && (
                   <span>{p!.targetExams.join(", ")}</span>
+                )}
+                {(p?.languages?.length ?? 0) > 0 && (
+                  <span>Teaches in {p!.languages.join(", ")}</span>
                 )}
               </div>
               {(p?.expertiseTags?.length ?? 0) > 0 && (
@@ -288,6 +297,15 @@ export default async function TeacherProfilePage({
                 Qualifications
               </h3>
               <p className="text-sm text-ink whitespace-pre-line">{p.qualifications}</p>
+            </div>
+          )}
+
+          {p?.achievements && (
+            <div className="mt-4 border-t border-line pt-4">
+              <h3 className="text-xs font-semibold text-ink-soft uppercase tracking-wide mb-1">
+                Achievements &amp; results
+              </h3>
+              <p className="text-sm text-ink whitespace-pre-line">{p.achievements}</p>
             </div>
           )}
         </div>

@@ -4,6 +4,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import LogoutButton from "@/app/_components/LogoutButton";
 import AppNav from "@/app/_components/AppNav";
+import InlineRating from "./InlineRating";
 import ProposeSlotButton from "./ProposeSlotButton";
 import TopicRequestForm from "./TopicRequestForm";
 import ParentAccessSection from "./ParentAccessSection";
@@ -69,7 +70,7 @@ export default async function StudentDashboard() {
           include: { oneOnOnePackage: { include: { teacher: { select: { name: true } } } } },
         },
         groupCourse: { include: { teacher: { select: { name: true } } } },
-        feedback: { where: { studentId: user.id }, select: { id: true }, take: 1 },
+        feedback: { where: { studentId: user.id }, select: { id: true, rating: true }, take: 1 },
       },
       orderBy: { scheduledAt: "desc" },
       take: 20,
@@ -327,14 +328,11 @@ export default async function StudentDashboard() {
                       </p>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      {canRate && (
-                        <Link href={`/student/sessions/${s.id}`}
-                          className="text-xs font-semibold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-lg hover:bg-amber-100 transition-colors">
-                          Rate ★
-                        </Link>
-                      )}
+                      {canRate && <InlineRating sessionId={s.id} />}
                       {hasRated && (
-                        <span className="text-xs text-gray-300">★ rated</span>
+                        <span className="text-xs text-amber-500" title="You rated this session">
+                          {"★".repeat(s.feedback[0].rating)}<span className="text-gray-200">{"★".repeat(5 - s.feedback[0].rating)}</span>
+                        </span>
                       )}
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
                         s.status === "COMPLETED" ? "bg-green-100 text-green-700" :

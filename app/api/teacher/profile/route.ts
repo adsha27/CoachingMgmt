@@ -29,6 +29,9 @@ export async function PUT(req: NextRequest) {
     demoVideoLink?: string;
     socialMediaLinks?: Record<string, string>;
     profilePhotoUrl?: string;
+    headline?: string;
+    languages?: string[];
+    achievements?: string;
   };
 
   const profile = await prisma.teacherProfile.upsert({
@@ -44,6 +47,9 @@ export async function PUT(req: NextRequest) {
       demoVideoLink: body.demoVideoLink,
       socialMediaLinks: body.socialMediaLinks ?? undefined,
       profilePhotoUrl: body.profilePhotoUrl,
+      headline: body.headline,
+      languages: body.languages ?? [],
+      achievements: body.achievements,
     },
     update: {
       ...(body.bio !== undefined && { bio: body.bio }),
@@ -55,6 +61,9 @@ export async function PUT(req: NextRequest) {
       ...(body.demoVideoLink !== undefined && { demoVideoLink: body.demoVideoLink }),
       ...(body.socialMediaLinks !== undefined && { socialMediaLinks: body.socialMediaLinks }),
       ...(body.profilePhotoUrl !== undefined && { profilePhotoUrl: body.profilePhotoUrl }),
+      ...(body.headline !== undefined && { headline: body.headline }),
+      ...(body.languages !== undefined && { languages: body.languages }),
+      ...(body.achievements !== undefined && { achievements: body.achievements }),
     },
   });
 

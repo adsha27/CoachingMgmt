@@ -13,6 +13,9 @@ interface Profile {
   targetExams?: string[];
   expertiseTags?: string[];
   teachingExperienceYears?: number;
+  headline?: string;
+  languages?: string[];
+  achievements?: string;
   demoVideoLink?: string;
   socialMediaLinks?: SocialLinks;
   verifyStatus?: string;
@@ -20,6 +23,7 @@ interface Profile {
 
 const SUBJECTS = ["Physics", "Chemistry", "Mathematics", "Biology"];
 const EXAMS = ["JEE Main", "JEE Advanced", "NEET", "KVPY", "Board Exams"];
+const LANGUAGES = ["Hindi", "English", "Hinglish", "Tamil", "Telugu", "Bengali", "Marathi"];
 
 const STEPS = [
   { id: 1, label: "Basic info" },
@@ -120,6 +124,9 @@ export default function TeacherWizardPage() {
   const [targetExams, setTargetExams] = useState<string[]>([]);
   const [expertiseTags, setExpertiseTags] = useState<string[]>([]);
   const [experienceYears, setExperienceYears] = useState<string>("");
+  const [headline, setHeadline] = useState("");
+  const [languages, setLanguages] = useState<string[]>([]);
+  const [achievements, setAchievements] = useState("");
   const [demoVideoLink, setDemoVideoLink] = useState("");
   const [social, setSocial] = useState<SocialLinks>({});
 
@@ -134,6 +141,9 @@ export default function TeacherWizardPage() {
         if (p.targetExams?.length) setTargetExams(p.targetExams);
         if (p.expertiseTags?.length) setExpertiseTags(p.expertiseTags);
         if (p.teachingExperienceYears) setExperienceYears(String(p.teachingExperienceYears));
+        if (p.headline) setHeadline(p.headline);
+        if (p.languages?.length) setLanguages(p.languages);
+        if (p.achievements) setAchievements(p.achievements);
         if (p.demoVideoLink) setDemoVideoLink(p.demoVideoLink);
         if (p.socialMediaLinks) setSocial(p.socialMediaLinks as SocialLinks);
         if (p.verifyStatus) setVerifyStatus(p.verifyStatus);
@@ -173,13 +183,15 @@ export default function TeacherWizardPage() {
       }
       payload = {
         bio,
+        headline: headline.trim() || undefined,
+        languages,
         subjects,
         targetExams,
         expertiseTags,
         teachingExperienceYears: experienceYears ? Number(experienceYears) : undefined,
       };
     } else if (step === 2) {
-      payload = { qualifications };
+      payload = { qualifications, achievements: achievements.trim() || undefined };
     } else if (step === 3) {
       payload = { demoVideoLink: demoVideoLink || undefined };
     } else if (step === 4) {
@@ -281,6 +293,18 @@ export default function TeacherWizardPage() {
             <div className="space-y-5">
               <h2 className="font-semibold text-gray-900">Basic information</h2>
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Headline</label>
+                <p className="text-xs text-gray-500 mb-2">One line students see first (e.g. &ldquo;IIT-D alum · 200+ selections · Organic Chemistry specialist&rdquo;).</p>
+                <input
+                  type="text"
+                  maxLength={90}
+                  value={headline}
+                  onChange={(e) => setHeadline(e.target.value)}
+                  placeholder="Your one-line pitch"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none"
+                />
+              </div>
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Subjects <span className="text-red-500">*</span>
                 </label>
@@ -312,6 +336,10 @@ export default function TeacherWizardPage() {
                 />
               </div>
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Languages you teach in</label>
+                <Toggle items={LANGUAGES} selected={languages} onChange={setLanguages} />
+              </div>
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Bio</label>
                 <textarea
                   value={bio}
@@ -324,17 +352,31 @@ export default function TeacherWizardPage() {
             </div>
           )}
 
-          {/* Step 2: Qualifications */}
+          {/* Step 2: Qualifications & achievements */}
           {step === 2 && (
-            <div className="space-y-4">
-              <h2 className="font-semibold text-gray-900">Qualifications</h2>
-              <textarea
-                value={qualifications}
-                onChange={(e) => setQualifications(e.target.value)}
-                rows={6}
-                placeholder="e.g. B.Tech (IIT Delhi), 3 years at FIITJEE, JEE Advanced rank 120 (2018)…"
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none resize-none"
-              />
+            <div className="space-y-5">
+              <h2 className="font-semibold text-gray-900">Qualifications &amp; achievements</h2>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Qualifications</label>
+                <textarea
+                  value={qualifications}
+                  onChange={(e) => setQualifications(e.target.value)}
+                  rows={5}
+                  placeholder="e.g. B.Tech (IIT Delhi), 3 years at FIITJEE, JEE Advanced rank 120 (2018)…"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none resize-none"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Achievements &amp; results</label>
+                <p className="text-xs text-gray-500 mb-2">Student results, ranks produced, awards — what makes parents choose you.</p>
+                <textarea
+                  value={achievements}
+                  onChange={(e) => setAchievements(e.target.value)}
+                  rows={4}
+                  placeholder="e.g. 12 students in JEE Advanced top 1000 (2024); NEET AIR 340 mentee…"
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none resize-none"
+                />
+              </div>
             </div>
           )}
 
@@ -386,8 +428,16 @@ export default function TeacherWizardPage() {
               <h2 className="font-semibold text-gray-900">Review & submit</h2>
               <div className="space-y-3 text-sm">
                 <div className="flex gap-3">
+                  <span className="text-gray-500 w-32 shrink-0">Headline</span>
+                  <span className="text-gray-900">{headline || "—"}</span>
+                </div>
+                <div className="flex gap-3">
                   <span className="text-gray-500 w-32 shrink-0">Subjects</span>
                   <span className="text-gray-900">{subjects.join(", ") || "—"}</span>
+                </div>
+                <div className="flex gap-3">
+                  <span className="text-gray-500 w-32 shrink-0">Languages</span>
+                  <span className="text-gray-900">{languages.join(", ") || "—"}</span>
                 </div>
                 <div className="flex gap-3">
                   <span className="text-gray-500 w-32 shrink-0">Exams</span>
@@ -408,6 +458,10 @@ export default function TeacherWizardPage() {
                 <div className="flex gap-3">
                   <span className="text-gray-500 w-32 shrink-0">Qualifications</span>
                   <span className="text-gray-900 line-clamp-3">{qualifications || "—"}</span>
+                </div>
+                <div className="flex gap-3">
+                  <span className="text-gray-500 w-32 shrink-0">Achievements</span>
+                  <span className="text-gray-900 line-clamp-3">{achievements || "—"}</span>
                 </div>
                 <div className="flex gap-3">
                   <span className="text-gray-500 w-32 shrink-0">Demo video</span>
